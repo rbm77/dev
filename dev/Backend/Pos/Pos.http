@@ -1,0 +1,11 @@
+@Pos_HostAddress = http://localhost:5130
+
+GET {{Pos_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{Pos_HostAddress}}/todos/1
+Accept: application/json
+
+###
