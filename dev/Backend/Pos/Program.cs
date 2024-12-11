@@ -1,6 +1,7 @@
 using Pos.Interfaces;
 using Pos.Repositories;
 using Pos.Services;
+using Pos.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddScoped<IDatabase>(provider =>
     return new MySqlDatabase(connectionString ?? "");
 });
 
+builder.Services.AddScoped<ILogManager, LogManager>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();

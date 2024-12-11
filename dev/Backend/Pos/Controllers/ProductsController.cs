@@ -1,79 +1,108 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Pos.Interfaces;
 using Pos.Models;
+using static Pos.Utilities.Enums;
 
 namespace Pos.Controllers
 {
     [Route("pos/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController(IProductService productService, ILogManager logManager) : ControllerBase
     {
 
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
-            // Simulación de datos
-            var products = new List<object>
+            try
             {
-                new { Id = 1, Name = "Product 1", Price = 10.99 },
-                new { Id = 2, Name = "Product 2", Price = 15.99 }
-            };
-
-            return Ok(products);
+                List<Product> products = await productService.GetAllProducts();
+                return Ok(products);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpGet("{productId:string}")]
         public async Task<IActionResult> GetProductById(string productId)
         {
-            // Simulación de obtener un producto
-            var product = new { Id = productId, Name = "Product " + id, Price = 12.99 };
-
-            if (product == null)
+            try
             {
-                return NotFound(new { Message = $"Product with ID {id} not found" });
+                if (string.IsNullOrEmpty(productId))
+                {
+                    return BadRequest();
+                }
+                Product? product = await productService.GetProductById(productId);
+                if (product == null)
+                {
+                    return NotFound();
+                }
+                return Ok(product);
             }
-
-            return Ok(product);
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] Product product)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (product == null)
+                {
+                    return BadRequest();
+                }
+                string productId = await productService.CreateProduct(product);
+                if (string.IsNullOrEmpty(productId))
+                {
+                    _ = logManager.Log("Error creating product. Empty ID.", LogType.Error);
+                    return StatusCode(500);
+                }
+                return CreatedAtAction(nameof(CreateProduct), productId);
             }
-
-            var createdProduct = new { Id = 3, Name = request.Name, Price = request.Price };
-
-            return CreatedAtAction(nameof(GetProductById), new { id = createdProduct.Id }, createdProduct);
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPut("{productId:string}")]
         public async Task<IActionResult> UpdateProduct(string productId, [FromBody] Product product)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (string.IsNullOrEmpty(productId) || product == null)
+                {
+                    return BadRequest();
+                }
+                bool updated = await productService.UpdateProduct(productId, product);
+                return updated ? NoContent() : NotFound();
             }
-
-            // Simulación de actualización
-            var updatedProduct = new { Id = id, Name = request.Name, Price = request.Price };
-
-            return Ok(updatedProduct);
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpDelete("{productId:string}")]
         public async Task<IActionResult> DeleteProduct(string productId)
         {
-            // Simulación de eliminación
-            var deleted = true; // Supongamos que se eliminó correctamente
-
-            if (!deleted)
+            try
             {
-                return NotFound(new { Message = $"Product with ID {id} not found" });
+                if (string.IsNullOrEmpty(productId))
+                {
+                    return BadRequest();
+                }
+                bool deleted = await productService.DeleteProduct(productId);
+                return deleted ? NoContent() : NotFound();
             }
-
-            return NoContent();
+            catch
+            {
+                return StatusCode(500);
+            }
         }
     }
 }
