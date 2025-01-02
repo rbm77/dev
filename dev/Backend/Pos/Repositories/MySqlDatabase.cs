@@ -8,7 +8,7 @@ namespace Pos.Repositories
     public class MySqlDatabase(string connectionString) : IDatabase
     {
 
-        public DbParameter CreateParameter(string name, object value)
+        public DbParameter CreateParameter(string name, object? value)
         {
             return new MySqlParameter(name, value);
         }

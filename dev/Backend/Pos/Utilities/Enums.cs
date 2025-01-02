@@ -7,5 +7,24 @@
             Info,
             Error
         }
+
+        public enum PaymentMethod
+        {
+            Cash,
+            Card,
+            Transfer,
+            Check
+        }
+
+        public enum TransactionType
+        {
+            Receivable,
+            Payable
+        }
+
+        public enum DocumentType
+        {
+            Sale
+        }
     }
 }

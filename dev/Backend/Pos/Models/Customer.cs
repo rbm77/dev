@@ -1,13 +1,13 @@
 ﻿namespace Pos.Models
 {
-    public class Supplier
+    public class Customer
     {
-        public string? SupplierId { get; set; }
+        public string? CustomerId { get; set; }
 
         public string? TenantId { get; set; }
 
         public string? Name { get; set; }
-  
+
         public string? Email { get; set; }
 
         public string? Phone { get; set; }

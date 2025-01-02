@@ -20,6 +20,8 @@
 
         public string? UnitId { get; set; }
 
+        public string? TaxId { get; set; }
+
         public string? SupplierId { get; set; }
 
         public DateTime CreatedAt { get; set; }

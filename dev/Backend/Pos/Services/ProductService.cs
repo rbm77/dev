@@ -29,6 +29,7 @@ namespace Pos.Services
                             Price = Convert.ToDecimal(reader["Price"]),
                             CategoryId = reader["CategoryId"].ToString(),
                             UnitId = reader["UnitId"].ToString(),
+                            TaxId = reader["TaxId"].ToString(),
                             SupplierId = reader["SupplierId"].ToString(),
                             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
                             UpdatedAt = Convert.ToDateTime(reader["UpdatedAt"]),
@@ -70,6 +71,7 @@ namespace Pos.Services
                             Price = Convert.ToDecimal(reader["Price"]),
                             CategoryId = reader["CategoryId"].ToString(),
                             UnitId = reader["UnitId"].ToString(),
+                            TaxId = reader["TaxId"].ToString(),
                             SupplierId = reader["SupplierId"].ToString(),
                             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
                             UpdatedAt = Convert.ToDateTime(reader["UpdatedAt"]),
@@ -100,6 +102,7 @@ namespace Pos.Services
                     database.CreateParameter("@Price", product.Price),
                     database.CreateParameter("@CategoryId", product.CategoryId),
                     database.CreateParameter("@UnitId", product.UnitId),
+                    database.CreateParameter("@TaxId", product.TaxId),
                     database.CreateParameter("@SupplierId", product.SupplierId),
                     database.CreateParameter("@IsActive", product.IsActive)
                 ];
@@ -130,6 +133,7 @@ namespace Pos.Services
                     database.CreateParameter("@Price", product.Price),
                     database.CreateParameter("@CategoryId", product.CategoryId),
                     database.CreateParameter("@UnitId", product.UnitId),
+                    database.CreateParameter("@TaxId", product.TaxId),
                     database.CreateParameter("@SupplierId", product.SupplierId),
                     database.CreateParameter("@IsActive", product.IsActive)
                 ];

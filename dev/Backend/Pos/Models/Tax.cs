@@ -1,18 +1,16 @@
 ﻿namespace Pos.Models
 {
-    public class Supplier
+    public class Tax
     {
-        public string? SupplierId { get; set; }
+        public string? TaxId { get; set; }
 
         public string? TenantId { get; set; }
 
         public string? Name { get; set; }
-  
-        public string? Email { get; set; }
 
-        public string? Phone { get; set; }
+        public string? Description { get; set; }
 
-        public string? Address { get; set; }
+        public decimal Rate { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
