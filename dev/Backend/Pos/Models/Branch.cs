@@ -1,16 +1,20 @@
 ﻿namespace Pos.Models
 {
-    public class Unit
+    public class Branch
     {
-        public string? UnitId { get; set; }
+        public int BranchId { get; set; }
 
         public int CompanyId { get; set; }
 
+        public string? Code { get; set; }
+
         public string? Name { get; set; }
 
-        public string? Abbreviation { get; set; }
+        public string? Email { get; set; }
 
-        public string? Description { get; set; }
+        public string? Phone { get; set; }
+
+        public string? Address { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

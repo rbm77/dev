@@ -4,7 +4,7 @@
     {
         public string? TaxId { get; set; }
 
-        public string? TenantId { get; set; }
+        public int CompanyId { get; set; }
 
         public string? Name { get; set; }
 

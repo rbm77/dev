@@ -16,15 +16,22 @@
             Check
         }
 
-        public enum TransactionType
+        public enum AccountType
         {
             Receivable,
             Payable
         }
 
-        public enum DocumentType
+        public enum TransactionType
         {
-            Sale
+            Sale,
+            Refund
+        }
+
+        public enum Currency
+        {
+            CRC,
+            USD
         }
     }
 }

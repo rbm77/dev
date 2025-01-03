@@ -21,7 +21,7 @@ namespace Pos.Services
                         products.Add(new Product
                         {
                             ProductId = reader["ProductId"].ToString(),
-                            TenantId = reader["TenantId"].ToString(),
+                            CompanyId = Convert.ToInt32(reader["CompanyId"]),
                             SKU = reader["SKU"].ToString(),
                             Barcode = reader["Barcode"].ToString(),
                             Name = reader["Name"].ToString(),
@@ -63,7 +63,7 @@ namespace Pos.Services
                         return new Product
                         {
                             ProductId = reader["ProductId"].ToString(),
-                            TenantId = reader["TenantId"].ToString(),
+                            CompanyId = Convert.ToInt32(reader["CompanyId"]),
                             SKU = reader["SKU"].ToString(),
                             Barcode = reader["Barcode"].ToString(),
                             Name = reader["Name"].ToString(),
@@ -94,7 +94,7 @@ namespace Pos.Services
             {
                 DbParameter[] parameters =
                 [
-                    database.CreateParameter("@TenantId", product.TenantId),
+                    database.CreateParameter("@CompanyId", product.CompanyId),
                     database.CreateParameter("@SKU", product.SKU),
                     database.CreateParameter("@Barcode", product.Barcode),
                     database.CreateParameter("@Name", product.Name),
@@ -125,7 +125,7 @@ namespace Pos.Services
                 DbParameter[] parameters =
                 [
                     database.CreateParameter("@ProductId", productId),
-                    database.CreateParameter("@TenantId", product.TenantId),
+                    database.CreateParameter("@CompanyId", product.CompanyId),
                     database.CreateParameter("@SKU", product.SKU),
                     database.CreateParameter("@Barcode", product.Barcode),
                     database.CreateParameter("@Name", product.Name),

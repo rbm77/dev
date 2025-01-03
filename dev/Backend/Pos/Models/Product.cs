@@ -4,7 +4,7 @@
     {
         public string? ProductId { get; set; }
 
-        public string? TenantId { get; set; }
+        public int CompanyId { get; set; }
 
         public string? SKU { get; set; }
 
