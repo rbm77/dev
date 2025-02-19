@@ -2,7 +2,8 @@
 {
     public class Permission
     {
-        public View? View { get; set; }
+        public int RoleId { get; set; }
+        public int ViewId { get; set; }
         public bool IsEditable { get; set; }
 
         public Permission() { }
