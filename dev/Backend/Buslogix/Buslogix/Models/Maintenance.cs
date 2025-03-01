@@ -10,6 +10,7 @@ namespace Buslogix.Models
         public string? Description { get; set; }
         public DateTime ScheduledDate { get; set; }
         public DateTime CompletedDate { get; set; }
+        public decimal Amount { get; set; }
  
         public Maintenance() { }
     }
