@@ -1,14 +1,22 @@
-var builder = WebApplication.CreateBuilder(args);
+using Buslogix.DataAccess;
+using Buslogix.Interfaces;
+using Buslogix.Repositories;
+using Buslogix.Services;
 
-// Add services to the container.
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+string connectionString = builder.Configuration.GetConnectionString("MySqlConnection") ?? "";
+builder.Services.AddScoped<IDataAccess>(provider => new MySqlDataAccess(connectionString));
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
