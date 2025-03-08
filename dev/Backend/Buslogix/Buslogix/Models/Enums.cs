@@ -17,5 +17,12 @@
             TrafficViolation = 4,
             SecurityEvent = 5
         }
+
+        public enum LogType
+        {
+            Info = 1,
+            Error = 2,
+            Warning = 3
+        }
     }
 }

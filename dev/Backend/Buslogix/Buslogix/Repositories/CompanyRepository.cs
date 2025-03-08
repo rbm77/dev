@@ -10,14 +10,7 @@ namespace Buslogix.Repositories
 
         public async Task<List<Company>> GetCompanies()
         {
-            string commandText = "GetCompanies";
-            Dictionary<string, object> parameters = new()
-            {
-                { "@param1", "" },
-                { "@param2", "" }
-            };
-
-            return await _dataAccess.ExecuteReader(commandText, CommandType.StoredProcedure,
+            return await _dataAccess.ExecuteReader("GetCompanies", CommandType.StoredProcedure,
                 static reader => new Company
                 {
                     Id = reader.GetInt32(0),
@@ -25,7 +18,7 @@ namespace Buslogix.Repositories
                     PhoneNumber = reader.GetString(2),
                     Email = reader.GetString(3),
                     IsActive = reader.GetBoolean(4)
-                }, parameters);
+                }, null);
         }
     }
 }

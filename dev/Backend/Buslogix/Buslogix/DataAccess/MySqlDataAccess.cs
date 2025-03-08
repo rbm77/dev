@@ -4,20 +4,11 @@ using MySqlConnector;
 
 namespace Buslogix.DataAccess
 {
-    public class MySqlDataAccess : IDataAccess
+    public class MySqlDataAccess(string connectionString) : IDataAccess
     {
-        private readonly string _connectionString;
+        private readonly string _connectionString = connectionString;
 
-        public MySqlDataAccess(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new InvalidOperationException("Invalid connection string");
-            }
-            _connectionString = connectionString;
-        }
-
-        public async Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDataParameter[] parameters)
+        public async Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object>? parameters)
         {
             await using MySqlConnection connection = new(_connectionString);
             await connection.OpenAsync();
@@ -27,15 +18,15 @@ namespace Buslogix.DataAccess
                 CommandType = commandType
             };
 
-            if (parameters != null && parameters.Length > 0)
+            if (parameters != null && parameters.Count > 0)
             {
-                command.Parameters.AddRange(parameters);
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value)).ToArray());
             }
 
             return await command.ExecuteNonQueryAsync();
         }
 
-        public async Task<List<T>> ExecuteReader<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object> parameters)
+        public async Task<List<T>> ExecuteReader<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object>? parameters)
         {
             List<T> results = [];
 
@@ -61,7 +52,7 @@ namespace Buslogix.DataAccess
             return results;
         }
 
-        public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDataParameter[] parameters)
+        public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object>? parameters)
         {
             await using MySqlConnection connection = new(_connectionString);
             await connection.OpenAsync();
@@ -71,9 +62,9 @@ namespace Buslogix.DataAccess
                 CommandType = commandType
             };
 
-            if (parameters != null && parameters.Length > 0)
+            if (parameters != null && parameters.Count > 0)
             {
-                command.Parameters.AddRange(parameters);
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value)).ToArray());
             }
 
             return await command.ExecuteScalarAsync();
