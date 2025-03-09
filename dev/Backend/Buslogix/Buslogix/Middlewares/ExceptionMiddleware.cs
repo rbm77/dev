@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using Buslogix.Interfaces;
+using Buslogix.Models.DTO;
 using static Buslogix.Models.Enums;
 
 namespace Buslogix.Middlewares
@@ -32,7 +33,7 @@ namespace Buslogix.Middlewares
         {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            var response = new { error = "An unexpected error occurred." };
+            Error response = new() { Message = "An unexpected error occurred." };
             string jsonResponse = JsonSerializer.Serialize(response);
             return context.Response.WriteAsync(jsonResponse);
         }
