@@ -3,9 +3,11 @@ using Buslogix.DataAccess;
 using Buslogix.Handlers;
 using Buslogix.Interfaces;
 using Buslogix.Middlewares;
+using Buslogix.Models;
 using Buslogix.Repositories;
 using Buslogix.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddSingleton<ILogHandler, LogHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
 string connectionString = builder.Configuration.GetConnectionString("MySqlConnection") ?? "";
 builder.Services.AddScoped<IDataAccess>(provider => new MySqlDataAccess(connectionString));
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
@@ -45,11 +49,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("ReadCompanyPolicy", static policy =>
-        policy.RequireClaim("Permission", "ReadCompany"))
-    .AddPolicy("EditCompanyPolicy", static policy =>
-        policy.RequireClaim("Permission", "EditCompany"));
+builder.Services.AddAuthorization(options =>
+{
+    foreach (string permission in PermissionMap.PermissionToCode.Keys)
+    {
+        options.AddPolicy(permission, policy =>
+            policy.Requirements.Add(new PermissionRequirement(permission)));
+    }
+});
 
 builder.Services.AddOpenApi();
 

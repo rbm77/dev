@@ -11,7 +11,7 @@ namespace Buslogix.Controllers
     {
         private readonly ICompanyService _companyService = companyService;
 
-        [Authorize(Policy = "ReadCompanyPolicy")]
+        [Authorize(Policy = "Company.Read")]
         [HttpGet]
         public async Task<IActionResult> GetCompanies()
         {

@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Buslogix.Interfaces;
+using Buslogix.Models;
 using Buslogix.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -34,16 +35,16 @@ namespace Buslogix.Controllers
         {
             if (userIdentity?.Permissions != null && userIdentity.Permissions.Count > 0)
             {
+                string[] permissionCodes = userIdentity.Permissions
+                    .Select(static p => PermissionMap.PermissionToCode[p])
+                    .ToArray();
+
                 List<Claim> claims =
                 [
                     new Claim(ClaimTypes.Name, userIdentity.Username ?? ""),
-                    new Claim(ClaimTypes.NameIdentifier, userIdentity.Id.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, userIdentity.Id.ToString()),
+                    new Claim("permissions", string.Join(",", permissionCodes))
                 ];
-
-                foreach (string permission in userIdentity.Permissions)
-                {
-                    claims.Add(new Claim("Permission", permission));
-                }
 
                 string secretKey = _configuration["JWT:SecretKey"] ?? "";
                 SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(secretKey));
