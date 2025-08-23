@@ -1,22 +1,24 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buslogix.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CompaniesController(ICompanyService companyService) : ControllerBase
     {
+
         private readonly ICompanyService _companyService = companyService;
 
-        [Authorize(Policy = "Company.Read")]
+        [Authorize(Policy = $"{Resources.COMPANY}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetCompanies()
+        public async Task<IActionResult> GetCompany()
         {
-            List<Company> companies = await _companyService.GetCompanies();
-            return Ok(companies);
+            Company? company = await _companyService.GetCompany();
+            return company == null ? NotFound() : Ok(company);
         }
     }
 }

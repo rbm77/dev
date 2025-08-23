@@ -8,7 +8,7 @@ namespace Buslogix.DataAccess
     {
         private readonly string _connectionString = connectionString;
 
-        public async Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object>? parameters)
+        public async Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object?>? parameters)
         {
             await using MySqlConnection connection = new(_connectionString);
             await connection.OpenAsync();
@@ -26,7 +26,7 @@ namespace Buslogix.DataAccess
             return await command.ExecuteNonQueryAsync();
         }
 
-        public async Task<List<T>> ExecuteReader<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object>? parameters)
+        public async Task<List<T>> ExecuteReader<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object?>? parameters)
         {
             List<T> results = [];
 
@@ -40,7 +40,7 @@ namespace Buslogix.DataAccess
 
             if (parameters != null && parameters.Count > 0)
             {
-                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value)).ToArray());
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value ?? DBNull.Value)).ToArray());
             }
 
             await using MySqlDataReader reader = await command.ExecuteReaderAsync();
@@ -52,7 +52,7 @@ namespace Buslogix.DataAccess
             return results;
         }
 
-        public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object>? parameters)
+        public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object?>? parameters)
         {
             await using MySqlConnection connection = new(_connectionString);
             await connection.OpenAsync();

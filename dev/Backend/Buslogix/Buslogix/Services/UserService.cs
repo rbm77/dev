@@ -7,7 +7,7 @@ namespace Buslogix.Services
     {
         private readonly IUserRepository _userRepository = userRepository;
 
-        public Task<UserIdentity> Authenticate(Credentials credentials)
+        public Task<UserIdentity?> Authenticate(Credentials credentials)
         {
             return _userRepository.Authenticate(credentials);
         }

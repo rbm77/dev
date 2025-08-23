@@ -5,11 +5,12 @@ namespace Buslogix.Services
 {
     public class CompanyService(ICompanyRepository companyRepository) : ICompanyService
     {
+
         private readonly ICompanyRepository _companyRepository = companyRepository;
 
-        public async Task<List<Company>> GetCompanies()
+        public async Task<Company?> GetCompany()
         {
-            return await _companyRepository.GetCompanies();
+            return await _companyRepository.GetCompany();
         }
     }
 }

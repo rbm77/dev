@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Buslogix.Models;
+using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Buslogix.Handlers
@@ -13,12 +14,12 @@ namespace Buslogix.Handlers
             {
                 string[] permissions = claim.Value.Split(',');
 
-                string view = requirement.RequiredPermission.Split('.')[0];
-                string editPermission = $"{view}.Edit";
+                string resource = requirement.RequiredPermission.Split('.')[0];
+                string writePermission = $"{resource}.{PermissionMode.WRITE}";
 
-                if (PermissionMap.PermissionToCode.TryGetValue(editPermission, out string? editCode))
+                if (PermissionMap.PermissionToCode.TryGetValue(writePermission, out string? writeCode))
                 {
-                    if (permissions.Contains(editCode))
+                    if (permissions.Contains(writeCode))
                     {
                         context.Succeed(requirement);
                         return Task.CompletedTask;

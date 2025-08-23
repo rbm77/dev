@@ -4,6 +4,6 @@ namespace Buslogix.Interfaces
 {
     public interface IUserRepository
     {
-        Task<UserIdentity> Authenticate(Credentials credentials);
+        Task<UserIdentity?> Authenticate(Credentials credentials);
     }
 }

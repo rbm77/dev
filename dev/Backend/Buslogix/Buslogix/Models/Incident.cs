@@ -1,4 +1,4 @@
-﻿using static Buslogix.Models.Enums;
+﻿using static Buslogix.Utilities.Enums;
 
 namespace Buslogix.Models
 {

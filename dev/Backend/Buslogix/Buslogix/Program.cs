@@ -6,9 +6,11 @@ using Buslogix.Middlewares;
 using Buslogix.Models;
 using Buslogix.Repositories;
 using Buslogix.Services;
+using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using TokenHandler = Buslogix.Handlers.TokenHandler;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);

@@ -1,5 +1,5 @@
 ﻿using Buslogix.Interfaces;
-using Buslogix.Models;
+using Buslogix.Utilities;
 
 namespace Buslogix.Handlers
 {

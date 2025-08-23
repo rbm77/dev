@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Buslogix.Interfaces;
 using Buslogix.Models.DTO;
-using static Buslogix.Models.Enums;
+using static Buslogix.Utilities.Enums;
 
 namespace Buslogix.Middlewares
 {

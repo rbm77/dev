@@ -4,6 +4,6 @@ namespace Buslogix.Interfaces
 {
     public interface ICompanyService
     {
-        Task<List<Company>> GetCompanies();
+        Task<Company?> GetCompany();
     }
 }

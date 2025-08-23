@@ -1,4 +1,4 @@
-﻿namespace Buslogix.Models
+﻿namespace Buslogix.Utilities
 {
     public static class Enums
     {
