@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Xml.Linq;
 using Buslogix.Interfaces;
 using Buslogix.Models;
 using Buslogix.Utilities;
@@ -23,6 +24,19 @@ namespace Buslogix.Repositories
                 }, null);
 
             return rows != null && rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<int> UpdateCompany(Company company)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_id"] = company.Id,
+                ["p_name"] = company.Name,
+                ["p_phone_number"] = company.PhoneNumber,
+                ["p_email"] = company.Email,
+                ["p_is_active"] = company.IsActive
+            };
+            return await _dataAccess.ExecuteNonQuery("update_company", CommandType.StoredProcedure, parameters);
         }
     }
 }

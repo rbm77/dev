@@ -1,5 +1,6 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,15 @@ namespace Buslogix.Controllers
         {
             Company? company = await _companyService.GetCompany();
             return company == null ? NotFound() : Ok(company);
+        }
+
+        [Authorize(Policy = $"{Resources.COMPANY}.{PermissionMode.WRITE}")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company company)
+        {
+            company.Id = id;
+            bool updated = await _companyService.UpdateCompany(company);
+            return updated ? NoContent() : NotFound();
         }
     }
 }

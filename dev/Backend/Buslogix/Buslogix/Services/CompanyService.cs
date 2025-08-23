@@ -12,5 +12,10 @@ namespace Buslogix.Services
         {
             return await _companyRepository.GetCompany();
         }
+
+        public async Task<bool> UpdateCompany(Company company)
+        {
+            return (await _companyRepository.UpdateCompany(company)) > 0;
+        }
     }
 }
