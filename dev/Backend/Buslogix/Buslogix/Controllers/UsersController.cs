@@ -1,6 +1,7 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buslogix.Controllers
@@ -14,6 +15,7 @@ namespace Buslogix.Controllers
         private readonly ITokenHandler _tokenHandler = tokenHandler;
 
         [HttpPost("authenticate")]
+        [AllowAnonymous]
         public async Task<IActionResult> Authenticate([FromBody] Credentials credentials)
         {
             UserIdentity? userIdentity = await _userService.Authenticate(credentials);

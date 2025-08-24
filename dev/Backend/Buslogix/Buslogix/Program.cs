@@ -59,6 +59,10 @@ builder.Services.AddAuthorization(options =>
         options.AddPolicy(permission, policy =>
             policy.Requirements.Add(new PermissionRequirement(permission)));
     }
+
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 builder.Services.AddOpenApi();
