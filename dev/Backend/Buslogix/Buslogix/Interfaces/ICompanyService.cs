@@ -4,8 +4,8 @@ namespace Buslogix.Interfaces
 {
     public interface ICompanyService
     {
-        Task<Company?> GetCompany();
+        Task<Company?> GetCompany(int id);
 
-        Task<bool> UpdateCompany(Company company);
+        Task<bool> UpdateCompany(int id, Company company);
     }
 }

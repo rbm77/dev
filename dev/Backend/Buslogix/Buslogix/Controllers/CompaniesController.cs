@@ -1,6 +1,5 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
-using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +14,15 @@ namespace Buslogix.Controllers
         private readonly ICompanyService _companyService = companyService;
 
         [Authorize(Policy = $"{Resources.COMPANY}.{PermissionMode.READ}")]
-        [HttpGet]
-        public async Task<IActionResult> GetCompany()
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetCompany(int id)
         {
-            Company? company = await _companyService.GetCompany();
+            if (id != HttpContext.GetCompanyId())
+            {
+                return Forbid();
+            }
+
+            Company? company = await _companyService.GetCompany(id);
             return company == null ? NotFound() : Ok(company);
         }
 
@@ -26,8 +30,12 @@ namespace Buslogix.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company company)
         {
-            company.Id = id;
-            bool updated = await _companyService.UpdateCompany(company);
+            if (id != HttpContext.GetCompanyId())
+            {
+                return Forbid();
+            }
+
+            bool updated = await _companyService.UpdateCompany(id, company);
             return updated ? NoContent() : NotFound();
         }
     }

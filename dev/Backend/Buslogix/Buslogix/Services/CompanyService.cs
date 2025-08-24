@@ -8,14 +8,14 @@ namespace Buslogix.Services
 
         private readonly ICompanyRepository _companyRepository = companyRepository;
 
-        public async Task<Company?> GetCompany()
+        public async Task<Company?> GetCompany(int id)
         {
-            return await _companyRepository.GetCompany();
+            return await _companyRepository.GetCompany(id);
         }
 
-        public async Task<bool> UpdateCompany(Company company)
+        public async Task<bool> UpdateCompany(int id, Company company)
         {
-            return (await _companyRepository.UpdateCompany(company)) > 0;
+            return (await _companyRepository.UpdateCompany(id, company)) > 0;
         }
     }
 }

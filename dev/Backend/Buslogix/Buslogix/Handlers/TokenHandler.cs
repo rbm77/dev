@@ -25,7 +25,8 @@ namespace Buslogix.Handlers
                 [
                     new Claim(ClaimTypes.Name, userIdentity.Username ?? ""),
                     new Claim(ClaimTypes.NameIdentifier, userIdentity.Id.ToString()),
-                    new Claim("permissions", string.Join(",", permissionCodes))
+                    new Claim("permissions", string.Join(",", permissionCodes)),
+                    new Claim("cid", userIdentity.CompanyId.ToString())
                 ];
 
                 string secretKey = _configuration["JWT:SecretKey"] ?? "";

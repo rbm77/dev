@@ -16,15 +16,16 @@ namespace Buslogix.Repositories
                            "authenticate_user",
                            CommandType.StoredProcedure,
                            static reader => {
-                               string permissions = reader.GetStringOrDefault(2, "");
+                               string permissions = reader.GetStringOrDefault(3, "");
                                return new UserIdentity
                                {
-                                   Id = reader.GetInt32OrDefault(0),
-                                   Username = reader.GetStringOrDefault(1),
+                                   CompanyId = reader.GetInt32OrDefault(0),
+                                   Id = reader.GetInt32OrDefault(1),
+                                   Username = reader.GetStringOrDefault(2),
                                    Permissions = string.IsNullOrEmpty(permissions)
                                        ? []
                                        : [.. permissions.Split(',')],
-                                   IsAuthenticated = reader.GetBooleanOrDefault(3)
+                                   IsAuthenticated = reader.GetBooleanOrDefault(4)
                                };
                            },
                            new Dictionary<string, object?>
