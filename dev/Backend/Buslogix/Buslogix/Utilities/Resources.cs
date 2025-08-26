@@ -4,5 +4,6 @@
     {
 
         public const string COMPANY = "COMPANY";
+        public const string ROLE = "ROLE";
     }
 }

@@ -20,7 +20,7 @@ namespace Buslogix.DataAccess
 
             if (parameters != null && parameters.Count > 0)
             {
-                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value)).ToArray());
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value ?? DBNull.Value)).ToArray());
             }
 
             return await command.ExecuteNonQueryAsync();
@@ -64,7 +64,7 @@ namespace Buslogix.DataAccess
 
             if (parameters != null && parameters.Count > 0)
             {
-                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value)).ToArray());
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value ?? DBNull.Value)).ToArray());
             }
 
             return await command.ExecuteScalarAsync();

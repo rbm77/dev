@@ -6,6 +6,8 @@
         {
             { "1", $"{Resources.COMPANY}.{PermissionMode.WRITE}" },
             { "2", $"{Resources.COMPANY}.{PermissionMode.READ}" },
+            { "3", $"{Resources.ROLE}.{PermissionMode.WRITE}" },
+            { "4", $"{Resources.ROLE}.{PermissionMode.READ}" }
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

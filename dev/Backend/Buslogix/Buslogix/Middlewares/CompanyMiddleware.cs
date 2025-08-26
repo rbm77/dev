@@ -5,15 +5,12 @@ namespace Buslogix.Middlewares
 {
     public class CompanyMiddleware(RequestDelegate next)
     {
-
         private readonly RequestDelegate _next = next;
 
         public async Task InvokeAsync(HttpContext context)
         {
 
-            string? path = context.Request.Path.Value?.ToLowerInvariant().Trim();
-
-            if (path != null && path.EndsWith("users/authenticate"))
+            if (ShouldSkipValidation(context))
             {
                 await _next(context);
                 return;
@@ -30,6 +27,12 @@ namespace Buslogix.Middlewares
             context.Items["CompanyId"] = int.Parse(companyId);
 
             await _next(context);
+        }
+
+        private static bool ShouldSkipValidation(HttpContext context)
+        {
+            string? path = context.Request.Path.Value?.ToLowerInvariant().Trim();
+            return (path != null && path.EndsWith("users/authenticate")) || (context.User?.Identity?.IsAuthenticated == false);
         }
 
         private static Task WriteResponse(HttpContext context)
