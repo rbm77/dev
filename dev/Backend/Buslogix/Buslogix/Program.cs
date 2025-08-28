@@ -28,6 +28,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenHandler, TokenHandler>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);

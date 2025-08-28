@@ -5,5 +5,7 @@
 
         public const string COMPANY = "COMPANY";
         public const string ROLE = "ROLE";
+        public const string USER = "USER";
+        public const string OWN_USER = "OWN_USER";
     }
 }

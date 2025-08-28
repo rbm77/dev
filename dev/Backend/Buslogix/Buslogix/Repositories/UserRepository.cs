@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Buslogix.Interfaces;
+using Buslogix.Models;
 using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 
@@ -37,5 +38,159 @@ namespace Buslogix.Repositories
 
             return rows != null && rows.Count > 0 ? rows[0] : null;
         }
+
+        public async Task<User?> GetUser(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            List<User> rows = await _dataAccess.ExecuteReader("get_user", CommandType.StoredProcedure,
+                static reader => new User
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    Username = reader.GetStringOrDefault(1),
+                    Password = reader.GetStringOrDefault(2),
+                    RoleId = reader.GetInt32OrDefault(3),
+                    IsActive = reader.GetBooleanOrDefault(4),
+
+                    IdentityDocument = reader.GetStringOrDefault(5),
+                    Name = reader.GetStringOrDefault(6),
+                    LastName = reader.GetStringOrDefault(7),
+                    Address = reader.GetStringOrDefault(8),
+                    PhoneNumber = reader.GetStringOrDefault(9),
+                    Email = reader.GetStringOrDefault(10)
+                }, parameters);
+
+            return rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<int> InsertUser(int companyId, User user)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_username"] = user.Username,
+                ["p_password"] = user.Password,
+                ["p_role_id"] = user.RoleId,
+                ["p_is_active"] = user.IsActive,
+
+                ["p_identity_document"] = user.IdentityDocument,
+                ["p_name"] = user.Name,
+                ["p_lastname"] = user.LastName,
+                ["p_address"] = user.Address,
+                ["p_phone_number"] = user.PhoneNumber,
+                ["p_email"] = user.Email
+            };
+
+            object? result = await _dataAccess.ExecuteScalar("insert_user", CommandType.StoredProcedure, parameters);
+            return result != null ? ((int)result) : 0;
+        }
+
+        public async Task<int> UpdatePassword(int companyId, int id, string password)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_password"] = password
+            };
+
+            return await _dataAccess.ExecuteNonQuery("update_user_password", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> UpdateOwnUser(int companyId, int id, User user)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_username"] = user.Username,
+                ["p_identity_document"] = user.IdentityDocument,
+                ["p_name"] = user.Name,
+                ["p_lastname"] = user.LastName,
+                ["p_address"] = user.Address,
+                ["p_phone_number"] = user.PhoneNumber,
+                ["p_email"] = user.Email
+            };
+
+            return await _dataAccess.ExecuteNonQuery("update_own_user", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> UpdateUser(int companyId, int id, User user)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_username"] = user.Username,
+                ["p_role_id"] = user.RoleId,
+                ["p_is_active"] = user.IsActive,
+
+                ["p_identity_document"] = user.IdentityDocument,
+                ["p_name"] = user.Name,
+                ["p_lastname"] = user.LastName,
+                ["p_address"] = user.Address,
+                ["p_phone_number"] = user.PhoneNumber,
+                ["p_email"] = user.Email
+            };
+
+            return await _dataAccess.ExecuteNonQuery("update_user", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> DeleteUser(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            return await _dataAccess.ExecuteNonQuery("delete_user", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<List<User>> GetUsers(
+            int companyId,
+            int? roleId = null,
+            bool? isActive = null,
+            string? identityDocument = null,
+            string? name = null,
+            string? lastName = null
+        )
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_role_id"] = roleId,
+                ["p_is_active"] = isActive,
+                ["p_identity_document"] = identityDocument,
+                ["p_name"] = name,
+                ["p_lastname"] = lastName
+            };
+
+            List<User> rows = await _dataAccess.ExecuteReader("get_users", CommandType.StoredProcedure,
+                static reader => new User
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    Username = reader.GetStringOrDefault(1),
+                    Password = reader.GetStringOrDefault(2),
+                    RoleId = reader.GetInt32OrDefault(3),
+                    IsActive = reader.GetBooleanOrDefault(4),
+
+                    IdentityDocument = reader.GetStringOrDefault(5),
+                    Name = reader.GetStringOrDefault(6),
+                    LastName = reader.GetStringOrDefault(7),
+                    Address = reader.GetStringOrDefault(8),
+                    PhoneNumber = reader.GetStringOrDefault(9),
+                    Email = reader.GetStringOrDefault(10)
+                }, parameters);
+
+            return rows;
+        }
     }
 }
+
+
+
