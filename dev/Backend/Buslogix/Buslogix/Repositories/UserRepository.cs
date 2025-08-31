@@ -36,7 +36,7 @@ namespace Buslogix.Repositories
                            }
                        );
 
-            return rows != null && rows.Count > 0 ? rows[0] : null;
+            return rows.Count > 0 ? rows[0] : null;
         }
 
         public async Task<User?> GetUser(int companyId, int id)
@@ -52,16 +52,15 @@ namespace Buslogix.Repositories
                 {
                     Id = reader.GetInt32OrDefault(0),
                     Username = reader.GetStringOrDefault(1),
-                    Password = reader.GetStringOrDefault(2),
-                    RoleId = reader.GetInt32OrDefault(3),
-                    IsActive = reader.GetBooleanOrDefault(4),
+                    RoleId = reader.GetInt32OrDefault(2),
+                    IsActive = reader.GetBooleanOrDefault(3),
 
-                    IdentityDocument = reader.GetStringOrDefault(5),
-                    Name = reader.GetStringOrDefault(6),
-                    LastName = reader.GetStringOrDefault(7),
-                    Address = reader.GetStringOrDefault(8),
-                    PhoneNumber = reader.GetStringOrDefault(9),
-                    Email = reader.GetStringOrDefault(10)
+                    IdentityDocument = reader.GetStringOrDefault(4),
+                    Name = reader.GetStringOrDefault(5),
+                    LastName = reader.GetStringOrDefault(6),
+                    Address = reader.GetStringOrDefault(7),
+                    PhoneNumber = reader.GetStringOrDefault(8),
+                    Email = reader.GetStringOrDefault(9)
                 }, parameters);
 
             return rows.Count > 0 ? rows[0] : null;
@@ -175,19 +174,39 @@ namespace Buslogix.Repositories
                 {
                     Id = reader.GetInt32OrDefault(0),
                     Username = reader.GetStringOrDefault(1),
-                    Password = reader.GetStringOrDefault(2),
-                    RoleId = reader.GetInt32OrDefault(3),
-                    IsActive = reader.GetBooleanOrDefault(4),
+                    RoleId = reader.GetInt32OrDefault(2),
+                    IsActive = reader.GetBooleanOrDefault(3),
 
-                    IdentityDocument = reader.GetStringOrDefault(5),
-                    Name = reader.GetStringOrDefault(6),
-                    LastName = reader.GetStringOrDefault(7),
-                    Address = reader.GetStringOrDefault(8),
-                    PhoneNumber = reader.GetStringOrDefault(9),
-                    Email = reader.GetStringOrDefault(10)
+                    IdentityDocument = reader.GetStringOrDefault(4),
+                    Name = reader.GetStringOrDefault(5),
+                    LastName = reader.GetStringOrDefault(6),
+                    Address = reader.GetStringOrDefault(7),
+                    PhoneNumber = reader.GetStringOrDefault(8),
+                    Email = reader.GetStringOrDefault(9)
                 }, parameters);
 
             return rows;
+        }
+
+        public async Task<NotificationData?> ResetPassword(Credentials credentials)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_username"] = credentials.Username,
+                ["p_password"] = credentials.Password
+            };
+
+            List<NotificationData> rows = await _dataAccess.ExecuteReader("reset_password", CommandType.StoredProcedure,
+                static reader => new NotificationData
+                {
+                    CompanyId = reader.GetInt32OrDefault(0),
+                    Name = reader.GetStringOrDefault(1),
+                    LastName = reader.GetStringOrDefault(2),
+                    Email = reader.GetStringOrDefault(3),
+                    PhoneNumber = reader.GetStringOrDefault(4)
+                }, parameters);
+
+            return rows.Count > 0 ? rows[0] : null;
         }
     }
 }

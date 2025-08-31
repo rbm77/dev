@@ -32,6 +32,14 @@ namespace Buslogix.Controllers
             return Unauthorized(new Error { Message = "Invalid credentials." });
         }
 
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] Credentials credentials)
+        {
+            await _userService.ResetPassword(credentials);
+            return Accepted();
+        }
+
         [Authorize(Policy = $"{Resources.USER}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetUsers(

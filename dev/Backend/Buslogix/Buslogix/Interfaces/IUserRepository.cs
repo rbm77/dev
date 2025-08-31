@@ -6,6 +6,7 @@ namespace Buslogix.Interfaces
     public interface IUserRepository
     {
         Task<UserIdentity?> Authenticate(Credentials credentials);
+        Task<NotificationData?> ResetPassword(Credentials credentials);
         Task<User?> GetUser(int companyId, int id);
         Task<int> InsertUser(int companyId, User user);
         Task<int> UpdatePassword(int companyId, int id, string password);

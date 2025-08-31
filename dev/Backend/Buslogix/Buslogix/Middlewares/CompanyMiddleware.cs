@@ -10,7 +10,7 @@ namespace Buslogix.Middlewares
         public async Task InvokeAsync(HttpContext context)
         {
 
-            if (ShouldSkipValidation(context))
+            if (context.User?.Identity?.IsAuthenticated == false)
             {
                 await _next(context);
                 return;
@@ -27,12 +27,6 @@ namespace Buslogix.Middlewares
             context.Items["CompanyId"] = int.Parse(companyId);
 
             await _next(context);
-        }
-
-        private static bool ShouldSkipValidation(HttpContext context)
-        {
-            string? path = context.Request.Path.Value?.ToLowerInvariant().Trim();
-            return (path != null && path.EndsWith("users/authenticate")) || (context.User?.Identity?.IsAuthenticated == false);
         }
 
         private static Task WriteResponse(HttpContext context)

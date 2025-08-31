@@ -1,6 +1,7 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
+using Buslogix.Utilities;
 
 namespace Buslogix.Services
 {
@@ -20,6 +21,7 @@ namespace Buslogix.Services
 
         public async Task<int> InsertUser(int companyId, User user)
         {
+            user.Password = RandomGenerator.GenerateRandomString(10);
             return await _userRepository.InsertUser(companyId, user);
         }
 
@@ -57,6 +59,16 @@ namespace Buslogix.Services
         )
         {
             return await _userRepository.GetUsers(companyId, roleId, isActive, identityDocument, name, lastName);
+        }
+
+        public async Task ResetPassword(Credentials credentials)
+        {
+            credentials.Password = RandomGenerator.GenerateRandomString(10);
+            NotificationData? notificationData = await _userRepository.ResetPassword(credentials);
+            if (notificationData != null && notificationData.CompanyId > 0)
+            {
+                // TODO: Send email with new password
+            }
         }
     }
 }
