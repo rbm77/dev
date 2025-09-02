@@ -1,5 +1,6 @@
 using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ namespace Buslogix.Controllers
     [ApiController]
     public class RolesController(IRoleService roleService) : ControllerBase
     {
+
         private readonly IRoleService _roleService = roleService;
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.READ}")]
@@ -55,6 +57,24 @@ namespace Buslogix.Controllers
             int companyId = HttpContext.GetCompanyId();
             bool deleted = await _roleService.DeleteRole(companyId, id);
             return deleted ? NoContent() : NotFound();
+        }
+
+        [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.READ}")]
+        [HttpGet("{roleId:int}/permissions")]
+        public async Task<IActionResult> GetPermissions(int roleId)
+        {
+            int companyId = HttpContext.GetCompanyId();
+            List<RolePermission> permissions = await _roleService.GetPermissions(companyId, roleId);
+            return Ok(permissions);
+        }
+
+        [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.WRITE}")]
+        [HttpPut("{roleId:int}/permissions")]
+        public async Task<IActionResult> UpdatePermissions(int roleId, [FromBody] List<RolePermission> permissions)
+        {
+            int companyId = HttpContext.GetCompanyId();
+            bool updated = await _roleService.UpdatePermissions(companyId, roleId, permissions);
+            return updated ? NoContent() : NotFound();
         }
     }
 }

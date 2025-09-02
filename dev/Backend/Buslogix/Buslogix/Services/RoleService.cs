@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 
 namespace Buslogix.Services
 {
@@ -30,6 +32,18 @@ namespace Buslogix.Services
         public async Task<List<Role>> GetRoles(int companyId, string? description = null)
         {
             return await _roleRepository.GetRoles(companyId, description);
+        }
+
+        public async Task<List<RolePermission>> GetPermissions(int companyId, int roleId)
+        {
+            return await _roleRepository.GetPermissions(companyId, roleId);
+        }
+
+        public async Task<bool> UpdatePermissions(int companyId, int roleId, List<RolePermission> permissions)
+        {
+            string permissionsJson = JsonSerializer.Serialize(permissions);
+            int affected = await _roleRepository.UpdatePermissions(companyId, roleId, permissionsJson);
+            return affected > 0;
         }
     }
 }

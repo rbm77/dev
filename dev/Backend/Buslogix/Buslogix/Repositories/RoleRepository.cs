@@ -1,6 +1,7 @@
 using System.Data;
 using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 
 namespace Buslogix.Repositories
@@ -73,6 +74,41 @@ namespace Buslogix.Repositories
                 }, parameters);
 
             return rows;
+        }
+
+        public async Task<int> UpdatePermissions(int companyId, int roleId, string permissionsJson)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_role_id"] = roleId,
+                ["p_permissions_json"] = permissionsJson
+            };
+
+            object? result = await _dataAccess.ExecuteScalar("update_permissions", CommandType.StoredProcedure, parameters);
+            return result != null ? Convert.ToInt32(result) : 0;
+        }
+
+        public async Task<List<RolePermission>> GetPermissions(int companyId, int roleId)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_role_id"] = roleId
+            };
+
+            return await _dataAccess.ExecuteReader(
+                "get_permissions",
+                CommandType.StoredProcedure,
+                static reader => new RolePermission
+                {
+                    ResourceId = reader.GetInt32OrDefault(0),
+                    Description = reader.GetStringOrDefault(1),
+                    IsAssigned = reader.GetBooleanOrDefault(2),
+                    IsEditable = reader.GetBooleanOrDefault(3)
+                },
+                parameters
+            );
         }
     }
 }
