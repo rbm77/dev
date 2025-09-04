@@ -13,5 +13,8 @@ namespace Buslogix.Utilities
 
         public static bool GetBooleanOrDefault(this IDataRecord reader, int ordinal, bool defaultValue = false)
             => reader.IsDBNull(ordinal) ? defaultValue : reader.GetBoolean(ordinal);
+
+        public static DateTime? GetDateTimeOrDefault(this IDataRecord reader, int ordinal, DateTime? defaultValue = null)
+            => reader.IsDBNull(ordinal) ? defaultValue : reader.GetDateTime(ordinal);
     }
 }

@@ -1,0 +1,956 @@
+CREATE DATABASE  IF NOT EXISTS `buslogix` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `buslogix`;
+-- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
+--
+-- Host: localhost    Database: buslogix
+-- ------------------------------------------------------
+-- Server version	8.0.35
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Dumping events for database 'buslogix'
+--
+
+--
+-- Dumping routines for database 'buslogix'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `authenticate_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `authenticate_user`(
+    IN p_username VARCHAR(50),
+    IN p_password VARCHAR(10)
+)
+BEGIN
+	DECLARE v_company_id INT;
+    DECLARE v_user_id INT;
+
+    SELECT u.company_id, u.id
+      INTO v_company_id, v_user_id
+    FROM `user` u
+    WHERE u.username   = p_username
+      AND u.`password` = p_password
+      AND u.is_active  = TRUE
+    LIMIT 1;
+
+    IF v_user_id IS NULL THEN
+        SELECT
+			NULL       AS company_id,
+            NULL       AS id,
+            p_username AS username,
+            ''         AS permissions,
+            FALSE      AS is_authenticated;
+    ELSE
+        SELECT
+			u.company_id,
+            u.id,
+            u.username,
+            COALESCE(
+                GROUP_CONCAT(
+                    DISTINCT CONCAT(
+                        r.description,
+                        '.',
+                        CASE WHEN p.is_editable THEN 'WRITE' ELSE 'READ' END
+                    )
+                    SEPARATOR ','
+                ),
+                ''
+            ) AS permissions,
+            TRUE AS is_authenticated
+        FROM `user` u
+        LEFT JOIN `permission` p 
+               ON p.company_id = u.company_id
+              AND p.role_id    = u.role_id
+        LEFT JOIN `resource` r 
+               ON r.id = p.resource_id
+        WHERE u.company_id = v_company_id
+          AND u.id         = v_user_id
+        GROUP BY u.company_id, u.id, u.username;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_employee` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_employee`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM employee
+     WHERE company_id = p_company_id
+       AND id = p_id;
+
+    IF NOT EXISTS (
+        SELECT 1
+          FROM `user`
+         WHERE company_id = p_company_id
+           AND id = p_id
+    ) THEN
+        DELETE FROM personal_data
+         WHERE company_id = p_company_id
+           AND id = p_id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_role` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_role`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM role
+    WHERE company_id = p_company_id AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM user
+    WHERE company_id = p_company_id
+      AND id = p_id;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM employee
+        WHERE company_id = p_company_id
+          AND id = p_id
+    ) THEN
+        DELETE FROM personal_data
+        WHERE company_id = p_company_id
+          AND id = p_id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_company` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_company`(
+    IN p_id INT
+)
+BEGIN
+    SELECT 
+        id,
+        name,
+        phone_number,
+        email,
+        is_active
+    FROM company
+    WHERE id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_employee` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_employee`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.hire_date,
+        e.is_active,
+        p.identity_document,
+        p.name,
+        p.last_name,
+        p.address,
+        p.phone_number,
+        p.email
+      FROM employee e
+INNER JOIN personal_data p
+        ON p.company_id = e.company_id
+       AND p.id = e.id
+     WHERE e.company_id = p_company_id
+       AND e.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_employees` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_employees`(
+    IN p_company_id INT,
+    IN p_is_active TINYINT(1),
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50)
+)
+BEGIN
+    SELECT
+        e.id,
+        e.hire_date,
+        e.is_active,
+        p.identity_document,
+        p.name,
+        p.last_name,
+        p.address,
+        p.phone_number,
+        p.email
+      FROM employee e
+INNER JOIN personal_data p
+        ON p.company_id = e.company_id
+       AND p.id = e.id
+     WHERE e.company_id = p_company_id
+       AND (p_is_active IS NULL OR e.is_active = p_is_active)
+       AND (p_identity_document IS NULL OR p.identity_document = p_identity_document)
+       AND (p_name IS NULL OR p.name LIKE CONCAT('%', p_name, '%'))
+       AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'))
+  ORDER BY p.name ASC, p.last_name ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_permissions` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_permissions`(
+    IN p_company_id INT,
+    IN p_role_id INT
+)
+BEGIN
+    SELECT
+        r.id AS resource_id,
+        r.description AS description,
+        IF(p.resource_id IS NULL, 0, 1) AS is_assigned,
+        COALESCE(p.is_editable, 0) AS is_editable
+    FROM resource r
+    LEFT JOIN permission p
+      ON p.resource_id = r.id
+     AND p.company_id  = p_company_id
+     AND p.role_id     = p_role_id
+    ORDER BY r.id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_role` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_role`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT id, description
+    FROM role
+    WHERE company_id = p_company_id AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_roles` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_roles`(
+    IN p_company_id INT,
+    IN p_description VARCHAR(30)
+)
+BEGIN
+    SELECT id, description
+    FROM role
+    WHERE company_id = p_company_id
+      AND (p_description IS NULL OR description LIKE CONCAT('%', p_description, '%'))
+    ORDER BY description ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        u.id,
+        u.username,
+        u.role_id,
+        u.is_active,
+        p.identity_document,
+        p.name,
+        p.last_name,
+        p.address,
+        p.phone_number,
+        p.email
+    FROM user u
+    INNER JOIN personal_data p
+        ON p.company_id = u.company_id
+       AND p.id = u.id
+    WHERE u.company_id = p_company_id
+      AND u.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_users` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_users`(
+    IN p_company_id INT,
+    IN p_role_id INT,
+    IN p_is_active TINYINT(1),
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50)
+)
+BEGIN
+    SELECT
+        u.id,
+        u.username,
+        u.role_id,
+        u.is_active,
+        p.identity_document,
+        p.name,
+        p.last_name,
+        p.address,
+        p.phone_number,
+        p.email
+    FROM user u
+    INNER JOIN personal_data p
+        ON p.company_id = u.company_id
+       AND p.id = u.id
+    WHERE u.company_id = p_company_id
+      AND (p_role_id IS NULL OR u.role_id = p_role_id)
+      AND (p_is_active IS NULL OR u.is_active = p_is_active)
+      AND (p_identity_document IS NULL OR p.identity_document = p_identity_document)
+      AND (p_name IS NULL OR p.name LIKE CONCAT('%', p_name, '%'))
+      AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'))
+    ORDER BY p.name ASC, p.last_name ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_employee` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_employee`(
+    IN p_company_id INT,
+    IN p_hire_date DATE,
+    IN p_is_active TINYINT(1),
+
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50),
+    IN p_address VARCHAR(130),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id INT;
+
+    SELECT id
+      INTO v_id
+      FROM personal_data
+     WHERE company_id = p_company_id
+       AND identity_document = p_identity_document
+     LIMIT 1;
+
+    IF v_id IS NULL THEN
+        SELECT IFNULL(MAX(id), 0) + 1
+          INTO v_id
+          FROM personal_data
+         WHERE company_id = p_company_id;
+
+        INSERT INTO personal_data (company_id, id, identity_document, name, last_name, address, phone_number, email)
+        VALUES (p_company_id, v_id, p_identity_document, p_name, p_lastname, p_address, p_phone_number, p_email);
+    ELSE
+        UPDATE personal_data
+           SET name = p_name,
+               last_name = p_lastname,
+               address = p_address,
+               phone_number = p_phone_number,
+               email = p_email
+         WHERE company_id = p_company_id
+           AND id = v_id;
+    END IF;
+
+    INSERT INTO employee (company_id, id, hire_date, is_active)
+    VALUES (p_company_id, v_id, p_hire_date, p_is_active);
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_role` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_role`(
+    IN p_company_id INT,
+    IN p_description VARCHAR(30)
+)
+BEGIN
+    DECLARE new_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO new_id
+    FROM role
+    WHERE company_id = p_company_id;
+    INSERT INTO role (company_id, id, description)
+    VALUES (p_company_id, new_id, p_description);
+    SELECT new_id AS id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_user`(
+    IN p_company_id INT,
+    IN p_username VARCHAR(50),
+    IN p_password VARCHAR(10),
+    IN p_role_id INT,
+    IN p_is_active TINYINT(1),
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50),
+    IN p_address VARCHAR(130),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id INT;
+
+    SELECT id
+    INTO v_id
+    FROM personal_data
+    WHERE company_id = p_company_id
+      AND identity_document = p_identity_document
+    LIMIT 1;
+
+    IF v_id IS NULL THEN
+        SELECT IFNULL(MAX(id), 0) + 1
+        INTO v_id
+        FROM personal_data
+        WHERE company_id = p_company_id;
+
+        INSERT INTO personal_data (company_id, id, identity_document, name, last_name, address, phone_number, email)
+        VALUES (p_company_id, v_id, p_identity_document, p_name, p_lastname, p_address, p_phone_number, p_email);
+    ELSE
+        UPDATE personal_data
+        SET first_name = p_name,
+            last_name = p_lastname,
+            address = p_address,
+            phone_number = p_phone_number,
+            email = p_email
+        WHERE company_id = p_company_id
+          AND id = v_id;
+    END IF;
+
+    INSERT INTO user (company_id, id, username, password, role_id, is_active)
+    VALUES (p_company_id, v_id, p_username, p_password, p_role_id, p_is_active);
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `reset_password` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `reset_password`(
+    IN p_username  VARCHAR(50),
+    IN p_password  VARCHAR(10)
+)
+BEGIN
+    UPDATE user
+       SET password = p_password
+     WHERE username = p_username
+     AND is_active = 1;
+
+    IF ROW_COUNT() > 0 THEN
+        SELECT
+            pd.company_id,
+            pd.name,
+            pd.last_name,
+            pd.email,
+            pd.phone_number
+        FROM user u
+        INNER JOIN personal_data pd
+          ON pd.company_id = u.company_id
+         AND pd.id = u.id
+        WHERE u.username = p_username
+        LIMIT 1;
+    ELSE
+        SELECT
+            NULL AS company_id,
+            NULL AS name,
+            NULL AS last_name,
+            NULL AS email,
+            NULL AS phone_number;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_company` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_company`(
+    IN p_id INT,
+    IN p_name VARCHAR(50),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50),
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    UPDATE company
+    SET 
+        name = p_name,
+        phone_number = p_phone_number,
+        email = p_email,
+        is_active = p_is_active
+    WHERE id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_employee` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_employee`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_hire_date DATE,
+    IN p_is_active TINYINT(1),
+
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50),
+    IN p_address VARCHAR(130),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50)
+)
+BEGIN
+    UPDATE employee
+       SET hire_date = p_hire_date,
+           is_active = p_is_active
+     WHERE company_id = p_company_id
+       AND id = p_id;
+
+    UPDATE personal_data
+       SET identity_document = p_identity_document,
+           name = p_name,
+           last_name = p_lastname,
+           address = p_address,
+           phone_number = p_phone_number,
+           email = p_email
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_own_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_own_user`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_username VARCHAR(50),
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50),
+    IN p_address VARCHAR(130),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50)
+)
+BEGIN
+    UPDATE user
+    SET username = p_username
+    WHERE company_id = p_company_id
+      AND id = p_id;
+
+    UPDATE personal_data
+    SET identity_document = p_identity_document,
+		name = p_name,
+        last_name = p_lastname,
+        address = p_address,
+        phone_number = p_phone_number,
+        email = p_email
+    WHERE company_id = p_company_id
+      AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_permissions` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_permissions`(
+    IN p_company_id INT,
+    IN p_role_id INT,
+    IN p_permissions_json JSON
+)
+BEGIN
+    DECLARE v_upserted INT DEFAULT 0;
+    DECLARE v_deleted  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS rows_affected;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    DROP TEMPORARY TABLE IF EXISTS perms_tmp;
+    CREATE TEMPORARY TABLE perms_tmp (
+        resource_id  INT PRIMARY KEY,
+        is_editable  TINYINT(1) NOT NULL
+    ) ENGINE=MEMORY;
+
+    INSERT INTO perms_tmp (resource_id, is_editable)
+    SELECT jt.resource_id, IFNULL(jt.is_editable, 0)
+    FROM JSON_TABLE(
+            p_permissions_json, '$[*]'
+            COLUMNS(
+                resource_id INT     PATH '$.ResourceId',
+                is_editable TINYINT PATH '$.IsEditable'
+            )
+         ) AS jt;
+
+    INSERT INTO permission (company_id, role_id, resource_id, is_editable)
+    SELECT p_company_id, p_role_id, t.resource_id, t.is_editable
+    FROM perms_tmp t
+    ON DUPLICATE KEY UPDATE
+        is_editable = VALUES(is_editable);
+
+    SET v_upserted = ROW_COUNT();
+
+    DELETE p
+    FROM permission p
+    LEFT JOIN perms_tmp t
+           ON t.resource_id = p.resource_id
+    WHERE p.company_id = p_company_id
+      AND p.role_id    = p_role_id
+      AND t.resource_id IS NULL;
+
+    SET v_deleted = ROW_COUNT();
+
+    COMMIT;
+
+    SELECT v_upserted + v_deleted AS rows_affected;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_role` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_role`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_description VARCHAR(30)
+)
+BEGIN
+    UPDATE role
+    SET description = p_description
+    WHERE company_id = p_company_id AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_username VARCHAR(50),
+    IN p_role_id INT,
+    IN p_is_active TINYINT(1),
+    IN p_identity_document VARCHAR(12),
+    IN p_name VARCHAR(50),
+    IN p_lastname VARCHAR(50),
+    IN p_address VARCHAR(130),
+    IN p_phone_number VARCHAR(12),
+    IN p_email VARCHAR(50)
+)
+BEGIN
+    UPDATE user
+    SET username = p_username,
+        role_id = p_role_id,
+        is_active = p_is_active
+    WHERE company_id = p_company_id
+      AND id = p_id;
+
+    UPDATE personal_data
+    SET identity_document = p_identity_document,
+        name = p_name,
+        last_name = p_lastname,
+        address = p_address,
+        phone_number = p_phone_number,
+        email = p_email
+    WHERE company_id = p_company_id
+      AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_user_password` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user_password`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_password VARCHAR(10)
+)
+BEGIN
+    UPDATE user
+    SET password = p_password
+    WHERE company_id = p_company_id
+      AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-09-03 21:39:26
