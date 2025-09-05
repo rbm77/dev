@@ -7,7 +7,6 @@ namespace Buslogix.Repositories
 {
     public class EmployeeRepository(IDataAccess dataAccess) : IEmployeeRepository
     {
-
         private readonly IDataAccess _dataAccess = dataAccess;
 
         public async Task<Employee?> GetEmployee(int companyId, int id)
@@ -19,18 +18,33 @@ namespace Buslogix.Repositories
             };
 
             List<Employee> rows = await _dataAccess.ExecuteReader("get_employee", CommandType.StoredProcedure,
-                static reader => new Employee
+                static reader =>
                 {
-                    Id = reader.GetInt32OrDefault(0),
-                    HireDate = reader.GetDateTimeOrDefault(1),
-                    IsActive = reader.GetBooleanOrDefault(2),
+                    Employee employee = new()
+                    {
+                        Id = reader.GetInt32OrDefault(0),
+                        HireDate = reader.GetDateTimeOrDefault(1),
+                        IsActive = reader.GetBooleanOrDefault(2),
+                        IdentityDocument = reader.GetStringOrDefault(3),
+                        Name = reader.GetStringOrDefault(4),
+                        LastName = reader.GetStringOrDefault(5),
+                        Address = reader.GetStringOrDefault(6),
+                        PhoneNumber = reader.GetStringOrDefault(7),
+                        Email = reader.GetStringOrDefault(8)
+                    };
 
-                    IdentityDocument = reader.GetStringOrDefault(3),
-                    Name = reader.GetStringOrDefault(4),
-                    LastName = reader.GetStringOrDefault(5),
-                    Address = reader.GetStringOrDefault(6),
-                    PhoneNumber = reader.GetStringOrDefault(7),
-                    Email = reader.GetStringOrDefault(8)
+                    string licenseNumber = reader.GetStringOrDefault(9);
+                    DateTime? licenseExpiry = reader.GetDateTimeOrDefault(10);
+                    if (!string.IsNullOrWhiteSpace(licenseNumber))
+                    {
+                        employee.DriverDetails = new Driver
+                        {
+                            LicenseNumber = licenseNumber,
+                            LicenseExpiryDate = licenseExpiry
+                        };
+                    }
+
+                    return employee;
                 }, parameters);
 
             return rows.Count > 0 ? rows[0] : null;
@@ -54,18 +68,28 @@ namespace Buslogix.Repositories
             };
 
             List<Employee> rows = await _dataAccess.ExecuteReader("get_employees", CommandType.StoredProcedure,
-                static reader => new Employee
+                static reader =>
                 {
-                    Id = reader.GetInt32OrDefault(0),
-                    HireDate = reader.GetDateTimeOrDefault(1),
-                    IsActive = reader.GetBooleanOrDefault(2),
+                    Employee employee = new()
+                    {
+                        Id = reader.GetInt32OrDefault(0),
+                        HireDate = reader.GetDateTimeOrDefault(1),
+                        IsActive = reader.GetBooleanOrDefault(2),
+                        IdentityDocument = reader.GetStringOrDefault(3),
+                        Name = reader.GetStringOrDefault(4),
+                        LastName = reader.GetStringOrDefault(5)
+                    };
 
-                    IdentityDocument = reader.GetStringOrDefault(3),
-                    Name = reader.GetStringOrDefault(4),
-                    LastName = reader.GetStringOrDefault(5),
-                    Address = reader.GetStringOrDefault(6),
-                    PhoneNumber = reader.GetStringOrDefault(7),
-                    Email = reader.GetStringOrDefault(8)
+                    string licenseNumber = reader.GetStringOrDefault(6);
+                    if (!string.IsNullOrWhiteSpace(licenseNumber))
+                    {
+                        employee.DriverDetails = new Driver
+                        {
+                            LicenseNumber = licenseNumber
+                        };
+                    }
+
+                    return employee;
                 }, parameters);
 
             return rows;
@@ -78,17 +102,18 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_hire_date"] = employee.HireDate,
                 ["p_is_active"] = employee.IsActive,
-
                 ["p_identity_document"] = employee.IdentityDocument,
                 ["p_name"] = employee.Name,
                 ["p_lastname"] = employee.LastName,
                 ["p_address"] = employee.Address,
                 ["p_phone_number"] = employee.PhoneNumber,
-                ["p_email"] = employee.Email
+                ["p_email"] = employee.Email,
+                ["p_license_number"] = employee.DriverDetails?.LicenseNumber,
+                ["p_license_expiry_date"] = employee.DriverDetails?.LicenseExpiryDate
             };
 
             object? result = await _dataAccess.ExecuteScalar("insert_employee", CommandType.StoredProcedure, parameters);
-            return result != null ? ((int)result) : 0;
+            return result != null ? (int)result : 0;
         }
 
         public async Task<int> UpdateEmployee(int companyId, int id, Employee employee)
@@ -99,13 +124,14 @@ namespace Buslogix.Repositories
                 ["p_id"] = id,
                 ["p_hire_date"] = employee.HireDate,
                 ["p_is_active"] = employee.IsActive,
-
                 ["p_identity_document"] = employee.IdentityDocument,
                 ["p_name"] = employee.Name,
                 ["p_lastname"] = employee.LastName,
                 ["p_address"] = employee.Address,
                 ["p_phone_number"] = employee.PhoneNumber,
-                ["p_email"] = employee.Email
+                ["p_email"] = employee.Email,
+                ["p_license_number"] = employee.DriverDetails?.LicenseNumber,
+                ["p_license_expiry_date"] = employee.DriverDetails?.LicenseExpiryDate
             };
 
             return await _dataAccess.ExecuteNonQuery("update_employee", CommandType.StoredProcedure, parameters);

@@ -8,5 +8,6 @@
         public const string USER = "USER";
         public const string OWN_USER = "OWN_USER";
         public const string EMPLOYEE = "EMPLOYEE";
+        public const string SALARY = "SALARY";
     }
 }

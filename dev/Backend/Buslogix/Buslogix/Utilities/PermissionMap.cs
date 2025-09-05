@@ -13,7 +13,9 @@
             { "7", $"{Resources.OWN_USER}.{PermissionMode.WRITE}" },
             { "8", $"{Resources.OWN_USER}.{PermissionMode.READ}" },
             { "9", $"{Resources.EMPLOYEE}.{PermissionMode.WRITE}" },
-            { "10", $"{Resources.EMPLOYEE}.{PermissionMode.READ}" }
+            { "10", $"{Resources.EMPLOYEE}.{PermissionMode.READ}" },
+            { "11", $"{Resources.SALARY}.{PermissionMode.WRITE}" },
+            { "12", $"{Resources.SALARY}.{PermissionMode.READ}" }
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

@@ -105,6 +105,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_employee`(
     IN p_id INT
 )
 BEGIN
+
+    DELETE FROM driver
+	WHERE company_id = p_company_id
+     AND id = p_id;
+           
     DELETE FROM employee
      WHERE company_id = p_company_id
        AND id = p_id;
@@ -142,6 +147,32 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_role`(
 BEGIN
     DELETE FROM role
     WHERE company_id = p_company_id AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_salary` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_salary`(
+    IN p_company_id INT,
+    IN p_employee_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM salary
+     WHERE company_id = p_company_id
+       AND employee_id = p_employee_id
+       AND id = p_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -235,11 +266,16 @@ BEGIN
         p.last_name,
         p.address,
         p.phone_number,
-        p.email
+        p.email,
+        d.license_number,
+        d.license_expiry_date
       FROM employee e
 INNER JOIN personal_data p
         ON p.company_id = e.company_id
        AND p.id = e.id
+ LEFT JOIN driver d
+        ON d.company_id = e.company_id
+       AND d.id = e.id
      WHERE e.company_id = p_company_id
        AND e.id = p_id;
 END ;;
@@ -273,13 +309,14 @@ BEGIN
         p.identity_document,
         p.name,
         p.last_name,
-        p.address,
-        p.phone_number,
-        p.email
+        d.license_number
       FROM employee e
 INNER JOIN personal_data p
         ON p.company_id = e.company_id
        AND p.id = e.id
+ LEFT JOIN driver d
+        ON d.company_id = e.company_id
+       AND d.id = e.id
      WHERE e.company_id = p_company_id
        AND (p_is_active IS NULL OR e.is_active = p_is_active)
        AND (p_identity_document IS NULL OR p.identity_document = p_identity_document)
@@ -374,6 +411,35 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_salaries` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_salaries`(
+    IN p_company_id INT,
+    IN p_employee_id INT
+)
+BEGIN
+    SELECT
+        id,
+        amount,
+        start_date
+      FROM salary
+     WHERE company_id = p_company_id
+       AND employee_id = p_employee_id
+  ORDER BY start_date DESC, id DESC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_user` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -438,10 +504,7 @@ BEGIN
         u.is_active,
         p.identity_document,
         p.name,
-        p.last_name,
-        p.address,
-        p.phone_number,
-        p.email
+        p.last_name
     FROM user u
     INNER JOIN personal_data p
         ON p.company_id = u.company_id
@@ -479,7 +542,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_employee`(
     IN p_lastname VARCHAR(50),
     IN p_address VARCHAR(130),
     IN p_phone_number VARCHAR(12),
-    IN p_email VARCHAR(50)
+    IN p_email VARCHAR(50),
+
+    IN p_license_number VARCHAR(17),
+    IN p_license_expiry_date DATE
 )
 BEGIN
     DECLARE v_id INT;
@@ -513,6 +579,12 @@ BEGIN
     INSERT INTO employee (company_id, id, hire_date, is_active)
     VALUES (p_company_id, v_id, p_hire_date, p_is_active);
 
+    IF p_license_number IS NOT NULL AND p_license_number <> '' 
+       AND p_license_expiry_date IS NOT NULL THEN
+        INSERT INTO driver (company_id, id, license_number, license_expiry_date)
+        VALUES (p_company_id, v_id, p_license_number, p_license_expiry_date);
+    END IF;
+
     SELECT v_id AS new_id;
 END ;;
 DELIMITER ;
@@ -542,6 +614,38 @@ BEGIN
     INSERT INTO role (company_id, id, description)
     VALUES (p_company_id, new_id, p_description);
     SELECT new_id AS id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_salary` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_salary`(
+    IN p_company_id INT,
+    IN p_employee_id INT,
+    IN p_amount DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM salary
+     WHERE company_id = p_company_id
+       AND employee_id = p_employee_id;
+
+    INSERT INTO salary (company_id, employee_id, id, amount)
+    VALUES (p_company_id, p_employee_id, v_id, p_amount);
+
+    SELECT v_id AS new_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -709,7 +813,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_employee`(
     IN p_lastname VARCHAR(50),
     IN p_address VARCHAR(130),
     IN p_phone_number VARCHAR(12),
-    IN p_email VARCHAR(50)
+    IN p_email VARCHAR(50),
+
+    IN p_license_number VARCHAR(17),
+    IN p_license_expiry_date DATE
 )
 BEGIN
     UPDATE employee
@@ -727,6 +834,18 @@ BEGIN
            email = p_email
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    IF p_license_number IS NOT NULL AND p_license_number <> '' AND p_license_expiry_date IS NOT NULL THEN
+        INSERT INTO driver (company_id, id, license_number, license_expiry_date)
+        VALUES (p_company_id, p_id, p_license_number, p_license_expiry_date)
+        ON DUPLICATE KEY UPDATE
+            license_number = VALUES(license_number),
+            license_expiry_date = VALUES(license_expiry_date);
+    ELSE
+        DELETE FROM driver
+         WHERE company_id = p_company_id
+           AND id = p_id;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -953,4 +1072,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-03 21:39:26
+-- Dump completed on 2025-09-04 22:53:36

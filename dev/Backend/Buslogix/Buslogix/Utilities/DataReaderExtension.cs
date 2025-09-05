@@ -16,5 +16,8 @@ namespace Buslogix.Utilities
 
         public static DateTime? GetDateTimeOrDefault(this IDataRecord reader, int ordinal, DateTime? defaultValue = null)
             => reader.IsDBNull(ordinal) ? defaultValue : reader.GetDateTime(ordinal);
+
+        public static decimal GetDecimalOrDefault(this IDataReader reader, int ordinal, decimal defaultValue = 0m)
+            => reader.IsDBNull(ordinal) ? defaultValue : reader.GetDecimal(ordinal);
     }
 }

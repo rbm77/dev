@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public DateTime? HireDate { get; set; }
         public bool IsActive { get; set; }
+        public Driver? DriverDetails { get; set; }
 
         public Employee() { }
     }

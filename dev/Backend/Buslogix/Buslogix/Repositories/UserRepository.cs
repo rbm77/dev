@@ -179,10 +179,7 @@ namespace Buslogix.Repositories
 
                     IdentityDocument = reader.GetStringOrDefault(4),
                     Name = reader.GetStringOrDefault(5),
-                    LastName = reader.GetStringOrDefault(6),
-                    Address = reader.GetStringOrDefault(7),
-                    PhoneNumber = reader.GetStringOrDefault(8),
-                    Email = reader.GetStringOrDefault(9)
+                    LastName = reader.GetStringOrDefault(6)
                 }, parameters);
 
             return rows;

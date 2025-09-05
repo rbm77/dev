@@ -14,7 +14,12 @@ using TokenHandler = Buslogix.Handlers.TokenHandler;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 
 builder.Services.AddSingleton<ILogHandler, LogHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
@@ -32,6 +37,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
+builder.Services.AddScoped<ISalaryService, SalaryService>();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);
