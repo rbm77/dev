@@ -39,6 +39,10 @@ builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
 builder.Services.AddScoped<ISalaryService, SalaryService>();
+builder.Services.AddScoped<IExtraSalaryRepository, ExtraSalaryRepository>();
+builder.Services.AddScoped<IExtraSalaryService, ExtraSalaryService>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);

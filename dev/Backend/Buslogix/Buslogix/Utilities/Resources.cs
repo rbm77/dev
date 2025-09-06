@@ -9,5 +9,6 @@
         public const string OWN_USER = "OWN_USER";
         public const string EMPLOYEE = "EMPLOYEE";
         public const string SALARY = "SALARY";
+        public const string VEHICLE = "VEHICLE";
     }
 }
