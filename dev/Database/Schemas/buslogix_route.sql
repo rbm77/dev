@@ -18,20 +18,21 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `company`
+-- Table structure for table `route`
 --
 
-DROP TABLE IF EXISTS `company`;
+DROP TABLE IF EXISTS `route`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `company` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `phone_number` varchar(12) DEFAULT NULL,
-  `email` varchar(50) DEFAULT NULL,
+CREATE TABLE `route` (
+  `company_id` int NOT NULL,
+  `id` int NOT NULL,
+  `name` varchar(30) NOT NULL,
+  `description` varchar(70) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`company_id`,`id`),
+  CONSTRAINT `fk_route_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

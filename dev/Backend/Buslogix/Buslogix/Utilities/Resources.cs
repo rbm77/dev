@@ -10,5 +10,7 @@
         public const string EMPLOYEE = "EMPLOYEE";
         public const string SALARY = "SALARY";
         public const string VEHICLE = "VEHICLE";
+        public const string ROUTE = "ROUTE";
+        public const string GRADE = "GRADE";
     }
 }
