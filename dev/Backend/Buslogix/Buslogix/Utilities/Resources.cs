@@ -12,5 +12,7 @@
         public const string VEHICLE = "VEHICLE";
         public const string ROUTE = "ROUTE";
         public const string GRADE = "GRADE";
+        public const string STUDENT = "STUDENT";
+        public const string CONTACT = "CONTACT";
     }
 }

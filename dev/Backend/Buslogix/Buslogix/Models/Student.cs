@@ -7,6 +7,7 @@
         public string? LastName { get; set; }
         public string? Address { get; set; }
         public string? IdentityDocument { get; set; }
+        public int RouteId { get; set; }
         public int GradeId { get; set; }
         public bool IsActive { get; set; }
 

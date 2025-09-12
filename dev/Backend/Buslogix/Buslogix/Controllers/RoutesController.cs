@@ -20,8 +20,8 @@ namespace Buslogix.Controllers
             [FromQuery] string? name = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Route> items = await _routeService.GetRoutes(companyId, isActive, name);
-            return Ok(items);
+            List<Route> routes = await _routeService.GetRoutes(companyId, isActive, name);
+            return Ok(routes);
         }
 
         [Authorize(Policy = $"{Resources.ROUTE}.{PermissionMode.READ}")]
@@ -29,8 +29,8 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetRoute(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Route? item = await _routeService.GetRoute(companyId, id);
-            return item == null ? NotFound() : Ok(item);
+            Route? route = await _routeService.GetRoute(companyId, id);
+            return route == null ? NotFound() : Ok(route);
         }
 
         [Authorize(Policy = $"{Resources.ROUTE}.{PermissionMode.WRITE}")]

@@ -21,7 +21,11 @@
             { "15", $"{Resources.ROUTE}.{PermissionMode.WRITE}" },
             { "16", $"{Resources.ROUTE}.{PermissionMode.READ}" },
             { "17", $"{Resources.GRADE}.{PermissionMode.WRITE}" },
-            { "18", $"{Resources.GRADE}.{PermissionMode.READ}" }
+            { "18", $"{Resources.GRADE}.{PermissionMode.READ}" },
+            { "19", $"{Resources.STUDENT}.{PermissionMode.WRITE}" },
+            { "20", $"{Resources.STUDENT}.{PermissionMode.READ}" },
+            { "21", $"{Resources.CONTACT}.{PermissionMode.WRITE}" },
+            { "22", $"{Resources.CONTACT}.{PermissionMode.READ}" }
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

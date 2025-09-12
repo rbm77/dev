@@ -18,21 +18,27 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `extra_salary`
+-- Table structure for table `student`
 --
 
-DROP TABLE IF EXISTS `extra_salary`;
+DROP TABLE IF EXISTS `student`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extra_salary` (
+CREATE TABLE `student` (
   `company_id` int NOT NULL,
-  `employee_id` int NOT NULL,
   `id` int NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `date` date NOT NULL DEFAULT (curdate()),
-  `description` varchar(70) DEFAULT NULL,
-  PRIMARY KEY (`company_id`,`employee_id`,`id`),
-  CONSTRAINT `fk_extra_salary_employee` FOREIGN KEY (`company_id`, `employee_id`) REFERENCES `employee` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  `name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `address` varchar(130) DEFAULT NULL,
+  `identity_document` varchar(12) DEFAULT NULL,
+  `route_id` int NOT NULL,
+  `grade_id` int NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`company_id`,`id`),
+  KEY `fk_student_route` (`company_id`,`route_id`),
+  KEY `fk_student_grade` (`company_id`,`grade_id`),
+  CONSTRAINT `fk_student_grade` FOREIGN KEY (`company_id`, `grade_id`) REFERENCES `grade` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_student_route` FOREIGN KEY (`company_id`, `route_id`) REFERENCES `route` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -45,4 +51,4 @@ CREATE TABLE `extra_salary` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-11 22:20:24
+-- Dump completed on 2025-09-11 22:20:25

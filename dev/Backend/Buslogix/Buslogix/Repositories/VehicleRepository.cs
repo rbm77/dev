@@ -59,11 +59,7 @@ namespace Buslogix.Repositories
                     LicensePlate = reader.GetStringOrDefault(1),
                     Make = reader.GetStringOrDefault(2),
                     Model = reader.GetStringOrDefault(3),
-                    ManufactureYear = reader.GetInt32OrDefault(4),
-                    Capacity = reader.GetInt32OrDefault(5),
-                    Mileage = reader.GetInt32OrDefault(6),
-                    AcquisitionDate = reader.GetDateTimeOrDefault(7),
-                    IsActive = reader.GetBooleanOrDefault(8)
+                    IsActive = reader.GetBooleanOrDefault(4)
                 }, parameters);
 
             return rows;
