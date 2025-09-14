@@ -14,5 +14,6 @@
         public const string GRADE = "GRADE";
         public const string STUDENT = "STUDENT";
         public const string CONTACT = "CONTACT";
+        public const string MAINTENANCE = "MAINTENANCE";
     }
 }

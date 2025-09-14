@@ -2,10 +2,8 @@
 {
     public class SalaryExpense
     {
-        public int Id { get; set; }
+        public int ExpenseId { get; set; }
         public int EmployeeId { get; set; }
-        public int SalaryId { get; set; }
-        public DateTime? Date { get; set; }
 
         public SalaryExpense() { }
     }
