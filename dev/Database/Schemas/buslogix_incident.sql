@@ -18,23 +18,29 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `personal_data`
+-- Table structure for table `incident`
 --
 
-DROP TABLE IF EXISTS `personal_data`;
+DROP TABLE IF EXISTS `incident`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `personal_data` (
+CREATE TABLE `incident` (
   `company_id` int NOT NULL,
   `id` int NOT NULL,
-  `identity_document` varchar(12) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `address` varchar(130) DEFAULT NULL,
-  `phone_number` varchar(12) DEFAULT NULL,
-  `email` varchar(50) DEFAULT NULL,
+  `vehicle_id` int DEFAULT NULL,
+  `driver_id` int DEFAULT NULL,
+  `date` date NOT NULL,
+  `description` varchar(150) DEFAULT NULL,
+  `type` int NOT NULL,
+  `corrective_actions` varchar(150) DEFAULT NULL,
   PRIMARY KEY (`company_id`,`id`),
-  CONSTRAINT `fk_personal_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `fk_incident_vehicle` (`company_id`,`vehicle_id`),
+  KEY `fk_incident_driver` (`company_id`,`driver_id`),
+  KEY `fk_incident_type` (`type`),
+  CONSTRAINT `fk_incident_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_incident_driver` FOREIGN KEY (`company_id`, `driver_id`) REFERENCES `driver` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_incident_type` FOREIGN KEY (`type`) REFERENCES `incident_type` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_incident_vehicle` FOREIGN KEY (`company_id`, `vehicle_id`) REFERENCES `vehicle` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -47,4 +53,4 @@ CREATE TABLE `personal_data` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-18 23:32:10
+-- Dump completed on 2025-09-18 23:32:08

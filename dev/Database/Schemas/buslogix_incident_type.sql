@@ -18,23 +18,16 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `personal_data`
+-- Table structure for table `incident_type`
 --
 
-DROP TABLE IF EXISTS `personal_data`;
+DROP TABLE IF EXISTS `incident_type`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `personal_data` (
-  `company_id` int NOT NULL,
+CREATE TABLE `incident_type` (
   `id` int NOT NULL,
-  `identity_document` varchar(12) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `address` varchar(130) DEFAULT NULL,
-  `phone_number` varchar(12) DEFAULT NULL,
-  `email` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`company_id`,`id`),
-  CONSTRAINT `fk_personal_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  `description` varchar(30) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
