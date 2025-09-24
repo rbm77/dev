@@ -24,5 +24,7 @@ namespace Buslogix.Interfaces
         Task<int> UpdateMaintenance(int companyId, int id, Maintenance maintenance);
 
         Task<int> DeleteMaintenance(int companyId, int id);
+
+        Task<int> CompleteMaintenance(int companyId, int id, Maintenance maintenance);
     }
 }

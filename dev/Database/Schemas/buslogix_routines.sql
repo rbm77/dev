@@ -90,6 +90,66 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `complete_custom_transport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `complete_custom_transport`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_completed_date DATE
+)
+BEGIN
+    DELETE FROM `scheduled_custom_transport`
+     WHERE company_id = p_company_id
+       AND custom_transport_id = p_id;
+
+    UPDATE `custom_transport`
+       SET completed_date = p_completed_date
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `complete_maintenance` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `complete_maintenance`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_completed_date DATE
+)
+BEGIN
+    DELETE FROM `scheduled_maintenance`
+     WHERE company_id = p_company_id
+       AND maintenance_id = p_id;
+
+    UPDATE `maintenance`
+       SET completed_date = p_completed_date
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_contact` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -109,6 +169,34 @@ BEGIN
     DELETE FROM contact
      WHERE company_id = p_company_id
        AND student_id = p_student_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_custom_transport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_custom_transport`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM `scheduled_custom_transport`
+     WHERE company_id = p_company_id
+       AND custom_transport_id = p_id;
+       
+    DELETE FROM `custom_transport`
+     WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
 DELIMITER ;
@@ -219,7 +307,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_maintenance`(
     IN p_id INT
 )
 BEGIN
-    DELETE FROM `maintenance`
+    DELETE FROM `scheduled_maintenance`
+     WHERE company_id = p_company_id
+       AND maintenance_id = p_id;
+       
+	DELETE FROM `maintenance`
      WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
@@ -412,6 +504,39 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_completed_custom_transports` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_completed_custom_transports`(
+    IN p_company_id INT,
+    IN p_vehicle_id INT,
+    IN p_driver_id INT
+)
+BEGIN
+    SELECT
+        m.id,
+        m.vehicle_id,
+        m.driver_id,
+        m.completed_date
+      FROM `custom_transport` m
+     WHERE m.company_id = p_company_id
+       AND m.completed_date IS NOT NULL
+       AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
+       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id)
+  ORDER BY m.completed_date ASC, m.id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_completed_maintenances` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -469,6 +594,41 @@ BEGIN
      WHERE c.company_id = p_company_id
        AND c.student_id = p_student_id
   ORDER BY c.id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_custom_transport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_custom_transport`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        m.id,
+        m.vehicle_id,
+        m.driver_id,
+        m.amount,
+        m.description,
+        s.scheduled_date,
+        m.completed_date
+      FROM `custom_transport` m
+      LEFT JOIN scheduled_custom_transport s
+        ON m.company_id = s.company_id
+       AND m.id = s.custom_transport_id
+     WHERE m.company_id = p_company_id
+       AND m.id = p_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -704,11 +864,50 @@ BEGIN
         m.vehicle_id,
         m.description,
         m.type,
-        m.scheduled_date,
+        s.scheduled_date,
         m.completed_date
       FROM `maintenance` m
+      LEFT JOIN scheduled_maintenance s
+		ON m.company_id = s.company_id
+        AND m.id = s.maintenance_id
      WHERE m.company_id = p_company_id
        AND m.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_pending_custom_transports` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_pending_custom_transports`(
+    IN p_company_id INT,
+    IN p_vehicle_id INT,
+    IN p_driver_id INT
+)
+BEGIN
+    SELECT
+        m.id,
+        m.vehicle_id,
+        m.driver_id,
+        s.scheduled_date
+      FROM scheduled_custom_transport s
+      INNER JOIN `custom_transport` m
+        ON s.company_id = m.company_id
+       AND s.custom_transport_id = m.id
+     WHERE m.company_id = p_company_id
+       AND m.completed_date IS NULL
+       AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
+       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id)
+  ORDER BY s.scheduled_date ASC, s.custom_transport_id ASC;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -735,13 +934,16 @@ BEGIN
         m.id,
         m.vehicle_id,
         m.type,
-        m.scheduled_date
-      FROM `maintenance` m
+        s.scheduled_date
+      FROM scheduled_maintenance s
+		INNER JOIN `maintenance` m
+        ON s.company_id = m.company_id
+        AND s.maintenance_id = m.id
      WHERE m.company_id = p_company_id
        AND m.completed_date IS NULL
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
        AND (p_type IS NULL OR m.type = p_type)
-  ORDER BY m.scheduled_date ASC, m.id ASC;
+  ORDER BY s.scheduled_date ASC, s.maintenance_id ASC;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1183,6 +1385,51 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_custom_transport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_custom_transport`(
+    IN p_company_id INT,
+    IN p_vehicle_id INT,
+    IN p_driver_id INT,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(150),
+    IN p_scheduled_date DATE
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM `custom_transport`
+     WHERE company_id = p_company_id;
+
+    INSERT INTO `custom_transport` (
+        company_id, id, vehicle_id, driver_id, amount, description
+    ) VALUES (
+        p_company_id, v_id, p_vehicle_id, p_driver_id, p_amount, p_description
+    );
+    
+    IF p_scheduled_date IS NOT NULL THEN
+        INSERT INTO `scheduled_custom_transport` (
+            company_id, custom_transport_id, scheduled_date
+        ) VALUES (
+            p_company_id, v_id, p_scheduled_date
+        );
+    END IF;
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `insert_employee` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1337,8 +1584,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_maintenance`(
     IN p_vehicle_id INT,
     IN p_description VARCHAR(100),
     IN p_type INT,
-    IN p_scheduled_date DATE,
-    IN p_completed_date DATE
+    IN p_scheduled_date DATE
 )
 BEGIN
     DECLARE v_id INT;
@@ -1347,10 +1593,18 @@ BEGIN
      WHERE company_id = p_company_id;
 
     INSERT INTO `maintenance` (
-        company_id, id, vehicle_id, description, type, scheduled_date, completed_date
+        company_id, id, vehicle_id, description, type
     ) VALUES (
-        p_company_id, v_id, p_vehicle_id, p_description, p_type, p_scheduled_date, p_completed_date
+        p_company_id, v_id, p_vehicle_id, p_description, p_type
     );
+    
+    IF p_scheduled_date IS NOT NULL THEN
+		INSERT INTO `scheduled_maintenance` (
+        company_id, maintenance_id, scheduled_date
+		) VALUES (
+			p_company_id, v_id, p_scheduled_date
+		);
+    END IF;
 
     SELECT v_id AS new_id;
 END ;;
@@ -1702,6 +1956,46 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_custom_transport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_custom_transport`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_vehicle_id INT,
+    IN p_driver_id INT,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(150),
+    IN p_scheduled_date DATE
+)
+BEGIN
+    IF p_scheduled_date IS NOT NULL THEN
+       UPDATE `scheduled_custom_transport`
+          SET scheduled_date = p_scheduled_date
+        WHERE company_id = p_company_id
+          AND custom_transport_id = p_id;
+    END IF;
+
+    UPDATE `custom_transport`
+       SET vehicle_id = p_vehicle_id,
+           driver_id = p_driver_id,
+           amount = p_amount,
+           description = p_description
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_employee` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1840,16 +2134,21 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_maintenance`(
     IN p_vehicle_id INT,
     IN p_description VARCHAR(100),
     IN p_type INT,
-    IN p_scheduled_date DATE,
-    IN p_completed_date DATE
+    IN p_scheduled_date DATE
 )
 BEGIN
+
+    IF p_scheduled_date IS NOT NULL THEN
+	   UPDATE `scheduled_maintenance`
+       SET scheduled_date = p_scheduled_date
+		 WHERE company_id = p_company_id
+		   AND maintenance_id = p_id;
+    END IF;
+
     UPDATE `maintenance`
        SET vehicle_id = p_vehicle_id,
            description = p_description,
-           type = p_type,
-           scheduled_date = p_scheduled_date,
-           completed_date = p_completed_date
+           type = p_type
      WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
@@ -2186,4 +2485,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-18 23:32:10
+-- Dump completed on 2025-09-23 23:26:47

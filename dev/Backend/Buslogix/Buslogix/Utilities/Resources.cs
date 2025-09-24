@@ -16,5 +16,6 @@
         public const string CONTACT = "CONTACT";
         public const string MAINTENANCE = "MAINTENANCE";
         public const string INCIDENT = "INCIDENT";
+        public const string CUSTOM_TRANSPORT = "CUSTOM_TRANSPORT";
     }
 }

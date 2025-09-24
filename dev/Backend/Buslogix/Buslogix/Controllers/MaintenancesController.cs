@@ -71,5 +71,14 @@ namespace Buslogix.Controllers
             bool deleted = await _maintenanceService.DeleteMaintenance(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
+
+        [Authorize(Policy = $"{Resources.MAINTENANCE}.{PermissionMode.WRITE}")]
+        [HttpPut("{id:int}/complete")]
+        public async Task<IActionResult> CompleteMaintenance(int id, [FromBody] Maintenance maintenance)
+        {
+            int companyId = HttpContext.GetCompanyId();
+            bool completed = await _maintenanceService.CompleteMaintenance(companyId, id, maintenance);
+            return completed ? NoContent() : NotFound();
+        }
     }
 }

@@ -91,8 +91,7 @@ namespace Buslogix.Repositories
                 ["p_vehicle_id"] = maintenance.VehicleId,
                 ["p_description"] = maintenance.Description,
                 ["p_type"] = (int)maintenance.Type,
-                ["p_scheduled_date"] = maintenance.ScheduledDate,
-                ["p_completed_date"] = maintenance.CompletedDate
+                ["p_scheduled_date"] = maintenance.ScheduledDate
             };
 
             object? result = await _dataAccess.ExecuteScalar("insert_maintenance", CommandType.StoredProcedure, parameters);
@@ -108,8 +107,7 @@ namespace Buslogix.Repositories
                 ["p_vehicle_id"] = maintenance.VehicleId,
                 ["p_description"] = maintenance.Description,
                 ["p_type"] = (int)maintenance.Type,
-                ["p_scheduled_date"] = maintenance.ScheduledDate,
-                ["p_completed_date"] = maintenance.CompletedDate
+                ["p_scheduled_date"] = maintenance.ScheduledDate
             };
 
             return await _dataAccess.ExecuteNonQuery("update_maintenance", CommandType.StoredProcedure, parameters);
@@ -124,6 +122,18 @@ namespace Buslogix.Repositories
             };
 
             return await _dataAccess.ExecuteNonQuery("delete_maintenance", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> CompleteMaintenance(int companyId, int id, Maintenance maintenance)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_completed_date"] = maintenance.CompletedDate
+            };
+
+            return await _dataAccess.ExecuteNonQuery("complete_maintenance", CommandType.StoredProcedure, parameters);
         }
     }
 }

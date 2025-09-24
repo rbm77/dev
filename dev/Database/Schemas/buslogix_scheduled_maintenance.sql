@@ -18,24 +18,18 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `user`
+-- Table structure for table `scheduled_maintenance`
 --
 
-DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `scheduled_maintenance`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user` (
+CREATE TABLE `scheduled_maintenance` (
   `company_id` int NOT NULL,
-  `id` int NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(10) NOT NULL,
-  `role_id` int NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`company_id`,`id`),
-  UNIQUE KEY `username` (`username`),
-  KEY `fk_user_role` (`company_id`,`role_id`),
-  CONSTRAINT `fk_user_personal_data` FOREIGN KEY (`company_id`, `id`) REFERENCES `personal_data` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_user_role` FOREIGN KEY (`company_id`, `role_id`) REFERENCES `role` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  `maintenance_id` int NOT NULL,
+  `scheduled_date` date NOT NULL,
+  PRIMARY KEY (`company_id`,`maintenance_id`),
+  CONSTRAINT `fk_scheduled_maintenance` FOREIGN KEY (`company_id`, `maintenance_id`) REFERENCES `maintenance` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

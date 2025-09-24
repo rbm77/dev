@@ -29,7 +29,9 @@
             { "23", $"{Resources.MAINTENANCE}.{PermissionMode.WRITE}" },
             { "24", $"{Resources.MAINTENANCE}.{PermissionMode.READ}" },
             { "25", $"{Resources.INCIDENT}.{PermissionMode.WRITE}" },
-            { "26", $"{Resources.INCIDENT}.{PermissionMode.READ}" }
+            { "26", $"{Resources.INCIDENT}.{PermissionMode.READ}" },
+            { "27", $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.WRITE}" },
+            { "28", $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.READ}" }
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

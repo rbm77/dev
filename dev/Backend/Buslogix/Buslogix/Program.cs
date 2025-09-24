@@ -53,6 +53,8 @@ builder.Services.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<ICustomTransportRepository, CustomTransportRepository>();
+builder.Services.AddScoped<ICustomTransportService, CustomTransportService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";

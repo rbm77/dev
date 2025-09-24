@@ -48,5 +48,11 @@ namespace Buslogix.Services
             int affected = await _maintenanceRepository.DeleteMaintenance(companyId, id);
             return affected > 0;
         }
+
+        public async Task<bool> CompleteMaintenance(int companyId, int id, Maintenance maintenance)
+        {
+            int affected = await _maintenanceRepository.CompleteMaintenance(companyId, id, maintenance);
+            return affected > 0;
+        }
     }
 }
