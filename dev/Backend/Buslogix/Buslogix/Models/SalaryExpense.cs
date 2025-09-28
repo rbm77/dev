@@ -1,8 +1,7 @@
 ﻿namespace Buslogix.Models
 {
-    public class SalaryExpense
+    public class SalaryExpense : Expense
     {
-        public int ExpenseId { get; set; }
         public int EmployeeId { get; set; }
 
         public SalaryExpense() { }

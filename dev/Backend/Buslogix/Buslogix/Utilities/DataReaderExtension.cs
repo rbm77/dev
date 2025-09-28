@@ -8,6 +8,9 @@ namespace Buslogix.Utilities
         public static int GetInt32OrDefault(this IDataRecord reader, int ordinal, int defaultValue = 0)
             => reader.IsDBNull(ordinal) ? defaultValue : reader.GetInt32(ordinal);
 
+        public static long GetInt64OrDefault(this IDataRecord reader, int ordinal, long defaultValue = 0L)
+            => reader.IsDBNull(ordinal) ? defaultValue : reader.GetInt64(ordinal);
+
         public static string GetStringOrDefault(this IDataRecord reader, int ordinal, string defaultValue = "")
             => reader.IsDBNull(ordinal) ? defaultValue : reader.GetString(ordinal);
 

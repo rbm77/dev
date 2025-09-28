@@ -17,5 +17,6 @@
         public const string MAINTENANCE = "MAINTENANCE";
         public const string INCIDENT = "INCIDENT";
         public const string CUSTOM_TRANSPORT = "CUSTOM_TRANSPORT";
+        public const string EXPENSE = "EXPENSE";
     }
 }

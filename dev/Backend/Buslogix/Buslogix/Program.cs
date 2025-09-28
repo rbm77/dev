@@ -55,7 +55,10 @@ builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<ICustomTransportRepository, CustomTransportRepository>();
 builder.Services.AddScoped<ICustomTransportService, CustomTransportService>();
-
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IFuelExpenseRepository, FuelExpenseRepository>();
+builder.Services.AddScoped<IFuelExpenseService, FuelExpenseService>();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);
