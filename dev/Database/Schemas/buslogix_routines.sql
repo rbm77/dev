@@ -796,7 +796,31 @@ BEGIN
         e.amount
       FROM `expense` e
      WHERE e.company_id = p_company_id
-       AND (p_date IS NULL OR e.`date` = p_date);
+       AND (p_date IS NULL OR e.`date` = p_date)
+       AND NOT EXISTS (
+             SELECT 1
+               FROM `fuel_expense` f
+              WHERE f.company_id = e.company_id
+                AND f.id = e.id
+       )
+       AND NOT EXISTS (
+             SELECT 1
+               FROM `salary_expense` s
+              WHERE s.company_id = e.company_id
+                AND s.id = e.id
+       )
+       AND NOT EXISTS (
+             SELECT 1
+               FROM `maintenance_expense` m
+              WHERE m.company_id = e.company_id
+                AND m.id = e.id
+       )
+       AND NOT EXISTS (
+             SELECT 1
+               FROM `incident_expense` i
+              WHERE i.company_id = e.company_id
+                AND i.id = e.id
+       );
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -995,6 +1019,72 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_incident_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_incident_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount,
+        e.`description`,
+        i.incident_id
+      FROM `incident_expense` i
+      JOIN `expense` e
+        ON e.company_id = i.company_id
+       AND e.id = i.id
+     WHERE i.company_id = p_company_id
+       AND i.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_incident_expenses` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_incident_expenses`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_incident_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount
+      FROM `incident_expense` i
+      JOIN `expense` e
+        ON e.company_id = i.company_id
+       AND e.id = i.id
+     WHERE i.company_id = p_company_id
+       AND (p_date IS NULL OR e.`date` = p_date)
+       AND (p_incident_id IS NULL OR i.incident_id = p_incident_id);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_maintenance` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1023,6 +1113,72 @@ BEGIN
         AND m.id = s.maintenance_id
      WHERE m.company_id = p_company_id
        AND m.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_maintenance_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_maintenance_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount,
+        e.`description`,
+        m.maintenance_id
+      FROM `maintenance_expense` m
+      JOIN `expense` e
+        ON e.company_id = m.company_id
+       AND e.id = m.id
+     WHERE m.company_id = p_company_id
+       AND m.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_maintenance_expenses` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_maintenance_expenses`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_maintenance_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount
+      FROM `maintenance_expense` m
+      JOIN `expense` e
+        ON e.company_id = m.company_id
+       AND e.id = m.id
+     WHERE m.company_id = p_company_id
+       AND (p_date IS NULL OR e.`date` = p_date)
+       AND (p_maintenance_id IS NULL OR m.maintenance_id = p_maintenance_id);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1267,6 +1423,72 @@ BEGIN
      WHERE company_id = p_company_id
        AND employee_id = p_employee_id
   ORDER BY start_date DESC, id DESC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_salary_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_salary_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount,
+        e.`description`,
+        s.employee_id
+      FROM `salary_expense` s
+      JOIN `expense` e
+        ON e.company_id = s.company_id
+       AND e.id = s.id
+     WHERE s.company_id = p_company_id
+       AND s.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_salary_expenses` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_salary_expenses`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_employee_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.`date`,
+        e.amount
+      FROM `salary_expense` s
+      JOIN `expense` e
+        ON e.company_id = s.company_id
+       AND e.id = s.id
+     WHERE s.company_id = p_company_id
+       AND (p_date IS NULL OR e.`date` = p_date)
+       AND (p_employee_id IS NULL OR s.employee_id = p_employee_id);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1794,6 +2016,44 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_incident_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_incident_expense`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_incident_id INT
+)
+BEGIN
+    DECLARE v_new_id BIGINT;
+
+    SELECT COALESCE(MAX(x.id) + 1, 1)
+      INTO v_new_id
+      FROM `expense` x
+     WHERE x.company_id = p_company_id;
+
+    INSERT INTO `expense`(company_id, id, `date`, amount, `description`)
+    VALUES (p_company_id, v_new_id, p_date, p_amount, p_description);
+
+    INSERT INTO `incident_expense`(company_id, id, incident_id)
+    VALUES (p_company_id, v_new_id, p_incident_id);
+
+    SELECT v_new_id AS id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `insert_maintenance` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1832,6 +2092,44 @@ BEGIN
     END IF;
 
     SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_maintenance_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_maintenance_expense`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_maintenance_id INT
+)
+BEGIN
+    DECLARE v_new_id BIGINT;
+
+    SELECT COALESCE(MAX(x.id) + 1, 1)
+      INTO v_new_id
+      FROM `expense` x
+     WHERE x.company_id = p_company_id;
+
+    INSERT INTO `expense`(company_id, id, `date`, amount, `description`)
+    VALUES (p_company_id, v_new_id, p_date, p_amount, p_description);
+
+    INSERT INTO `maintenance_expense`(company_id, id, maintenance_id)
+    VALUES (p_company_id, v_new_id, p_maintenance_id);
+
+    SELECT v_new_id AS id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1924,6 +2222,44 @@ BEGIN
     VALUES (p_company_id, p_employee_id, v_id, p_amount);
 
     SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_salary_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_salary_expense`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_employee_id INT
+)
+BEGIN
+    DECLARE v_new_id BIGINT;
+
+    SELECT COALESCE(MAX(x.id) + 1, 1)
+      INTO v_new_id
+      FROM `expense` x
+     WHERE x.company_id = p_company_id;
+
+    INSERT INTO `expense`(company_id, id, `date`, amount, `description`)
+    VALUES (p_company_id, v_new_id, p_date, p_amount, p_description);
+
+    INSERT INTO `salary_expense`(company_id, id, employee_id)
+    VALUES (p_company_id, v_new_id, p_employee_id);
+
+    SELECT v_new_id AS id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2413,6 +2749,42 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_incident_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_incident_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_incident_id INT
+)
+BEGIN
+    UPDATE `expense`
+       SET `date` = p_date,
+           amount = p_amount,
+           `description` = p_description
+     WHERE company_id = p_company_id
+       AND id = p_id;
+
+    UPDATE `incident_expense`
+       SET incident_id = p_incident_id
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_maintenance` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2444,6 +2816,42 @@ BEGIN
        SET vehicle_id = p_vehicle_id,
            description = p_description,
            type = p_type
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_maintenance_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_maintenance_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_maintenance_id INT
+)
+BEGIN
+    UPDATE `expense`
+       SET `date` = p_date,
+           amount = p_amount,
+           `description` = p_description
+     WHERE company_id = p_company_id
+       AND id = p_id;
+
+    UPDATE `maintenance_expense`
+       SET maintenance_id = p_maintenance_id
      WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
@@ -2620,6 +3028,42 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_salary_expense` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_salary_expense`(
+    IN p_company_id INT,
+    IN p_id BIGINT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_description VARCHAR(130),
+    IN p_employee_id INT
+)
+BEGIN
+    UPDATE `expense`
+       SET `date` = p_date,
+           amount = p_amount,
+           `description` = p_description
+     WHERE company_id = p_company_id
+       AND id = p_id;
+
+    UPDATE `salary_expense`
+       SET employee_id = p_employee_id
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_student` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2780,4 +3224,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-27 23:02:16
+-- Dump completed on 2025-09-30 23:14:10

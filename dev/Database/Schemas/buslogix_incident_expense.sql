@@ -18,21 +18,20 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `contact`
+-- Table structure for table `incident_expense`
 --
 
-DROP TABLE IF EXISTS `contact`;
+DROP TABLE IF EXISTS `incident_expense`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `contact` (
+CREATE TABLE `incident_expense` (
   `company_id` int NOT NULL,
-  `student_id` int NOT NULL,
-  `id` int NOT NULL,
-  `phone_number` varchar(12) DEFAULT NULL,
-  `description` varchar(50) DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`company_id`,`student_id`,`id`),
-  CONSTRAINT `fk_contact_student` FOREIGN KEY (`company_id`, `student_id`) REFERENCES `student` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  `id` bigint NOT NULL,
+  `incident_id` int NOT NULL,
+  PRIMARY KEY (`company_id`,`id`),
+  KEY `fk_incident_expense_incident` (`company_id`,`incident_id`),
+  CONSTRAINT `fk_incident_expense_expense` FOREIGN KEY (`company_id`, `id`) REFERENCES `expense` (`company_id`, `id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_incident_expense_incident` FOREIGN KEY (`company_id`, `incident_id`) REFERENCES `incident` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

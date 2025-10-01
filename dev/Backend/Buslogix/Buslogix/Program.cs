@@ -59,6 +59,13 @@ builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IFuelExpenseRepository, FuelExpenseRepository>();
 builder.Services.AddScoped<IFuelExpenseService, FuelExpenseService>();
+builder.Services.AddScoped<IMaintenanceExpenseRepository, MaintenanceExpenseRepository>();
+builder.Services.AddScoped<IMaintenanceExpenseService, MaintenanceExpenseService>();
+builder.Services.AddScoped<ISalaryExpenseRepository, SalaryExpenseRepository>();
+builder.Services.AddScoped<ISalaryExpenseService, SalaryExpenseService>();
+builder.Services.AddScoped<IIncidentExpenseRepository, IncidentExpenseRepository>();
+builder.Services.AddScoped<IIncidentExpenseService, IncidentExpenseService>();
+
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);
