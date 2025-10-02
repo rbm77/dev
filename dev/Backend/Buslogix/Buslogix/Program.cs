@@ -65,6 +65,8 @@ builder.Services.AddScoped<ISalaryExpenseRepository, SalaryExpenseRepository>();
 builder.Services.AddScoped<ISalaryExpenseService, SalaryExpenseService>();
 builder.Services.AddScoped<IIncidentExpenseRepository, IncidentExpenseRepository>();
 builder.Services.AddScoped<IIncidentExpenseService, IncidentExpenseService>();
+builder.Services.AddScoped<IPaymentPeriodRequestRepository, PaymentPeriodRequestRepository>();
+builder.Services.AddScoped<IPaymentPeriodRequestService, PaymentPeriodRequestService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";

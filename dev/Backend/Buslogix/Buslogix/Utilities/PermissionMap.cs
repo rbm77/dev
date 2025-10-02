@@ -33,7 +33,9 @@
             { "27", $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.WRITE}" },
             { "28", $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.READ}" },
             { "29", $"{Resources.EXPENSE}.{PermissionMode.WRITE}" },
-            { "30", $"{Resources.EXPENSE}.{PermissionMode.READ}" }
+            { "30", $"{Resources.EXPENSE}.{PermissionMode.READ}" },
+            { "31", $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.WRITE}" },
+            { "32", $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.READ}" }
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

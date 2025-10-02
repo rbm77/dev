@@ -18,5 +18,6 @@
         public const string INCIDENT = "INCIDENT";
         public const string CUSTOM_TRANSPORT = "CUSTOM_TRANSPORT";
         public const string EXPENSE = "EXPENSE";
+        public const string PAYMENT_PERIOD_REQUEST = "PAYMENT_PERIOD_REQUEST";
     }
 }
