@@ -7,11 +7,9 @@ namespace Buslogix.Services
     public class MaintenanceService(IMaintenanceRepository maintenanceRepository) : IMaintenanceService
     {
 
-        private readonly IMaintenanceRepository _maintenanceRepository = maintenanceRepository;
-
         public async Task<Maintenance?> GetMaintenance(int companyId, int id)
         {
-            return await _maintenanceRepository.GetMaintenance(companyId, id);
+            return await maintenanceRepository.GetMaintenance(companyId, id);
         }
 
         public async Task<List<Maintenance>> GetPendingMaintenances(
@@ -20,7 +18,7 @@ namespace Buslogix.Services
             MaintenanceType? type = null
         )
         {
-            return await _maintenanceRepository.GetPendingMaintenances(companyId, vehicleId, type);
+            return await maintenanceRepository.GetPendingMaintenances(companyId, vehicleId, type);
         }
 
         public async Task<List<Maintenance>> GetCompletedMaintenances(
@@ -29,29 +27,29 @@ namespace Buslogix.Services
             MaintenanceType? type = null
         )
         {
-            return await _maintenanceRepository.GetCompletedMaintenances(companyId, vehicleId, type);
+            return await maintenanceRepository.GetCompletedMaintenances(companyId, vehicleId, type);
         }
 
         public async Task<int> InsertMaintenance(int companyId, Maintenance maintenance)
         {
-            return await _maintenanceRepository.InsertMaintenance(companyId, maintenance);
+            return await maintenanceRepository.InsertMaintenance(companyId, maintenance);
         }
 
         public async Task<bool> UpdateMaintenance(int companyId, int id, Maintenance maintenance)
         {
-            int affected = await _maintenanceRepository.UpdateMaintenance(companyId, id, maintenance);
+            int affected = await maintenanceRepository.UpdateMaintenance(companyId, id, maintenance);
             return affected > 0;
         }
 
         public async Task<bool> DeleteMaintenance(int companyId, int id)
         {
-            int affected = await _maintenanceRepository.DeleteMaintenance(companyId, id);
+            int affected = await maintenanceRepository.DeleteMaintenance(companyId, id);
             return affected > 0;
         }
 
         public async Task<bool> CompleteMaintenance(int companyId, int id, Maintenance maintenance)
         {
-            int affected = await _maintenanceRepository.CompleteMaintenance(companyId, id, maintenance);
+            int affected = await maintenanceRepository.CompleteMaintenance(companyId, id, maintenance);
             return affected > 0;
         }
     }

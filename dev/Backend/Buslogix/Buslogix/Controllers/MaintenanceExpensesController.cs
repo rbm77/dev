@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class MaintenanceExpensesController(IMaintenanceExpenseService maintenanceExpenseService) : ControllerBase
     {
 
-        private readonly IMaintenanceExpenseService _maintenanceExpenseService = maintenanceExpenseService;
-
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetMaintenanceExpenses(
@@ -20,7 +18,7 @@ namespace Buslogix.Controllers
             [FromQuery] int? maintenanceId = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<MaintenanceExpense> expenses = await _maintenanceExpenseService.GetMaintenanceExpenses(companyId, date, maintenanceId);
+            List<MaintenanceExpense> expenses = await maintenanceExpenseService.GetMaintenanceExpenses(companyId, date, maintenanceId);
             return Ok(expenses);
         }
 
@@ -29,7 +27,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetMaintenanceExpense(long id)
         {
             int companyId = HttpContext.GetCompanyId();
-            MaintenanceExpense? expense = await _maintenanceExpenseService.GetMaintenanceExpense(companyId, id);
+            MaintenanceExpense? expense = await maintenanceExpenseService.GetMaintenanceExpense(companyId, id);
             return expense == null ? NotFound() : Ok(expense);
         }
 
@@ -38,16 +36,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertMaintenanceExpense([FromBody] MaintenanceExpense expense)
         {
             int companyId = HttpContext.GetCompanyId();
-            long id = await _maintenanceExpenseService.InsertMaintenanceExpense(companyId, expense);
+            long id = await maintenanceExpenseService.InsertMaintenanceExpense(companyId, expense);
             return id > 0 ? CreatedAtAction(nameof(GetMaintenanceExpense), new { id }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateMaintenanceExpense(long id, [FromBody] MaintenanceExpense expense)
+        public async Task<IActionResult> UpdateMaintenanceExpense(long id, [FromBody] MaintenanceExpense expense, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _maintenanceExpenseService.UpdateMaintenanceExpense(companyId, id, expense);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await maintenanceExpenseService.UpdateMaintenanceExpense(companyId, id, expense);
             return updated ? NoContent() : NotFound();
         }
     }

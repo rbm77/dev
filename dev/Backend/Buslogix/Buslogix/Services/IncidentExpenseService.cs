@@ -6,11 +6,9 @@ namespace Buslogix.Services
     public class IncidentExpenseService(IIncidentExpenseRepository incidentExpenseRepository) : IIncidentExpenseService
     {
 
-        private readonly IIncidentExpenseRepository _incidentExpenseRepository = incidentExpenseRepository;
-
         public async Task<IncidentExpense?> GetIncidentExpense(int companyId, long id)
         {
-            return await _incidentExpenseRepository.GetIncidentExpense(companyId, id);
+            return await incidentExpenseRepository.GetIncidentExpense(companyId, id);
         }
 
         public async Task<List<IncidentExpense>> GetIncidentExpenses(
@@ -19,17 +17,17 @@ namespace Buslogix.Services
             int? incidentId = null
         )
         {
-            return await _incidentExpenseRepository.GetIncidentExpenses(companyId, date, incidentId);
+            return await incidentExpenseRepository.GetIncidentExpenses(companyId, date, incidentId);
         }
 
         public async Task<long> InsertIncidentExpense(int companyId, IncidentExpense expense)
         {
-            return await _incidentExpenseRepository.InsertIncidentExpense(companyId, expense);
+            return await incidentExpenseRepository.InsertIncidentExpense(companyId, expense);
         }
 
         public async Task<bool> UpdateIncidentExpense(int companyId, long id, IncidentExpense expense)
         {
-            int affected = await _incidentExpenseRepository.UpdateIncidentExpense(companyId, id, expense);
+            int affected = await incidentExpenseRepository.UpdateIncidentExpense(companyId, id, expense);
             return affected > 0;
         }
     }

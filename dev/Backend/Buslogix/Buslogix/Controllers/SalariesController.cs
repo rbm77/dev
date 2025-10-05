@@ -11,14 +11,12 @@ namespace Buslogix.Controllers
     public class SalariesController(ISalaryService salaryService) : ControllerBase
     {
 
-        private readonly ISalaryService _salaryService = salaryService;
-
         [Authorize(Policy = $"{Resources.SALARY}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetSalaries(int employeeId)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Salary> salaries = await _salaryService.GetSalaries(companyId, employeeId);
+            List<Salary> salaries = await salaryService.GetSalaries(companyId, employeeId);
             return Ok(salaries);
         }
 
@@ -27,16 +25,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertSalary(int employeeId, [FromBody] Salary salary)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _salaryService.InsertSalary(companyId, employeeId, salary);
+            int id = await salaryService.InsertSalary(companyId, employeeId, salary);
             return id > 0 ? CreatedAtAction(nameof(GetSalaries), new { employeeId }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.SALARY}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteSalary(int employeeId, int id)
+        public async Task<IActionResult> DeleteSalary(int employeeId, int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _salaryService.DeleteSalary(companyId, employeeId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await salaryService.DeleteSalary(companyId, employeeId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

@@ -5,6 +5,6 @@ namespace Buslogix.Interfaces
     public interface ITokenHandler
     {
 
-        Token? GenerateJwtToken(UserIdentity userIdentity);
+        Token? GenerateToken(UserIdentity userIdentity);
     }
 }

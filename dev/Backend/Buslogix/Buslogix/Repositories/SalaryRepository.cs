@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class SalaryRepository(IDataAccess dataAccess) : ISalaryRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<int> InsertSalary(int companyId, int employeeId, Salary salary)
         {
             Dictionary<string, object?> parameters = new()
@@ -19,7 +17,7 @@ namespace Buslogix.Repositories
                 ["p_amount"] = salary.Amount
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_salary", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_salary", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -31,7 +29,7 @@ namespace Buslogix.Repositories
                 ["p_employee_id"] = employeeId
             };
 
-            List<Salary> rows = await _dataAccess.ExecuteReader("get_salaries", CommandType.StoredProcedure,
+            List<Salary> rows = await dataAccess.ExecuteReader("get_salaries", CommandType.StoredProcedure,
                 static reader => new Salary
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -51,7 +49,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = salaryId
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_salary", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_salary", CommandType.StoredProcedure, parameters);
         }
     }
 }

@@ -18,6 +18,11 @@
         public const string INCIDENT = "INCIDENT";
         public const string CUSTOM_TRANSPORT = "CUSTOM_TRANSPORT";
         public const string EXPENSE = "EXPENSE";
-        public const string PAYMENT_PERIOD_REQUEST = "PAYMENT_PERIOD_REQUEST";
+        public const string PAYMENT_PERIOD = "PAYMENT_PERIOD";
+        public const string VACATION = "VACATION";
+        public const string SPECIFIC_EXEMPTION = "SPECIFIC_EXEMPTION";
+        public const string PERIODIC_EXEMPTION = "PERIODIC_EXEMPTION";
+        public const string PAYMENT = "PAYMENT";
+
     }
 }

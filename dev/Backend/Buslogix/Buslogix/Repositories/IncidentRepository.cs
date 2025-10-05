@@ -9,8 +9,6 @@ namespace Buslogix.Repositories
     public class IncidentRepository(IDataAccess dataAccess) : IIncidentRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Incident?> GetIncident(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -19,7 +17,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Incident> rows = await _dataAccess.ExecuteReader("get_incident", CommandType.StoredProcedure,
+            List<Incident> rows = await dataAccess.ExecuteReader("get_incident", CommandType.StoredProcedure,
                 static reader => new Incident
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -49,7 +47,7 @@ namespace Buslogix.Repositories
                 ["p_type"] = type
             };
 
-            List<Incident> rows = await _dataAccess.ExecuteReader("get_incidents", CommandType.StoredProcedure,
+            List<Incident> rows = await dataAccess.ExecuteReader("get_incidents", CommandType.StoredProcedure,
                 static reader => new Incident
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -75,7 +73,7 @@ namespace Buslogix.Repositories
                 ["p_corrective_actions"] = incident.CorrectiveActions
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_incident", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_incident", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -93,7 +91,7 @@ namespace Buslogix.Repositories
                 ["p_corrective_actions"] = incident.CorrectiveActions
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_incident", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_incident", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteIncident(int companyId, int id)
@@ -104,7 +102,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_incident", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_incident", CommandType.StoredProcedure, parameters);
         }
     }
 }

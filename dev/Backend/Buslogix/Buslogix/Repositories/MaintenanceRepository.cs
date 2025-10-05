@@ -9,8 +9,6 @@ namespace Buslogix.Repositories
     public class MaintenanceRepository(IDataAccess dataAccess) : IMaintenanceRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Maintenance?> GetMaintenance(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -19,7 +17,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Maintenance> rows = await _dataAccess.ExecuteReader("get_maintenance", CommandType.StoredProcedure,
+            List<Maintenance> rows = await dataAccess.ExecuteReader("get_maintenance", CommandType.StoredProcedure,
                 static reader => new Maintenance
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -46,7 +44,7 @@ namespace Buslogix.Repositories
                 ["p_type"] = type.HasValue ? (int?)type.Value : null
             };
 
-            List<Maintenance> rows = await _dataAccess.ExecuteReader("get_pending_maintenances", CommandType.StoredProcedure,
+            List<Maintenance> rows = await dataAccess.ExecuteReader("get_pending_maintenances", CommandType.StoredProcedure,
                 static reader => new Maintenance
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -71,7 +69,7 @@ namespace Buslogix.Repositories
                 ["p_type"] = type.HasValue ? (int?)type.Value : null
             };
 
-            List<Maintenance> rows = await _dataAccess.ExecuteReader("get_completed_maintenances", CommandType.StoredProcedure,
+            List<Maintenance> rows = await dataAccess.ExecuteReader("get_completed_maintenances", CommandType.StoredProcedure,
                 static reader => new Maintenance
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -94,7 +92,7 @@ namespace Buslogix.Repositories
                 ["p_scheduled_date"] = maintenance.ScheduledDate
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_maintenance", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_maintenance", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -110,7 +108,7 @@ namespace Buslogix.Repositories
                 ["p_scheduled_date"] = maintenance.ScheduledDate
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_maintenance", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_maintenance", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteMaintenance(int companyId, int id)
@@ -121,7 +119,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_maintenance", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_maintenance", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> CompleteMaintenance(int companyId, int id, Maintenance maintenance)
@@ -133,7 +131,7 @@ namespace Buslogix.Repositories
                 ["p_completed_date"] = maintenance.CompletedDate
             };
 
-            return await _dataAccess.ExecuteNonQuery("complete_maintenance", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("complete_maintenance", CommandType.StoredProcedure, parameters);
         }
     }
 }

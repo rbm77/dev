@@ -12,14 +12,12 @@ namespace Buslogix.Controllers
     public class RolesController(IRoleService roleService) : ControllerBase
     {
 
-        private readonly IRoleService _roleService = roleService;
-
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetRoles([FromQuery] string? description = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Role> roles = await _roleService.GetRoles(companyId, description);
+            List<Role> roles = await roleService.GetRoles(companyId, description);
             return Ok(roles);
         }
 
@@ -28,7 +26,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetRole(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Role? role = await _roleService.GetRole(companyId, id);
+            Role? role = await roleService.GetRole(companyId, id);
             return role == null ? NotFound() : Ok(role);
         }
 
@@ -37,7 +35,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertRole([FromBody] Role role)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _roleService.InsertRole(companyId, role);
+            int id = await roleService.InsertRole(companyId, role);
             return id > 0 ? CreatedAtAction(nameof(GetRole), new { id }, null) : BadRequest();
         }
 
@@ -46,16 +44,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateRole(int id, [FromBody] Role role)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _roleService.UpdateRole(companyId, id, role);
+            bool updated = await roleService.UpdateRole(companyId, id, role);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteRole(int id)
+        public async Task<IActionResult> DeleteRole(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _roleService.DeleteRole(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await roleService.DeleteRole(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
 
@@ -64,16 +66,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetPermissions(int roleId)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<RolePermission> permissions = await _roleService.GetPermissions(companyId, roleId);
+            List<RolePermission> permissions = await roleService.GetPermissions(companyId, roleId);
             return Ok(permissions);
         }
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.WRITE}")]
         [HttpPut("{roleId:int}/permissions")]
-        public async Task<IActionResult> UpdatePermissions(int roleId, [FromBody] List<RolePermission> permissions)
+        public async Task<IActionResult> UpdatePermissions(int roleId, [FromBody] List<RolePermission> permissions, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _roleService.UpdatePermissions(companyId, roleId, permissions);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await roleService.UpdatePermissions(companyId, roleId, permissions);
             return updated ? NoContent() : NotFound();
         }
     }

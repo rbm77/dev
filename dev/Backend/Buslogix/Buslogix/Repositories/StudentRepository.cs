@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class StudentRepository(IDataAccess dataAccess) : IStudentRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Student?> GetStudent(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Student> rows = await _dataAccess.ExecuteReader("get_student", CommandType.StoredProcedure,
+            List<Student> rows = await dataAccess.ExecuteReader("get_student", CommandType.StoredProcedure,
                 static reader => new Student
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -55,7 +53,7 @@ namespace Buslogix.Repositories
                 ["p_grade_id"] = gradeId
             };
 
-            List<Student> rows = await _dataAccess.ExecuteReader("get_students", CommandType.StoredProcedure,
+            List<Student> rows = await dataAccess.ExecuteReader("get_students", CommandType.StoredProcedure,
                 static reader => new Student
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -84,7 +82,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = student.IsActive
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_student", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_student", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -103,7 +101,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = student.IsActive
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_student", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_student", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteStudent(int companyId, int id)
@@ -114,7 +112,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_student", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_student", CommandType.StoredProcedure, parameters);
         }
     }
 }

@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class MaintenanceExpenseRepository(IDataAccess dataAccess) : IMaintenanceExpenseRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<MaintenanceExpense?> GetMaintenanceExpense(int companyId, long id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<MaintenanceExpense> rows = await _dataAccess.ExecuteReader("get_maintenance_expense", CommandType.StoredProcedure,
+            List<MaintenanceExpense> rows = await dataAccess.ExecuteReader("get_maintenance_expense", CommandType.StoredProcedure,
                 static reader => new MaintenanceExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -44,7 +42,7 @@ namespace Buslogix.Repositories
                 ["p_maintenance_id"] = maintenanceId
             };
 
-            List<MaintenanceExpense> rows = await _dataAccess.ExecuteReader("get_maintenance_expenses", CommandType.StoredProcedure,
+            List<MaintenanceExpense> rows = await dataAccess.ExecuteReader("get_maintenance_expenses", CommandType.StoredProcedure,
                 static reader => new MaintenanceExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -66,7 +64,7 @@ namespace Buslogix.Repositories
                 ["p_maintenance_id"] = expense.MaintenanceId
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_maintenance_expense", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_maintenance_expense", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt64(result) : 0L;
         }
 
@@ -82,7 +80,7 @@ namespace Buslogix.Repositories
                 ["p_maintenance_id"] = expense.MaintenanceId
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_maintenance_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_maintenance_expense", CommandType.StoredProcedure, parameters);
         }
     }
 }

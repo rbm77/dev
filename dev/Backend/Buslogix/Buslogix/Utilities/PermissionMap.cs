@@ -34,8 +34,17 @@
             { "28", $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.READ}" },
             { "29", $"{Resources.EXPENSE}.{PermissionMode.WRITE}" },
             { "30", $"{Resources.EXPENSE}.{PermissionMode.READ}" },
-            { "31", $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.WRITE}" },
-            { "32", $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.READ}" }
+            { "31", $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}" },
+            { "32", $"{Resources.PAYMENT_PERIOD}.{PermissionMode.READ}" },
+            { "33", $"{Resources.VACATION}.{PermissionMode.WRITE}" },
+            { "34", $"{Resources.VACATION}.{PermissionMode.READ}" },
+            { "35", $"{Resources.SPECIFIC_EXEMPTION}.{PermissionMode.WRITE}" },
+            { "36", $"{Resources.SPECIFIC_EXEMPTION}.{PermissionMode.READ}" },
+            { "37", $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.WRITE}" },
+            { "38", $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.READ}" },
+            { "39", $"{Resources.PAYMENT}.{PermissionMode.WRITE}" },
+            { "40", $"{Resources.PAYMENT}.{PermissionMode.READ}" }
+
         };
 
         public static readonly Dictionary<string, string> PermissionToCode =

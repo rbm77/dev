@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class VehicleRepository(IDataAccess dataAccess) : IVehicleRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Vehicle?> GetVehicle(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Vehicle> rows = await _dataAccess.ExecuteReader("get_vehicle", CommandType.StoredProcedure,
+            List<Vehicle> rows = await dataAccess.ExecuteReader("get_vehicle", CommandType.StoredProcedure,
                 static reader => new Vehicle
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -52,7 +50,7 @@ namespace Buslogix.Repositories
                 ["p_model"] = model
             };
 
-            List<Vehicle> rows = await _dataAccess.ExecuteReader("get_vehicles", CommandType.StoredProcedure,
+            List<Vehicle> rows = await dataAccess.ExecuteReader("get_vehicles", CommandType.StoredProcedure,
                 static reader => new Vehicle
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -80,7 +78,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = vehicle.IsActive
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_vehicle", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_vehicle", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -100,7 +98,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = vehicle.IsActive
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_vehicle", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_vehicle", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteVehicle(int companyId, int id)
@@ -111,7 +109,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_vehicle", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_vehicle", CommandType.StoredProcedure, parameters);
         }
     }
 }

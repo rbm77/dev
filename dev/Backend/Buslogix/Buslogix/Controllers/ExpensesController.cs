@@ -11,15 +11,13 @@ namespace Buslogix.Controllers
     public class ExpensesController(IExpenseService expenseService) : ControllerBase
     {
 
-        private readonly IExpenseService _expenseService = expenseService;
-
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetExpenses(
             [FromQuery] DateTime? date = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Expense> expenses = await _expenseService.GetExpenses(companyId, date);
+            List<Expense> expenses = await expenseService.GetExpenses(companyId, date);
             return Ok(expenses);
         }
 
@@ -28,7 +26,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetExpense(long id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Expense? expense = await _expenseService.GetExpense(companyId, id);
+            Expense? expense = await expenseService.GetExpense(companyId, id);
             return expense == null ? NotFound() : Ok(expense);
         }
 
@@ -37,25 +35,33 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertExpense([FromBody] Expense expense)
         {
             int companyId = HttpContext.GetCompanyId();
-            long id = await _expenseService.InsertExpense(companyId, expense);
+            long id = await expenseService.InsertExpense(companyId, expense);
             return id > 0 ? CreatedAtAction(nameof(GetExpense), new { id }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateExpense(long id, [FromBody] Expense expense)
+        public async Task<IActionResult> UpdateExpense(long id, [FromBody] Expense expense, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _expenseService.UpdateExpense(companyId, id, expense);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await expenseService.UpdateExpense(companyId, id, expense);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:long}")]
-        public async Task<IActionResult> DeleteExpense(long id)
+        public async Task<IActionResult> DeleteExpense(long id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _expenseService.DeleteExpense(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await expenseService.DeleteExpense(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

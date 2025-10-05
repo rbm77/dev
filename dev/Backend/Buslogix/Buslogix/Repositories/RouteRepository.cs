@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class RouteRepository(IDataAccess dataAccess) : IRouteRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Route?> GetRoute(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Route> rows = await _dataAccess.ExecuteReader("get_route", CommandType.StoredProcedure,
+            List<Route> rows = await dataAccess.ExecuteReader("get_route", CommandType.StoredProcedure,
                 static reader => new Route
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -39,7 +37,7 @@ namespace Buslogix.Repositories
                 ["p_name"] = name
             };
 
-            List<Route> rows = await _dataAccess.ExecuteReader("get_routes", CommandType.StoredProcedure,
+            List<Route> rows = await dataAccess.ExecuteReader("get_routes", CommandType.StoredProcedure,
                 static reader => new Route
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -61,7 +59,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = route.IsActive
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_route", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_route", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -76,7 +74,7 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = route.IsActive
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_route", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_route", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteRoute(int companyId, int id)
@@ -87,7 +85,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_route", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_route", CommandType.StoredProcedure, parameters);
         }
     }
 }

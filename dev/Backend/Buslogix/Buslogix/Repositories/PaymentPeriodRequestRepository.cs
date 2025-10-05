@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class PaymentPeriodRequestRepository(IDataAccess dataAccess) : IPaymentPeriodRequestRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<PaymentPeriodRequest?> GetPaymentPeriodRequest(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<PaymentPeriodRequest> rows = await _dataAccess.ExecuteReader("get_payment_period_request", CommandType.StoredProcedure,
+            List<PaymentPeriodRequest> rows = await dataAccess.ExecuteReader("get_payment_period_request", CommandType.StoredProcedure,
                 static reader => new PaymentPeriodRequest
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -37,7 +35,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId
             };
 
-            List<PaymentPeriodRequest> rows = await _dataAccess.ExecuteReader("get_payment_period_requests", CommandType.StoredProcedure,
+            List<PaymentPeriodRequest> rows = await dataAccess.ExecuteReader("get_payment_period_requests", CommandType.StoredProcedure,
                 static reader => new PaymentPeriodRequest
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -57,7 +55,7 @@ namespace Buslogix.Repositories
                 ["p_days_to_next_payment"] = request.DaysToNextPayment
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_payment_period_request", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_payment_period_request", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -72,7 +70,7 @@ namespace Buslogix.Repositories
                 ["p_days_to_next_payment"] = request.DaysToNextPayment
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_payment_period_request", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_payment_period_request", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeletePaymentPeriodRequest(int companyId, int id)
@@ -83,7 +81,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_payment_period_request", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_payment_period_request", CommandType.StoredProcedure, parameters);
         }
     }
 }

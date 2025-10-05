@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class IncidentExpenseRepository(IDataAccess dataAccess) : IIncidentExpenseRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<IncidentExpense?> GetIncidentExpense(int companyId, long id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<IncidentExpense> rows = await _dataAccess.ExecuteReader("get_incident_expense", CommandType.StoredProcedure,
+            List<IncidentExpense> rows = await dataAccess.ExecuteReader("get_incident_expense", CommandType.StoredProcedure,
                 static reader => new IncidentExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -44,7 +42,7 @@ namespace Buslogix.Repositories
                 ["p_incident_id"] = incidentId
             };
 
-            List<IncidentExpense> rows = await _dataAccess.ExecuteReader("get_incident_expenses", CommandType.StoredProcedure,
+            List<IncidentExpense> rows = await dataAccess.ExecuteReader("get_incident_expenses", CommandType.StoredProcedure,
                 static reader => new IncidentExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -66,7 +64,7 @@ namespace Buslogix.Repositories
                 ["p_incident_id"] = expense.IncidentId
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_incident_expense", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_incident_expense", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt64(result) : 0L;
         }
 
@@ -82,7 +80,7 @@ namespace Buslogix.Repositories
                 ["p_incident_id"] = expense.IncidentId
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_incident_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_incident_expense", CommandType.StoredProcedure, parameters);
         }
     }
 }

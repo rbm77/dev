@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class SalaryExpenseRepository(IDataAccess dataAccess) : ISalaryExpenseRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<SalaryExpense?> GetSalaryExpense(int companyId, long id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<SalaryExpense> rows = await _dataAccess.ExecuteReader("get_salary_expense", CommandType.StoredProcedure,
+            List<SalaryExpense> rows = await dataAccess.ExecuteReader("get_salary_expense", CommandType.StoredProcedure,
                 static reader => new SalaryExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -44,7 +42,7 @@ namespace Buslogix.Repositories
                 ["p_employee_id"] = employeeId
             };
 
-            List<SalaryExpense> rows = await _dataAccess.ExecuteReader("get_salary_expenses", CommandType.StoredProcedure,
+            List<SalaryExpense> rows = await dataAccess.ExecuteReader("get_salary_expenses", CommandType.StoredProcedure,
                 static reader => new SalaryExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -66,7 +64,7 @@ namespace Buslogix.Repositories
                 ["p_employee_id"] = expense.EmployeeId
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_salary_expense", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_salary_expense", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt64(result) : 0L;
         }
 
@@ -82,7 +80,7 @@ namespace Buslogix.Repositories
                 ["p_employee_id"] = expense.EmployeeId
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_salary_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_salary_expense", CommandType.StoredProcedure, parameters);
         }
     }
 }

@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class StudentsController(IStudentService studentService) : ControllerBase
     {
 
-        private readonly IStudentService _studentService = studentService;
-
         [Authorize(Policy = $"{Resources.STUDENT}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetStudents(
@@ -24,7 +22,7 @@ namespace Buslogix.Controllers
             [FromQuery] int? gradeId = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Student> students = await _studentService.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId);
+            List<Student> students = await studentService.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId);
             return Ok(students);
         }
 
@@ -33,7 +31,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetStudent(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Student? student = await _studentService.GetStudent(companyId, id);
+            Student? student = await studentService.GetStudent(companyId, id);
             return student == null ? NotFound() : Ok(student);
         }
 
@@ -42,7 +40,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertStudent([FromBody] Student student)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _studentService.InsertStudent(companyId, student);
+            int id = await studentService.InsertStudent(companyId, student);
             return id > 0 ? CreatedAtAction(nameof(GetStudent), new { id }, null) : BadRequest();
         }
 
@@ -51,16 +49,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] Student student)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _studentService.UpdateStudent(companyId, id, student);
+            bool updated = await studentService.UpdateStudent(companyId, id, student);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.STUDENT}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteStudent(int id)
+        public async Task<IActionResult> DeleteStudent(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _studentService.DeleteStudent(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await studentService.DeleteStudent(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

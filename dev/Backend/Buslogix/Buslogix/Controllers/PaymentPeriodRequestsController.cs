@@ -11,50 +11,56 @@ namespace Buslogix.Controllers
     public class PaymentPeriodRequestsController(IPaymentPeriodRequestService paymentPeriodRequestService) : ControllerBase
     {
 
-        private readonly IPaymentPeriodRequestService _paymentPeriodRequestService = paymentPeriodRequestService;
-
-        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.READ}")]
+        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetPaymentPeriodRequests()
         {
             int companyId = HttpContext.GetCompanyId();
-            List<PaymentPeriodRequest> requests = await _paymentPeriodRequestService.GetPaymentPeriodRequests(companyId);
+            List<PaymentPeriodRequest> requests = await paymentPeriodRequestService.GetPaymentPeriodRequests(companyId);
             return Ok(requests);
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.READ}")]
+        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.READ}")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPaymentPeriodRequest(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            PaymentPeriodRequest? request = await _paymentPeriodRequestService.GetPaymentPeriodRequest(companyId, id);
+            PaymentPeriodRequest? request = await paymentPeriodRequestService.GetPaymentPeriodRequest(companyId, id);
             return request == null ? NotFound() : Ok(request);
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.WRITE}")]
+        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}")]
         [HttpPost]
         public async Task<IActionResult> InsertPaymentPeriodRequest([FromBody] PaymentPeriodRequest request)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _paymentPeriodRequestService.InsertPaymentPeriodRequest(companyId, request);
+            int id = await paymentPeriodRequestService.InsertPaymentPeriodRequest(companyId, request);
             return id > 0 ? CreatedAtAction(nameof(GetPaymentPeriodRequest), new { id }, null) : BadRequest();
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.WRITE}")]
+        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdatePaymentPeriodRequest(int id, [FromBody] PaymentPeriodRequest request)
+        public async Task<IActionResult> UpdatePaymentPeriodRequest(int id, [FromBody] PaymentPeriodRequest request, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _paymentPeriodRequestService.UpdatePaymentPeriodRequest(companyId, id, request);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await paymentPeriodRequestService.UpdatePaymentPeriodRequest(companyId, id, request);
             return updated ? NoContent() : NotFound();
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD_REQUEST}.{PermissionMode.WRITE}")]
+        [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeletePaymentPeriodRequest(int id)
+        public async Task<IActionResult> DeletePaymentPeriodRequest(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _paymentPeriodRequestService.DeletePaymentPeriodRequest(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await paymentPeriodRequestService.DeletePaymentPeriodRequest(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

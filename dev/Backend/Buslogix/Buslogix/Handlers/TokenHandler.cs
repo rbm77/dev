@@ -11,9 +11,7 @@ namespace Buslogix.Handlers
     public class TokenHandler(IConfiguration configuration) : ITokenHandler
     {
 
-        private readonly IConfiguration _configuration = configuration;
-
-        public Token? GenerateJwtToken(UserIdentity userIdentity)
+        public Token? GenerateToken(UserIdentity userIdentity)
         {
             if (userIdentity?.Permissions != null && userIdentity.Permissions.Count > 0)
             {
@@ -29,13 +27,13 @@ namespace Buslogix.Handlers
                     new Claim("cid", userIdentity.CompanyId.ToString())
                 ];
 
-                string secretKey = _configuration["JWT:SecretKey"] ?? "";
+                string secretKey = configuration["JWT:SecretKey"] ?? "";
                 SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(secretKey));
                 SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha256);
 
                 JwtSecurityToken token = new(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
+                    issuer: configuration["JWT:ValidIssuer"],
+                    audience: configuration["JWT:ValidAudience"],
                     claims: claims,
                     expires: DateTime.UtcNow.AddHours(1),
                     signingCredentials: creds);

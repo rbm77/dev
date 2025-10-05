@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Buslogix.Interfaces;
+﻿using Buslogix.Interfaces;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
 using Buslogix.Utilities;
@@ -10,20 +9,17 @@ namespace Buslogix.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class UsersController(IUserService userService, ITokenHandler tokenHandler) : ControllerBase
-
+    public class UsersController(IUserService userService) : ControllerBase
     {
-        private readonly IUserService _userService = userService;
-        private readonly ITokenHandler _tokenHandler = tokenHandler;
 
         [HttpPost("authenticate")]
         [AllowAnonymous]
-        public async Task<IActionResult> Authenticate([FromBody] Credentials credentials)
+        public async Task<IActionResult> Authenticate([FromBody] Credentials credentials, [FromServices] ITokenHandler tokenHandler)
         {
-            UserIdentity? userIdentity = await _userService.Authenticate(credentials);
+            UserIdentity? userIdentity = await userService.Authenticate(credentials);
             if (userIdentity != null && userIdentity.IsAuthenticated)
             {
-                Token? token = _tokenHandler.GenerateJwtToken(userIdentity);
+                Token? token = tokenHandler.GenerateToken(userIdentity);
                 if (token != null)
                 {
                     return Ok(token);
@@ -36,7 +32,7 @@ namespace Buslogix.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] Credentials credentials)
         {
-            await _userService.ResetPassword(credentials);
+            await userService.ResetPassword(credentials);
             return Accepted();
         }
 
@@ -50,7 +46,7 @@ namespace Buslogix.Controllers
             [FromQuery] string? lastName = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<User> users = await _userService.GetUsers(
+            List<User> users = await userService.GetUsers(
                 companyId, roleId, isActive, identityDocument, name, lastName);
             return Ok(users);
         }
@@ -60,7 +56,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetUser(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            User? user = await _userService.GetUser(companyId, id);
+            User? user = await userService.GetUser(companyId, id);
             return user == null ? NotFound() : Ok(user);
         }
 
@@ -69,7 +65,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertUser([FromBody] User user)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _userService.InsertUser(companyId, user);
+            int id = await userService.InsertUser(companyId, user);
             return id > 0 ? CreatedAtAction(nameof(GetUser), new { id }, null) : BadRequest();
         }
 
@@ -78,7 +74,11 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _userService.UpdateUser(companyId, id, user);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await userService.UpdateUser(companyId, id, user);
             return updated ? NoContent() : NotFound();
         }
 
@@ -87,7 +87,11 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> DeleteUser(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _userService.DeleteUser(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await userService.DeleteUser(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
 
@@ -95,11 +99,11 @@ namespace Buslogix.Controllers
         [HttpPut("{id:int}/password")]
         public async Task<IActionResult> UpdatePassword(int id, [FromBody] Credentials credentials)
         {
-            if (id != GetUserId()) return Forbid();
+            if (id != HttpContext.GetUserId()) return Forbid();
             if (string.IsNullOrEmpty(credentials.Password)) return BadRequest();
 
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _userService.UpdatePassword(companyId, id, credentials.Password);
+            bool updated = await userService.UpdatePassword(companyId, id, credentials.Password);
             return updated ? NoContent() : NotFound();
         }
 
@@ -107,13 +111,13 @@ namespace Buslogix.Controllers
         [HttpPut("{id:int}/own")]
         public async Task<IActionResult> UpdateOwnUser(int id, [FromBody] User user)
         {
-            if (id != GetUserId())
+            if (id != HttpContext.GetUserId())
             {
                 return Forbid();
             }
 
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _userService.UpdateOwnUser(companyId, id, user);
+            bool updated = await userService.UpdateOwnUser(companyId, id, user);
             return updated ? NoContent() : NotFound();
         }
 
@@ -121,19 +125,32 @@ namespace Buslogix.Controllers
         [HttpGet("{id:int}/own")]
         public async Task<IActionResult> GetOwnUser(int id)
         {
-            if (id != GetUserId())
+            if (id != HttpContext.GetUserId())
             {
                 return Forbid();
             }
 
             int companyId = HttpContext.GetCompanyId();
-            User? user = await _userService.GetUser(companyId, id);
+            User? user = await userService.GetUser(companyId, id);
             return user == null ? NotFound() : Ok(user);
         }
 
-        private int GetUserId()
+        [Authorize(Policy = $"{Resources.USER}.{PermissionMode.READ}")]
+        [HttpGet("critical-process")]
+        public async Task<IActionResult> GetCriticalProcessUsers()
         {
-            return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            int companyId = HttpContext.GetCompanyId();
+            List<CriticalProcessUser> users = await userService.GetCriticalProcessUsers(companyId);
+            return Ok(users);
+        }
+
+        [Authorize(Policy = $"{Resources.USER}.{PermissionMode.WRITE}")]
+        [HttpPut("critical-process")]
+        public async Task<IActionResult> UpdateCriticalProcessUsers([FromBody] List<CriticalProcessUser> users)
+        {
+            int companyId = HttpContext.GetCompanyId();
+            bool updated = await userService.UpdateCriticalProcessUsers(companyId, users);
+            return updated ? NoContent() : NotFound();
         }
     }
 }

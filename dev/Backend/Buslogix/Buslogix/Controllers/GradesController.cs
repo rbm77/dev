@@ -11,14 +11,12 @@ namespace Buslogix.Controllers
     public class GradesController(IGradeService gradeService) : ControllerBase
     {
 
-        private readonly IGradeService _gradeService = gradeService;
-
         [Authorize(Policy = $"{Resources.GRADE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetGrades([FromQuery] string? description = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Grade> items = await _gradeService.GetGrades(companyId, description);
+            List<Grade> items = await gradeService.GetGrades(companyId, description);
             return Ok(items);
         }
 
@@ -27,7 +25,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetGrade(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Grade? item = await _gradeService.GetGrade(companyId, id);
+            Grade? item = await gradeService.GetGrade(companyId, id);
             return item == null ? NotFound() : Ok(item);
         }
 
@@ -36,7 +34,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertGrade([FromBody] Grade grade)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _gradeService.InsertGrade(companyId, grade);
+            int id = await gradeService.InsertGrade(companyId, grade);
             return id > 0 ? CreatedAtAction(nameof(GetGrade), new { id }, null) : BadRequest();
         }
 
@@ -45,16 +43,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateGrade(int id, [FromBody] Grade grade)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _gradeService.UpdateGrade(companyId, id, grade);
+            bool updated = await gradeService.UpdateGrade(companyId, id, grade);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.GRADE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteGrade(int id)
+        public async Task<IActionResult> DeleteGrade(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _gradeService.DeleteGrade(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await gradeService.DeleteGrade(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

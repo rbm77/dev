@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class ExpenseRepository(IDataAccess dataAccess) : IExpenseRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Expense?> GetExpense(int companyId, long id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Expense> rows = await _dataAccess.ExecuteReader("get_expense", CommandType.StoredProcedure,
+            List<Expense> rows = await dataAccess.ExecuteReader("get_expense", CommandType.StoredProcedure,
                 static reader => new Expense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -41,7 +39,7 @@ namespace Buslogix.Repositories
                 ["p_date"] = date
             };
 
-            List<Expense> rows = await _dataAccess.ExecuteReader("get_expenses", CommandType.StoredProcedure,
+            List<Expense> rows = await dataAccess.ExecuteReader("get_expenses", CommandType.StoredProcedure,
                 static reader => new Expense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -62,7 +60,7 @@ namespace Buslogix.Repositories
                 ["p_description"] = expense.Description
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_expense", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_expense", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt64(result) : 0L;
         }
 
@@ -77,7 +75,7 @@ namespace Buslogix.Repositories
                 ["p_description"] = expense.Description
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_expense", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteExpense(int companyId, long id)
@@ -88,7 +86,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_expense", CommandType.StoredProcedure, parameters);
         }
     }
 }

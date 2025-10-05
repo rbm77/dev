@@ -12,8 +12,6 @@ namespace Buslogix.Controllers
     public class MaintenancesController(IMaintenanceService maintenanceService) : ControllerBase
     {
 
-        private readonly IMaintenanceService _maintenanceService = maintenanceService;
-
         [Authorize(Policy = $"{Resources.MAINTENANCE}.{PermissionMode.READ}")]
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingMaintenances(
@@ -21,7 +19,7 @@ namespace Buslogix.Controllers
             [FromQuery] MaintenanceType? type = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Maintenance> maintenances = await _maintenanceService.GetPendingMaintenances(companyId, vehicleId, type);
+            List<Maintenance> maintenances = await maintenanceService.GetPendingMaintenances(companyId, vehicleId, type);
             return Ok(maintenances);
         }
 
@@ -32,7 +30,7 @@ namespace Buslogix.Controllers
             [FromQuery] MaintenanceType? type = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Maintenance> maintenances = await _maintenanceService.GetCompletedMaintenances(companyId, vehicleId, type);
+            List<Maintenance> maintenances = await maintenanceService.GetCompletedMaintenances(companyId, vehicleId, type);
             return Ok(maintenances);
         }
 
@@ -41,7 +39,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetMaintenance(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Maintenance? maintenance = await _maintenanceService.GetMaintenance(companyId, id);
+            Maintenance? maintenance = await maintenanceService.GetMaintenance(companyId, id);
             return maintenance == null ? NotFound() : Ok(maintenance);
         }
 
@@ -50,7 +48,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertMaintenance([FromBody] Maintenance maintenance)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _maintenanceService.InsertMaintenance(companyId, maintenance);
+            int id = await maintenanceService.InsertMaintenance(companyId, maintenance);
             return id > 0 ? CreatedAtAction(nameof(GetMaintenance), new { id }, null) : BadRequest();
         }
 
@@ -59,16 +57,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateMaintenance(int id, [FromBody] Maintenance maintenance)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _maintenanceService.UpdateMaintenance(companyId, id, maintenance);
+            bool updated = await maintenanceService.UpdateMaintenance(companyId, id, maintenance);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.MAINTENANCE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteMaintenance(int id)
+        public async Task<IActionResult> DeleteMaintenance(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _maintenanceService.DeleteMaintenance(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await maintenanceService.DeleteMaintenance(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
 
@@ -77,7 +79,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> CompleteMaintenance(int id, [FromBody] Maintenance maintenance)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool completed = await _maintenanceService.CompleteMaintenance(companyId, id, maintenance);
+            bool completed = await maintenanceService.CompleteMaintenance(companyId, id, maintenance);
             return completed ? NoContent() : NotFound();
         }
     }

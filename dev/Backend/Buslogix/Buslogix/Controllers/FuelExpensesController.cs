@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class FuelExpensesController(IFuelExpenseService fuelExpenseService) : ControllerBase
     {
 
-        private readonly IFuelExpenseService _fuelExpenseService = fuelExpenseService;
-
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetFuelExpenses(
@@ -21,7 +19,7 @@ namespace Buslogix.Controllers
             [FromQuery] int? driverId = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<FuelExpense> expenses = await _fuelExpenseService.GetFuelExpenses(companyId, date, vehicleId, driverId);
+            List<FuelExpense> expenses = await fuelExpenseService.GetFuelExpenses(companyId, date, vehicleId, driverId);
             return Ok(expenses);
         }
 
@@ -30,7 +28,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetFuelExpense(long id)
         {
             int companyId = HttpContext.GetCompanyId();
-            FuelExpense? expense = await _fuelExpenseService.GetFuelExpense(companyId, id);
+            FuelExpense? expense = await fuelExpenseService.GetFuelExpense(companyId, id);
             return expense == null ? NotFound() : Ok(expense);
         }
 
@@ -39,16 +37,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertFuelExpense([FromBody] FuelExpense expense)
         {
             int companyId = HttpContext.GetCompanyId();
-            long id = await _fuelExpenseService.InsertFuelExpense(companyId, expense);
+            long id = await fuelExpenseService.InsertFuelExpense(companyId, expense);
             return id > 0 ? CreatedAtAction(nameof(GetFuelExpense), new { id }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateFuelExpense(long id, [FromBody] FuelExpense expense)
+        public async Task<IActionResult> UpdateFuelExpense(long id, [FromBody] FuelExpense expense, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _fuelExpenseService.UpdateFuelExpense(companyId, id, expense);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await fuelExpenseService.UpdateFuelExpense(companyId, id, expense);
             return updated ? NoContent() : NotFound();
         }
     }

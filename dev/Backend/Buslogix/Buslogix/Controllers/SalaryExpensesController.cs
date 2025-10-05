@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class SalaryExpensesController(ISalaryExpenseService salaryExpenseService) : ControllerBase
     {
 
-        private readonly ISalaryExpenseService _salaryExpenseService = salaryExpenseService;
-
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetSalaryExpenses(
@@ -20,7 +18,7 @@ namespace Buslogix.Controllers
             [FromQuery] int? employeeId = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<SalaryExpense> expenses = await _salaryExpenseService.GetSalaryExpenses(companyId, date, employeeId);
+            List<SalaryExpense> expenses = await salaryExpenseService.GetSalaryExpenses(companyId, date, employeeId);
             return Ok(expenses);
         }
 
@@ -29,7 +27,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetSalaryExpense(long id)
         {
             int companyId = HttpContext.GetCompanyId();
-            SalaryExpense? expense = await _salaryExpenseService.GetSalaryExpense(companyId, id);
+            SalaryExpense? expense = await salaryExpenseService.GetSalaryExpense(companyId, id);
             return expense == null ? NotFound() : Ok(expense);
         }
 
@@ -38,16 +36,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertSalaryExpense([FromBody] SalaryExpense expense)
         {
             int companyId = HttpContext.GetCompanyId();
-            long id = await _salaryExpenseService.InsertSalaryExpense(companyId, expense);
+            long id = await salaryExpenseService.InsertSalaryExpense(companyId, expense);
             return id > 0 ? CreatedAtAction(nameof(GetSalaryExpense), new { id }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateSalaryExpense(long id, [FromBody] SalaryExpense expense)
+        public async Task<IActionResult> UpdateSalaryExpense(long id, [FromBody] SalaryExpense expense, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _salaryExpenseService.UpdateSalaryExpense(companyId, id, expense);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await salaryExpenseService.UpdateSalaryExpense(companyId, id, expense);
             return updated ? NoContent() : NotFound();
         }
     }

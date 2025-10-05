@@ -344,6 +344,30 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_payment` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_payment`(
+    IN p_company_id INT,
+    IN p_id BIGINT
+)
+BEGIN
+    DELETE FROM `payment`
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_payment_period_request` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -360,6 +384,30 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_payment_period_request`(
 )
 BEGIN
     DELETE FROM `payment_period_request`
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_periodic_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_periodic_exemption`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM `periodic_exemption`
      WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
@@ -441,6 +489,30 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_specific_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_specific_exemption`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM `specific_exemption`
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_student` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -500,6 +572,30 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_vacation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_vacation`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM `vacation`
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_vehicle` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -518,6 +614,33 @@ BEGIN
     DELETE FROM `vehicle`
      WHERE company_id = p_company_id
        AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_all_vacation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_vacation`(
+    IN p_company_id INT
+)
+BEGIN
+    SELECT
+        v.id,
+        v.start_date,
+        v.end_date
+      FROM `vacation` v
+     WHERE v.company_id = p_company_id
+  ORDER BY v.start_date ASC, v.end_date ASC, v.id ASC;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -642,6 +765,36 @@ BEGIN
      WHERE c.company_id = p_company_id
        AND c.student_id = p_student_id
   ORDER BY c.id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_critical_process_users` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_critical_process_users`(
+    IN p_company_id INT
+)
+BEGIN
+    SELECT
+        c.user_id,
+        p.name,
+        p.last_name
+    FROM critical_process_user c
+    INNER JOIN personal_data p
+		ON p.company_id = c.company_id
+        AND p.id = c.user_id
+	WHERE c.company_id = p_company_id
+    ORDER BY p.name desc, p.last_name desc;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1209,6 +1362,95 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_payment` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment`(
+    IN p_company_id INT,
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        p.id,
+        p.`date`,
+        p.amount,
+        p.student_id
+      FROM `payment` p
+     WHERE p.company_id = p_company_id
+       AND p.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_payments` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payments`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_student_id INT
+)
+BEGIN
+    SELECT
+        p.id,
+        p.`date`,
+        p.student_id
+      FROM `payment` p
+     WHERE p.company_id = p_company_id
+       AND (p_date IS NULL OR p.`date` = p_date)
+       AND (p_student_id IS NULL OR p.student_id = p_student_id)
+  ORDER BY p.`date` ASC, p.id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_payment_periods` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment_periods`(
+    IN p_company_id INT,
+    IN p_request_id INT
+)
+BEGIN
+    SELECT
+        pp.id,
+        pp.request_id,
+        pp.payment_date
+      FROM `payment_period` pp
+     WHERE pp.company_id = p_company_id
+       AND (p_request_id IS NULL OR pp.request_id = p_request_id)
+  ORDER BY pp.payment_date DESC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_payment_period_request` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1330,6 +1572,66 @@ BEGIN
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
        AND (p_type IS NULL OR m.type = p_type)
   ORDER BY s.scheduled_date ASC, s.maintenance_id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_periodic_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_periodic_exemption`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.student_id,
+        e.description,
+        e.start_date,
+        e.end_date,
+        e.percentage
+      FROM `periodic_exemption` e
+     WHERE e.company_id = p_company_id
+       AND e.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_periodic_exemptions` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_periodic_exemptions`(
+    IN p_company_id INT,
+    IN p_student_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.student_id,
+        e.percentage
+      FROM `periodic_exemption` e
+     WHERE e.company_id = p_company_id
+       AND (p_student_id IS NULL OR e.student_id = p_student_id)
+  ORDER BY e.start_date ASC, e.end_date ASC, e.id ASC;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1574,6 +1876,67 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_specific_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_specific_exemption`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.student_id,
+        e.payment_period_id,
+        e.description,
+        e.percentage
+      FROM `specific_exemption` e
+     WHERE e.company_id = p_company_id
+       AND e.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_specific_exemptions` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_specific_exemptions`(
+    IN p_company_id INT,
+    IN p_student_id INT,
+    IN p_payment_period INT
+)
+BEGIN
+    SELECT
+        e.id,
+        e.student_id,
+        e.payment_period_id
+      FROM `specific_exemption` e
+     WHERE e.company_id = p_company_id
+       AND (p_student_id IS NULL OR e.student_id = p_student_id)
+       AND (p_payment_period IS NULL OR e.payment_period_id = p_payment_period)
+  ORDER BY e.student_id ASC, e.payment_period_id ASC, e.id ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_student` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1726,6 +2089,35 @@ BEGIN
       AND (p_name IS NULL OR p.name LIKE CONCAT('%', p_name, '%'))
       AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'))
     ORDER BY p.name ASC, p.last_name ASC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_vacation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_vacation`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        v.id,
+        v.description,
+        v.start_date,
+        v.end_date
+      FROM `vacation` v
+     WHERE v.company_id = p_company_id
+       AND v.id = p_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2215,6 +2607,41 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_payment` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_payment`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_student_id INT
+)
+BEGIN
+    DECLARE v_id BIGINT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM `payment`
+     WHERE company_id = p_company_id;
+
+    INSERT INTO `payment` (
+        company_id, id, `date`, amount, student_id
+    ) VALUES (
+        p_company_id, v_id, p_date, p_amount, p_student_id
+    );
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `insert_payment_period_request` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2232,15 +2659,64 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_payment_period_request`(
     IN p_days_to_next_payment INT
 )
 BEGIN
+    DECLARE v_last_start DATE;
     DECLARE v_id INT;
-    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
-      FROM `payment_period_request`
+
+    SELECT MAX(start_date)
+      INTO v_last_start
+      FROM payment_period_request
      WHERE company_id = p_company_id;
 
-    INSERT INTO `payment_period_request` (
-        company_id, id, amount, start_date, days_to_next_payment
+    IF v_last_start IS NOT NULL AND p_start_date <= v_last_start THEN
+        SELECT NULL AS new_id;
+    ELSE
+        SELECT IFNULL(MAX(id), 0) + 1
+          INTO v_id
+          FROM payment_period_request
+         WHERE company_id = p_company_id;
+
+        INSERT INTO payment_period_request (
+            company_id, id, amount, start_date, days_to_next_payment
+        ) VALUES (
+            p_company_id, v_id, p_amount, p_start_date, p_days_to_next_payment
+        );
+
+        SELECT v_id AS new_id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_periodic_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_periodic_exemption`(
+    IN p_company_id INT,
+    IN p_student_id INT,
+    IN p_description VARCHAR(50),
+    IN p_start_date DATE,
+    IN p_end_date DATE,
+    IN p_percentage DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM `periodic_exemption`
+     WHERE company_id = p_company_id;
+
+    INSERT INTO `periodic_exemption` (
+        company_id, id, student_id, description, start_date, end_date, percentage
     ) VALUES (
-        p_company_id, v_id, p_amount, p_start_date, p_days_to_next_payment
+        p_company_id, v_id, p_student_id, p_description, p_start_date, p_end_date, p_percentage
     );
 
     SELECT v_id AS new_id;
@@ -2380,6 +2856,42 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_specific_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_specific_exemption`(
+    IN p_company_id INT,
+    IN p_student_id INT,
+    IN p_payment_period INT,
+    IN p_description VARCHAR(50),
+    IN p_percentage DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM `specific_exemption`
+     WHERE company_id = p_company_id;
+
+    INSERT INTO `specific_exemption` (
+        company_id, id, student_id, payment_period_id, description, percentage
+    ) VALUES (
+        p_company_id, v_id, p_student_id, p_payment_period, p_description, p_percentage
+    );
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `insert_student` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2481,6 +2993,41 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_vacation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_vacation`(
+    IN p_company_id INT,
+    IN p_description VARCHAR(50),
+    IN p_start_date DATE,
+    IN p_end_date DATE
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM `vacation`
+     WHERE company_id = p_company_id;
+
+    INSERT INTO `vacation` (
+        company_id, id, description, start_date, end_date
+    ) VALUES (
+        p_company_id, v_id, p_description, p_start_date, p_end_date
+    );
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `insert_vehicle` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2515,6 +3062,35 @@ BEGIN
     );
 
     SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `is_critical_process_user` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `is_critical_process_user`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+
+	SELECT EXISTS(
+	  SELECT 1
+	  FROM critical_process_user c
+	  WHERE c.company_id = p_company_id
+		AND c.user_id    = p_id
+	) AS found;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2561,6 +3137,98 @@ BEGIN
             NULL AS last_name,
             NULL AS email,
             NULL AS phone_number;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `schedule_payment_period` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `schedule_payment_period`(
+    IN p_company_token VARCHAR(30)
+)
+BEGIN
+    DECLARE v_company_id INT;
+    DECLARE v_request_id INT;
+    DECLARE v_start_date DATE;
+    DECLARE v_days INT;
+    DECLARE v_last_or_start DATE;
+    DECLARE v_new_payment_date DATE;
+    DECLARE v_new_id INT;
+    DECLARE v_exist_future_id INT;
+    DECLARE v_exist_future_request INT;
+    DECLARE v_exist_future_date DATE;
+    DECLARE v_today DATE;
+
+    SET v_today = CURRENT_DATE;
+
+    SELECT c.id
+      INTO v_company_id
+      FROM company c
+     WHERE c.token = p_company_token;
+
+    IF v_company_id IS NULL THEN
+        SELECT NULL AS id, NULL AS request_id, NULL AS payment_date;
+    ELSE
+        SELECT pp.id, pp.request_id, pp.payment_date
+          INTO v_exist_future_id, v_exist_future_request, v_exist_future_date
+          FROM payment_period pp
+         WHERE pp.company_id = v_company_id
+           AND pp.payment_date > v_today
+         ORDER BY pp.payment_date ASC
+         LIMIT 1;
+
+        IF v_exist_future_id IS NOT NULL THEN
+            SELECT v_exist_future_id AS id,
+                   v_exist_future_request AS request_id,
+                   v_exist_future_date AS payment_date;
+        ELSE
+            SELECT pr.id, pr.start_date, pr.days_to_next_payment
+              INTO v_request_id, v_start_date, v_days
+              FROM payment_period_request pr
+             WHERE pr.company_id = v_company_id
+               AND pr.start_date <= v_today
+             ORDER BY pr.start_date DESC
+             LIMIT 1;
+
+            IF v_request_id IS NULL THEN
+                SELECT NULL AS id, NULL AS request_id, NULL AS payment_date;
+            ELSE
+                SELECT COALESCE(MAX(pp.payment_date), v_start_date)
+                  INTO v_last_or_start
+                  FROM payment_period pp
+                 WHERE pp.company_id = v_company_id
+                   AND pp.request_id = v_request_id;
+
+                SET v_new_payment_date = DATE_ADD(v_last_or_start, INTERVAL v_days DAY);
+
+                SELECT id
+                  INTO v_new_id
+                  FROM payment_period
+                 WHERE company_id = v_company_id
+                 ORDER BY id DESC
+                 LIMIT 1;
+
+                SET v_new_id = IFNULL(v_new_id, 0) + 1;
+
+                INSERT INTO payment_period (company_id, id, request_id, payment_date)
+                VALUES (v_company_id, v_new_id, v_request_id, v_new_payment_date);
+
+                SELECT v_new_id AS id,
+                       v_request_id AS request_id,
+                       v_new_payment_date AS payment_date;
+            END IF;
+        END IF;
     END IF;
 END ;;
 DELIMITER ;
@@ -2625,6 +3293,72 @@ BEGIN
      WHERE company_id = p_company_id
        AND student_id = p_student_id
        AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_critical_process_users` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_critical_process_users`(
+    IN p_company_id INT,
+    IN p_users_json JSON
+)
+BEGIN
+    DECLARE v_upserted INT DEFAULT 0;
+    DECLARE v_deleted  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS rows_affected;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    DROP TEMPORARY TABLE IF EXISTS users_tmp;
+    CREATE TEMPORARY TABLE users_tmp (
+        id  INT PRIMARY KEY
+    ) ENGINE=MEMORY;
+
+    INSERT INTO users_tmp (id)
+    SELECT jt.id
+    FROM JSON_TABLE(
+            p_users_json, '$[*]'
+            COLUMNS(
+                id INT     PATH '$.Id'
+            )
+         ) AS jt;
+	
+	INSERT INTO critical_process_user (company_id, user_id)
+	SELECT p_company_id, t.id
+	FROM users_tmp t
+	ON DUPLICATE KEY UPDATE user_id = user_id;
+    
+    SET v_upserted = ROW_COUNT();
+
+    DELETE c
+    FROM critical_process_user c
+    LEFT JOIN users_tmp t
+           ON t.id = c.user_id
+    WHERE c.company_id = p_company_id
+    AND t.id IS NULL;
+
+    SET v_deleted = ROW_COUNT();
+
+    COMMIT;
+
+    SELECT v_upserted + v_deleted AS rows_affected;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -3016,6 +3750,36 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_payment` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_payment`(
+    IN p_company_id INT,
+    IN p_id BIGINT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_student_id INT
+)
+BEGIN
+    UPDATE `payment`
+       SET `date` = p_date,
+           amount = p_amount,
+           student_id = p_student_id
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_payment_period_request` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -3034,10 +3798,62 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_payment_period_request`(
     IN p_days_to_next_payment INT
 )
 BEGIN
-    UPDATE `payment_period_request`
-       SET amount = p_amount,
+    DECLARE v_last_start DATE;
+
+    IF NOT EXISTS (
+        SELECT 1
+          FROM `payment_period`
+         WHERE company_id = p_company_id
+           AND request_id = p_id
+         LIMIT 1
+    ) THEN
+        SELECT MAX(start_date)
+          INTO v_last_start
+          FROM `payment_period_request`
+         WHERE company_id = p_company_id
+           AND id <> p_id;
+
+        IF v_last_start IS NULL OR p_start_date > v_last_start THEN
+            UPDATE `payment_period_request`
+               SET amount = p_amount,
+                   start_date = p_start_date,
+                   days_to_next_payment = p_days_to_next_payment
+             WHERE company_id = p_company_id
+               AND id = p_id;
+        END IF;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_periodic_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_periodic_exemption`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_student_id INT,
+    IN p_description VARCHAR(50),
+    IN p_start_date DATE,
+    IN p_end_date DATE,
+    IN p_percentage DECIMAL(10,2)
+)
+BEGIN
+    UPDATE `periodic_exemption`
+       SET student_id = p_student_id,
+           description = p_description,
            start_date = p_start_date,
-           days_to_next_payment = p_days_to_next_payment
+           end_date = p_end_date,
+           percentage = p_percentage
      WHERE company_id = p_company_id
        AND id = p_id;
 END ;;
@@ -3208,6 +4024,38 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_specific_exemption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_specific_exemption`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_student_id INT,
+    IN p_payment_period INT,
+    IN p_description VARCHAR(50),
+    IN p_percentage DECIMAL(10,2)
+)
+BEGIN
+    UPDATE `specific_exemption`
+       SET student_id = p_student_id,
+           payment_period_id = p_payment_period,
+           description = p_description,
+           percentage = p_percentage
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_student` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -3318,6 +4166,36 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_vacation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_vacation`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_description VARCHAR(50),
+    IN p_start_date DATE,
+    IN p_end_date DATE
+)
+BEGIN
+    UPDATE `vacation`
+       SET description = p_description,
+           start_date = p_start_date,
+           end_date = p_end_date
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `update_vehicle` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -3368,4 +4246,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-01 22:20:04
+-- Dump completed on 2025-10-04 21:28:10

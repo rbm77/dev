@@ -6,11 +6,9 @@ namespace Buslogix.Services
     public class MaintenanceExpenseService(IMaintenanceExpenseRepository maintenanceExpenseRepository) : IMaintenanceExpenseService
     {
 
-        private readonly IMaintenanceExpenseRepository _maintenanceExpenseRepository = maintenanceExpenseRepository;
-
         public async Task<MaintenanceExpense?> GetMaintenanceExpense(int companyId, long id)
         {
-            return await _maintenanceExpenseRepository.GetMaintenanceExpense(companyId, id);
+            return await maintenanceExpenseRepository.GetMaintenanceExpense(companyId, id);
         }
 
         public async Task<List<MaintenanceExpense>> GetMaintenanceExpenses(
@@ -19,17 +17,17 @@ namespace Buslogix.Services
             int? maintenanceId = null
         )
         {
-            return await _maintenanceExpenseRepository.GetMaintenanceExpenses(companyId, date, maintenanceId);
+            return await maintenanceExpenseRepository.GetMaintenanceExpenses(companyId, date, maintenanceId);
         }
 
         public async Task<long> InsertMaintenanceExpense(int companyId, MaintenanceExpense expense)
         {
-            return await _maintenanceExpenseRepository.InsertMaintenanceExpense(companyId, expense);
+            return await maintenanceExpenseRepository.InsertMaintenanceExpense(companyId, expense);
         }
 
         public async Task<bool> UpdateMaintenanceExpense(int companyId, long id, MaintenanceExpense expense)
         {
-            int affected = await _maintenanceExpenseRepository.UpdateMaintenanceExpense(companyId, id, expense);
+            int affected = await maintenanceExpenseRepository.UpdateMaintenanceExpense(companyId, id, expense);
             return affected > 0;
         }
     }

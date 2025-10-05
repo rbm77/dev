@@ -21,5 +21,8 @@ namespace Buslogix.Interfaces
             string? name = null,
             string? lastName = null
         );
+        Task<List<CriticalProcessUser>> GetCriticalProcessUsers(int companyId);
+        Task<bool> UpdateCriticalProcessUsers(int companyId, List<CriticalProcessUser> users);
+        Task<bool> IsCriticalProcessUser(int companyId, int id);
     }
 }

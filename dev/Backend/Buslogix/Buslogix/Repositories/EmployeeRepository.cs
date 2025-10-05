@@ -7,7 +7,6 @@ namespace Buslogix.Repositories
 {
     public class EmployeeRepository(IDataAccess dataAccess) : IEmployeeRepository
     {
-        private readonly IDataAccess _dataAccess = dataAccess;
 
         public async Task<Employee?> GetEmployee(int companyId, int id)
         {
@@ -17,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<Employee> rows = await _dataAccess.ExecuteReader("get_employee", CommandType.StoredProcedure,
+            List<Employee> rows = await dataAccess.ExecuteReader("get_employee", CommandType.StoredProcedure,
                 static reader =>
                 {
                     Employee employee = new()
@@ -67,7 +66,7 @@ namespace Buslogix.Repositories
                 ["p_lastname"] = lastName
             };
 
-            List<Employee> rows = await _dataAccess.ExecuteReader("get_employees", CommandType.StoredProcedure,
+            List<Employee> rows = await dataAccess.ExecuteReader("get_employees", CommandType.StoredProcedure,
                 static reader =>
                 {
                     Employee employee = new()
@@ -112,7 +111,7 @@ namespace Buslogix.Repositories
                 ["p_license_expiry_date"] = employee.DriverDetails?.LicenseExpiryDate
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_employee", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_employee", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -134,7 +133,7 @@ namespace Buslogix.Repositories
                 ["p_license_expiry_date"] = employee.DriverDetails?.LicenseExpiryDate
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_employee", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_employee", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteEmployee(int companyId, int id)
@@ -145,7 +144,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_employee", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_employee", CommandType.StoredProcedure, parameters);
         }
     }
 }

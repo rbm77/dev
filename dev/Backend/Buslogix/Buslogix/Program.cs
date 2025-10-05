@@ -67,6 +67,16 @@ builder.Services.AddScoped<IIncidentExpenseRepository, IncidentExpenseRepository
 builder.Services.AddScoped<IIncidentExpenseService, IncidentExpenseService>();
 builder.Services.AddScoped<IPaymentPeriodRequestRepository, PaymentPeriodRequestRepository>();
 builder.Services.AddScoped<IPaymentPeriodRequestService, PaymentPeriodRequestService>();
+builder.Services.AddScoped<IPaymentPeriodRepository, PaymentPeriodRepository>();
+builder.Services.AddScoped<IPaymentPeriodService, PaymentPeriodService>();
+builder.Services.AddScoped<IVacationRepository, VacationRepository>();
+builder.Services.AddScoped<IVacationService, VacationService>();
+builder.Services.AddScoped<ISpecificExemptionRepository, SpecificExemptionRepository>();
+builder.Services.AddScoped<ISpecificExemptionService, SpecificExemptionService>();
+builder.Services.AddScoped<IPeriodicExemptionRepository, PeriodicExemptionRepository>();
+builder.Services.AddScoped<IPeriodicExemptionService, PeriodicExemptionService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";

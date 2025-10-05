@@ -6,11 +6,10 @@ namespace Buslogix.DataAccess
 {
     public class MySqlDataAccess(string connectionString) : IDataAccess
     {
-        private readonly string _connectionString = connectionString;
 
         public async Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object?>? parameters)
         {
-            await using MySqlConnection connection = new(_connectionString);
+            await using MySqlConnection connection = new(connectionString);
             await connection.OpenAsync();
 
             await using MySqlCommand command = new(commandText, connection)
@@ -30,7 +29,7 @@ namespace Buslogix.DataAccess
         {
             List<T> results = [];
 
-            await using MySqlConnection connection = new(_connectionString);
+            await using MySqlConnection connection = new(connectionString);
             await connection.OpenAsync();
 
             await using MySqlCommand command = new(commandText, connection)
@@ -54,7 +53,7 @@ namespace Buslogix.DataAccess
 
         public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object?>? parameters)
         {
-            await using MySqlConnection connection = new(_connectionString);
+            await using MySqlConnection connection = new(connectionString);
             await connection.OpenAsync();
 
             await using MySqlCommand command = new(commandText, connection)

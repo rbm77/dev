@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class EmployeesController(IEmployeeService employeeService) : ControllerBase
     {
 
-        private readonly IEmployeeService _employeeService = employeeService;
-
         [Authorize(Policy = $"{Resources.EMPLOYEE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetEmployees(
@@ -22,7 +20,7 @@ namespace Buslogix.Controllers
             [FromQuery] string? lastName = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Employee> employees = await _employeeService.GetEmployees(
+            List<Employee> employees = await employeeService.GetEmployees(
                 companyId, isActive, identityDocument, name, lastName);
             return Ok(employees);
         }
@@ -32,7 +30,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetEmployee(int id)
         {
             int companyId = HttpContext.GetCompanyId();
-            Employee? employee = await _employeeService.GetEmployee(companyId, id);
+            Employee? employee = await employeeService.GetEmployee(companyId, id);
             return employee == null ? NotFound() : Ok(employee);
         }
 
@@ -41,7 +39,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertEmployee([FromBody] Employee employee)
         {
             int companyId = HttpContext.GetCompanyId();
-            int id = await _employeeService.InsertEmployee(companyId, employee);
+            int id = await employeeService.InsertEmployee(companyId, employee);
             return id > 0 ? CreatedAtAction(nameof(GetEmployee), new { id }, null) : BadRequest();
         }
 
@@ -50,16 +48,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] Employee employee)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _employeeService.UpdateEmployee(companyId, id, employee);
+            bool updated = await employeeService.UpdateEmployee(companyId, id, employee);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.EMPLOYEE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteEmployee(int id)
+        public async Task<IActionResult> DeleteEmployee(int id, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool deleted = await _employeeService.DeleteEmployee(companyId, id);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool deleted = await employeeService.DeleteEmployee(companyId, id);
             return deleted ? NoContent() : NotFound();
         }
     }

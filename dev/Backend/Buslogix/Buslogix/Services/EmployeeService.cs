@@ -6,11 +6,9 @@ namespace Buslogix.Services
     public class EmployeeService(IEmployeeRepository employeeRepository) : IEmployeeService
     {
 
-        private readonly IEmployeeRepository _employeeRepository = employeeRepository;
-
         public async Task<Employee?> GetEmployee(int companyId, int id)
         {
-            return await _employeeRepository.GetEmployee(companyId, id);
+            return await employeeRepository.GetEmployee(companyId, id);
         }
 
         public async Task<List<Employee>> GetEmployees(
@@ -21,23 +19,23 @@ namespace Buslogix.Services
             string? lastName = null
         )
         {
-            return await _employeeRepository.GetEmployees(companyId, isActive, identityDocument, name, lastName);
+            return await employeeRepository.GetEmployees(companyId, isActive, identityDocument, name, lastName);
         }
 
         public async Task<int> InsertEmployee(int companyId, Employee employee)
         {
-            return await _employeeRepository.InsertEmployee(companyId, employee);
+            return await employeeRepository.InsertEmployee(companyId, employee);
         }
 
         public async Task<bool> UpdateEmployee(int companyId, int id, Employee employee)
         {
-            int affected = await _employeeRepository.UpdateEmployee(companyId, id, employee);
+            int affected = await employeeRepository.UpdateEmployee(companyId, id, employee);
             return affected > 0;
         }
 
         public async Task<bool> DeleteEmployee(int companyId, int id)
         {
-            int affected = await _employeeRepository.DeleteEmployee(companyId, id);
+            int affected = await employeeRepository.DeleteEmployee(companyId, id);
             return affected > 0;
         }
     }

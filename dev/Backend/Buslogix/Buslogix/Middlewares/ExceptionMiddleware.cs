@@ -8,14 +8,11 @@ namespace Buslogix.Middlewares
     public class ExceptionMiddleware(RequestDelegate next, ILogHandler logHandler)
     {
 
-        private readonly RequestDelegate _next = next;
-        private readonly ILogHandler _logHandler = logHandler;
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
             {
-                await _next(context);
+                await next(context);
             }
             catch (Exception ex)
             {
@@ -24,7 +21,7 @@ namespace Buslogix.Middlewares
                 {
                     log = string.Concat(log, " | ", ex.InnerException.Message);
                 }
-                await _logHandler.WriteLog(log, LogType.Error);
+                await logHandler.WriteLog(log, LogType.Error);
                 await WriteResponse(context);
             }
         }

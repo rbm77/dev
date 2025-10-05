@@ -8,7 +8,6 @@ namespace Buslogix.Repositories
 {
     public class RoleRepository(IDataAccess dataAccess) : IRoleRepository
     {
-        private readonly IDataAccess _dataAccess = dataAccess;
 
         public async Task<Role?> GetRole(int companyId, int id)
         {
@@ -17,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_id"] = id
             };
-            List<Role> rows = await _dataAccess.ExecuteReader("get_role", CommandType.StoredProcedure,
+            List<Role> rows = await dataAccess.ExecuteReader("get_role", CommandType.StoredProcedure,
                 static reader => new Role
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -34,7 +33,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_description"] = role.Description
             };
-            object? result = await _dataAccess.ExecuteScalar("insert_role", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_role", CommandType.StoredProcedure, parameters);
             return result != null ? ((int)result) : 0;
         }
 
@@ -46,7 +45,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id,
                 ["p_description"] = role.Description
             };
-            return await _dataAccess.ExecuteNonQuery("update_role", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_role", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteRole(int companyId, int id)
@@ -56,7 +55,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_id"] = id
             };
-            return await _dataAccess.ExecuteNonQuery("delete_role", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_role", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<List<Role>> GetRoles(int companyId, string? description = null)
@@ -66,7 +65,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_description"] = description
             };
-            List<Role> rows = await _dataAccess.ExecuteReader("get_roles", CommandType.StoredProcedure,
+            List<Role> rows = await dataAccess.ExecuteReader("get_roles", CommandType.StoredProcedure,
                 static reader => new Role
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -85,7 +84,7 @@ namespace Buslogix.Repositories
                 ["p_permissions_json"] = permissionsJson
             };
 
-            object? result = await _dataAccess.ExecuteScalar("update_permissions", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("update_permissions", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt32(result) : 0;
         }
 
@@ -97,7 +96,7 @@ namespace Buslogix.Repositories
                 ["p_role_id"] = roleId
             };
 
-            return await _dataAccess.ExecuteReader(
+            return await dataAccess.ExecuteReader(
                 "get_permissions",
                 CommandType.StoredProcedure,
                 static reader => new RolePermission

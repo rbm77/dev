@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class CompaniesController(ICompanyService companyService) : ControllerBase
     {
 
-        private readonly ICompanyService _companyService = companyService;
-
         [Authorize(Policy = $"{Resources.COMPANY}.{PermissionMode.READ}")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCompany(int id)
@@ -22,7 +20,7 @@ namespace Buslogix.Controllers
                 return Forbid();
             }
 
-            Company? company = await _companyService.GetCompany(id);
+            Company? company = await companyService.GetCompany(id);
             return company == null ? NotFound() : Ok(company);
         }
 
@@ -35,7 +33,7 @@ namespace Buslogix.Controllers
                 return Forbid();
             }
 
-            bool updated = await _companyService.UpdateCompany(id, company);
+            bool updated = await companyService.UpdateCompany(id, company);
             return updated ? NoContent() : NotFound();
         }
     }

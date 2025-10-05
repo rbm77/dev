@@ -11,8 +11,6 @@ namespace Buslogix.Controllers
     public class IncidentExpensesController(IIncidentExpenseService incidentExpenseService) : ControllerBase
     {
 
-        private readonly IIncidentExpenseService _incidentExpenseService = incidentExpenseService;
-
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetIncidentExpenses(
@@ -20,7 +18,7 @@ namespace Buslogix.Controllers
             [FromQuery] int? incidentId = null)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<IncidentExpense> expenses = await _incidentExpenseService.GetIncidentExpenses(companyId, date, incidentId);
+            List<IncidentExpense> expenses = await incidentExpenseService.GetIncidentExpenses(companyId, date, incidentId);
             return Ok(expenses);
         }
 
@@ -29,7 +27,7 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetIncidentExpense(long id)
         {
             int companyId = HttpContext.GetCompanyId();
-            IncidentExpense? expense = await _incidentExpenseService.GetIncidentExpense(companyId, id);
+            IncidentExpense? expense = await incidentExpenseService.GetIncidentExpense(companyId, id);
             return expense == null ? NotFound() : Ok(expense);
         }
 
@@ -38,16 +36,20 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> InsertIncidentExpense([FromBody] IncidentExpense expense)
         {
             int companyId = HttpContext.GetCompanyId();
-            long id = await _incidentExpenseService.InsertIncidentExpense(companyId, expense);
+            long id = await incidentExpenseService.InsertIncidentExpense(companyId, expense);
             return id > 0 ? CreatedAtAction(nameof(GetIncidentExpense), new { id }, null) : BadRequest();
         }
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateIncidentExpense(long id, [FromBody] IncidentExpense expense)
+        public async Task<IActionResult> UpdateIncidentExpense(long id, [FromBody] IncidentExpense expense, [FromServices] IUserService userService)
         {
             int companyId = HttpContext.GetCompanyId();
-            bool updated = await _incidentExpenseService.UpdateIncidentExpense(companyId, id, expense);
+            if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            bool updated = await incidentExpenseService.UpdateIncidentExpense(companyId, id, expense);
             return updated ? NoContent() : NotFound();
         }
     }

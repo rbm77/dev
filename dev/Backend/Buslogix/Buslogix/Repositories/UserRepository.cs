@@ -9,15 +9,13 @@ namespace Buslogix.Repositories
     public class UserRepository(IDataAccess dataAccess) : IUserRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<UserIdentity?> Authenticate(Credentials credentials)
         {
-            List<UserIdentity> rows = await _dataAccess.ExecuteReader(
+            List<UserIdentity> rows = await dataAccess.ExecuteReader(
                            "authenticate_user",
                            CommandType.StoredProcedure,
                            static reader => {
-                               string permissions = reader.GetStringOrDefault(3, "");
+                               string? permissions = reader.GetStringOrDefault(3, "");
                                return new UserIdentity
                                {
                                    CompanyId = reader.GetInt32OrDefault(0),
@@ -47,7 +45,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<User> rows = await _dataAccess.ExecuteReader("get_user", CommandType.StoredProcedure,
+            List<User> rows = await dataAccess.ExecuteReader("get_user", CommandType.StoredProcedure,
                 static reader => new User
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -84,7 +82,7 @@ namespace Buslogix.Repositories
                 ["p_email"] = user.Email
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_user", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_user", CommandType.StoredProcedure, parameters);
             return result != null ? ((int)result) : 0;
         }
 
@@ -97,7 +95,7 @@ namespace Buslogix.Repositories
                 ["p_password"] = password
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_user_password", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_user_password", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> UpdateOwnUser(int companyId, int id, User user)
@@ -115,7 +113,7 @@ namespace Buslogix.Repositories
                 ["p_email"] = user.Email
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_own_user", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_own_user", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> UpdateUser(int companyId, int id, User user)
@@ -136,7 +134,7 @@ namespace Buslogix.Repositories
                 ["p_email"] = user.Email
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_user", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_user", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteUser(int companyId, int id)
@@ -147,7 +145,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_user", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_user", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<List<User>> GetUsers(
@@ -169,7 +167,7 @@ namespace Buslogix.Repositories
                 ["p_lastname"] = lastName
             };
 
-            List<User> rows = await _dataAccess.ExecuteReader("get_users", CommandType.StoredProcedure,
+            List<User> rows = await dataAccess.ExecuteReader("get_users", CommandType.StoredProcedure,
                 static reader => new User
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -193,7 +191,7 @@ namespace Buslogix.Repositories
                 ["p_password"] = credentials.Password
             };
 
-            List<NotificationData> rows = await _dataAccess.ExecuteReader("reset_password", CommandType.StoredProcedure,
+            List<NotificationData> rows = await dataAccess.ExecuteReader("reset_password", CommandType.StoredProcedure,
                 static reader => new NotificationData
                 {
                     CompanyId = reader.GetInt32OrDefault(0),
@@ -204,6 +202,50 @@ namespace Buslogix.Repositories
                 }, parameters);
 
             return rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<int> UpdateCriticalProcessUsers(int companyId, string usersJson)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_users_json"] = usersJson
+            };
+
+            object? result = await dataAccess.ExecuteScalar("update_critical_process_users", CommandType.StoredProcedure, parameters);
+            return result != null ? Convert.ToInt32(result) : 0;
+        }
+
+        public async Task<List<CriticalProcessUser>> GetCriticalProcessUsers(int companyId)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId
+            };
+
+            return await dataAccess.ExecuteReader(
+                "get_critical_process_users",
+                CommandType.StoredProcedure,
+                static reader => new CriticalProcessUser
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    Name = reader.GetStringOrDefault(1),
+                    LastName = reader.GetStringOrDefault(2)
+                },
+                parameters
+            );
+        }
+
+        public async Task<bool> IsCriticalProcessUser(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            object? result = await dataAccess.ExecuteScalar("is_critical_process_user", CommandType.StoredProcedure, parameters);
+            return result != null && Convert.ToBoolean(result);
         }
     }
 }

@@ -8,15 +8,13 @@ namespace Buslogix.Repositories
     public class CompanyRepository(IDataAccess dataAccess) : ICompanyRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<Company?> GetCompany(int id)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_id"] = id
             };
-            List<Company> rows = await _dataAccess.ExecuteReader("get_company", CommandType.StoredProcedure,
+            List<Company> rows = await dataAccess.ExecuteReader("get_company", CommandType.StoredProcedure,
                 static reader => new Company
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -39,7 +37,7 @@ namespace Buslogix.Repositories
                 ["p_email"] = company.Email,
                 ["p_is_active"] = company.IsActive
             };
-            return await _dataAccess.ExecuteNonQuery("update_company", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_company", CommandType.StoredProcedure, parameters);
         }
     }
 }

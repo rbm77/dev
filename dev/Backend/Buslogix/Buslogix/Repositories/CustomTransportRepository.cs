@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class CustomTransportRepository(IDataAccess dataAccess) : ICustomTransportRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<CustomTransport?> GetCustomTransport(int companyId, int id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<CustomTransport> rows = await _dataAccess.ExecuteReader("get_custom_transport", CommandType.StoredProcedure,
+            List<CustomTransport> rows = await dataAccess.ExecuteReader("get_custom_transport", CommandType.StoredProcedure,
                 static reader => new CustomTransport
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -46,7 +44,7 @@ namespace Buslogix.Repositories
                 ["p_driver_id"] = driverId
             };
 
-            List<CustomTransport> rows = await _dataAccess.ExecuteReader("get_pending_custom_transports", CommandType.StoredProcedure,
+            List<CustomTransport> rows = await dataAccess.ExecuteReader("get_pending_custom_transports", CommandType.StoredProcedure,
                 static reader => new CustomTransport
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -71,7 +69,7 @@ namespace Buslogix.Repositories
                 ["p_driver_id"] = driverId
             };
 
-            List<CustomTransport> rows = await _dataAccess.ExecuteReader("get_completed_custom_transports", CommandType.StoredProcedure,
+            List<CustomTransport> rows = await dataAccess.ExecuteReader("get_completed_custom_transports", CommandType.StoredProcedure,
                 static reader => new CustomTransport
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -95,7 +93,7 @@ namespace Buslogix.Repositories
                 ["p_scheduled_date"] = customTransport.ScheduledDate
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_custom_transport", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_custom_transport", CommandType.StoredProcedure, parameters);
             return result != null ? (int)result : 0;
         }
 
@@ -112,7 +110,7 @@ namespace Buslogix.Repositories
                 ["p_scheduled_date"] = customTransport.ScheduledDate
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_custom_transport", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_custom_transport", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> DeleteCustomTransport(int companyId, int id)
@@ -123,7 +121,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            return await _dataAccess.ExecuteNonQuery("delete_custom_transport", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("delete_custom_transport", CommandType.StoredProcedure, parameters);
         }
 
         public async Task<int> CompleteCustomTransport(int companyId, int id, CustomTransport customTransport)
@@ -135,7 +133,7 @@ namespace Buslogix.Repositories
                 ["p_completed_date"] = customTransport.CompletedDate
             };
 
-            return await _dataAccess.ExecuteNonQuery("complete_custom_transport", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("complete_custom_transport", CommandType.StoredProcedure, parameters);
         }
     }
 }

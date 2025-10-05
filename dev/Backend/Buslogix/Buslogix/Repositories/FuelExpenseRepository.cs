@@ -8,8 +8,6 @@ namespace Buslogix.Repositories
     public class FuelExpenseRepository(IDataAccess dataAccess) : IFuelExpenseRepository
     {
 
-        private readonly IDataAccess _dataAccess = dataAccess;
-
         public async Task<FuelExpense?> GetFuelExpense(int companyId, long id)
         {
             Dictionary<string, object?> parameters = new()
@@ -18,7 +16,7 @@ namespace Buslogix.Repositories
                 ["p_id"] = id
             };
 
-            List<FuelExpense> rows = await _dataAccess.ExecuteReader("get_fuel_expense", CommandType.StoredProcedure,
+            List<FuelExpense> rows = await dataAccess.ExecuteReader("get_fuel_expense", CommandType.StoredProcedure,
                 static reader => new FuelExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -48,7 +46,7 @@ namespace Buslogix.Repositories
                 ["p_driver_id"] = driverId
             };
 
-            List<FuelExpense> rows = await _dataAccess.ExecuteReader("get_fuel_expenses", CommandType.StoredProcedure,
+            List<FuelExpense> rows = await dataAccess.ExecuteReader("get_fuel_expenses", CommandType.StoredProcedure,
                 static reader => new FuelExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -72,7 +70,7 @@ namespace Buslogix.Repositories
                 ["p_liters"] = expense.Liters
             };
 
-            object? result = await _dataAccess.ExecuteScalar("insert_fuel_expense", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("insert_fuel_expense", CommandType.StoredProcedure, parameters);
             return result != null ? Convert.ToInt64(result) : 0L;
         }
 
@@ -90,7 +88,7 @@ namespace Buslogix.Repositories
                 ["p_liters"] = expense.Liters
             };
 
-            return await _dataAccess.ExecuteNonQuery("update_fuel_expense", CommandType.StoredProcedure, parameters);
+            return await dataAccess.ExecuteNonQuery("update_fuel_expense", CommandType.StoredProcedure, parameters);
         }
     }
 }
