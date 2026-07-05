@@ -18,10 +18,6 @@ USE `buslogix`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping events for database 'buslogix'
---
-
---
 -- Dumping routines for database 'buslogix'
 --
 /*!50003 DROP PROCEDURE IF EXISTS `authenticate_user` */;
@@ -830,6 +826,144 @@ BEGIN
        AND m.id = s.custom_transport_id
      WHERE m.company_id = p_company_id
        AND m.id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_debtors` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_debtors`(
+    IN p_company_id INT,
+    IN p_route_id   INT,
+    IN p_student_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT,
+    IN p_is_active  TINYINT
+)
+BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    SET p_page      = GREATEST(p_page, 1);
+    SET p_page_size = GREATEST(p_page_size, 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    WITH
+    eligible_periods AS (
+        SELECT
+            pp.company_id,
+            pp.id AS payment_period_id,
+            pp.payment_date,
+            r.amount
+        FROM payment_period pp
+        JOIN payment_period_request r
+          ON r.company_id = pp.company_id
+         AND r.id = pp.request_id
+        WHERE pp.company_id = p_company_id
+          AND NOT EXISTS (
+              SELECT 1
+              FROM vacation v
+              WHERE v.company_id = pp.company_id
+                AND pp.payment_date BETWEEN v.start_date AND v.end_date
+          )
+    ),
+    students_scope AS (
+        SELECT s.*
+        FROM student s
+        WHERE s.company_id = p_company_id
+          AND (p_route_id IS NULL OR s.route_id = p_route_id)
+          AND (p_student_id IS NULL OR s.id = p_student_id)
+          AND (p_is_active IS NULL OR s.is_active = p_is_active)
+    ),
+    periods_applied AS (
+        SELECT
+            s.company_id,
+            s.id AS student_id,
+            ep.payment_period_id,
+            ep.payment_date,
+            ep.amount
+        FROM students_scope s
+        JOIN eligible_periods ep
+          ON ep.company_id = s.company_id
+         AND ep.payment_date >= s.entry_date
+    ),
+    exemptions_applied AS (
+		SELECT
+            pa.company_id,
+            pa.student_id,
+            pa.payment_period_id,
+            pa.amount,
+            LEAST(COALESCE(SUM(pe.percentage), 0), 100) AS periodic_percentage,
+            LEAST(COALESCE(SUM(se.percentage), 0), 100) AS specific_percentage
+		FROM periods_applied pa
+        LEFT JOIN periodic_exemption pe
+          ON pe.company_id = pa.company_id
+          AND pe.student_id = pa.student_id
+          AND pa.payment_date BETWEEN pe.start_date AND pe.end_date
+		LEFT JOIN specific_exemption se
+          ON se.company_id = pa.company_id
+		  AND se.student_id = pa.student_id
+          AND se.payment_period_id = pa.payment_period_id
+        GROUP BY pa.company_id, pa.student_id, pa.payment_period_id, pa.amount
+    ),
+    due AS (
+        SELECT
+            ea.company_id,
+            ea.student_id,
+            SUM(
+                ea.amount * (
+                    1 - LEAST(COALESCE(ea.specific_percentage + ea.periodic_percentage, 0), 100) / 100
+                )
+            ) AS due_amount,
+            COUNT(*) AS periods_count
+        FROM exemptions_applied ea
+        GROUP BY ea.company_id, ea.student_id
+    ),
+    payments AS (
+        SELECT
+            p.company_id,
+            p.student_id,
+            COALESCE(SUM(p.amount), 0) AS payments_amount,
+            COUNT(*) AS payments_count
+        FROM payment p
+        INNER JOIN students_scope ss
+		 ON ss.company_id = p.company_id
+         AND ss.id = p.student_id
+        GROUP BY p.company_id, p.student_id
+    )
+    SELECT
+        ss.id,
+        ss.name,
+        ss.last_name,
+        ss.identity_document,
+        ss.grade_id,
+        ss.route_id,
+        ss.entry_date,
+        ss.is_active,
+        (d.due_amount - p.payments_amount) AS due_amount,
+        d.periods_count,
+        p.payments_count
+    FROM payments p
+	INNER JOIN due d
+      ON d.company_id = p.company_id
+	  AND d.student_id = p.student_id
+	INNER JOIN students_scope ss
+	  ON ss.company_id = p.company_id
+	  AND ss.id = p.student_id
+	WHERE d.due_amount > p.payments_amount
+    ORDER BY ss.last_name, ss.name, ss.id
+    LIMIT v_offset, v_limit;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2659,15 +2793,16 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_payment_period_request`(
     IN p_days_to_next_payment INT
 )
 BEGIN
-    DECLARE v_last_start DATE;
+    DECLARE v_last_period_date DATE;
     DECLARE v_id INT;
+    DECLARE v_pp_id INT;
 
-    SELECT MAX(start_date)
-      INTO v_last_start
-      FROM payment_period_request
+    SELECT MAX(payment_date)
+      INTO v_last_period_date
+      FROM payment_period
      WHERE company_id = p_company_id;
 
-    IF v_last_start IS NOT NULL AND p_start_date <= v_last_start THEN
+    IF v_last_period_date IS NOT NULL AND p_start_date <> v_last_period_date THEN
         SELECT NULL AS new_id;
     ELSE
         SELECT IFNULL(MAX(id), 0) + 1
@@ -2680,6 +2815,19 @@ BEGIN
         ) VALUES (
             p_company_id, v_id, p_amount, p_start_date, p_days_to_next_payment
         );
+
+        IF v_last_period_date IS NULL THEN
+            SELECT IFNULL(MAX(id), 0) + 1
+              INTO v_pp_id
+              FROM payment_period
+             WHERE company_id = p_company_id;
+
+            INSERT INTO payment_period (
+                company_id, id, request_id, payment_date
+            ) VALUES (
+                p_company_id, v_pp_id, v_id, p_start_date
+            );
+        END IF;
 
         SELECT v_id AS new_id;
     END IF;
@@ -4246,4 +4394,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-04 21:28:10
+-- Dump completed on 2026-07-05 12:20:35

@@ -34,6 +34,7 @@ CREATE TABLE `student` (
   `route_id` int NOT NULL,
   `grade_id` int NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
+  `entry_date` date NOT NULL DEFAULT (curdate()),
   PRIMARY KEY (`company_id`,`id`),
   KEY `fk_student_route` (`company_id`,`route_id`),
   KEY `fk_student_grade` (`company_id`,`grade_id`),
@@ -51,4 +52,4 @@ CREATE TABLE `student` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-04 21:28:07
+-- Dump completed on 2026-07-05 12:20:33
