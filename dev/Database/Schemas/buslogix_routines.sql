@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `buslogix` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `buslogix`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
 -- Host: localhost    Database: buslogix
@@ -627,16 +625,48 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_vacation`(
-    IN p_company_id INT
+    IN p_company_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_vacation;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_vacation;
+
+    CREATE TEMPORARY TABLE tmp_vacation AS
     SELECT
         v.id,
         v.start_date,
         v.end_date
       FROM `vacation` v
-     WHERE v.company_id = p_company_id
-  ORDER BY v.start_date ASC, v.end_date ASC, v.id ASC;
+     WHERE v.company_id = p_company_id;
+
+    SELECT
+        id,
+        start_date,
+        end_date
+      FROM tmp_vacation
+  ORDER BY start_date ASC, end_date ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT
+        COUNT(*) AS total_count
+      FROM tmp_vacation;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_vacation;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -684,9 +714,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_completed_custom_transports`(
     IN p_company_id INT,
     IN p_vehicle_id INT,
-    IN p_driver_id INT
+    IN p_driver_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_completed_custom_transports;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_completed_custom_transports;
+
+    CREATE TEMPORARY TABLE tmp_completed_custom_transports AS
     SELECT
         m.id,
         m.vehicle_id,
@@ -696,8 +745,22 @@ BEGIN
      WHERE m.company_id = p_company_id
        AND m.completed_date IS NOT NULL
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
-       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id)
-  ORDER BY m.completed_date ASC, m.id ASC;
+       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id);
+
+    SELECT
+        id,
+        vehicle_id,
+        driver_id,
+        completed_date
+      FROM tmp_completed_custom_transports
+  ORDER BY completed_date ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT
+        COUNT(*) AS total_count
+      FROM tmp_completed_custom_transports;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_completed_custom_transports;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -717,9 +780,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_completed_maintenances`(
     IN p_company_id INT,
     IN p_vehicle_id INT,
-    IN p_type INT
+    IN p_type       INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_completed_maintenances;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_completed_maintenances;
+
+    CREATE TEMPORARY TABLE tmp_completed_maintenances AS
     SELECT
         m.id,
         m.vehicle_id,
@@ -729,8 +811,22 @@ BEGIN
      WHERE m.company_id = p_company_id
        AND m.completed_date IS NOT NULL
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
-       AND (p_type IS NULL OR m.type = p_type)
-  ORDER BY m.completed_date ASC, m.id ASC;
+       AND (p_type IS NULL OR m.type = p_type);
+
+    SELECT
+        id,
+        vehicle_id,
+        type,
+        completed_date
+      FROM tmp_completed_maintenances
+  ORDER BY completed_date ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT
+        COUNT(*) AS total_count
+      FROM tmp_completed_maintenances;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_completed_maintenances;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -749,9 +845,28 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_contacts`(
     IN p_company_id INT,
-    IN p_student_id INT
+    IN p_student_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_contacts;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_contacts;
+
+    CREATE TEMPORARY TABLE tmp_contacts AS
     SELECT
         c.id,
         c.phone_number,
@@ -759,8 +874,22 @@ BEGIN
         c.is_active
       FROM contact c
      WHERE c.company_id = p_company_id
-       AND c.student_id = p_student_id
-  ORDER BY c.id ASC;
+       AND c.student_id = p_student_id;
+
+    SELECT
+        id,
+        phone_number,
+        description,
+        is_active
+      FROM tmp_contacts
+  ORDER BY id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT
+        COUNT(*) AS total_count
+      FROM tmp_contacts;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_contacts;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -854,11 +983,20 @@ BEGIN
     DECLARE v_offset INT DEFAULT 0;
     DECLARE v_limit  INT DEFAULT 0;
 
-    SET p_page      = GREATEST(p_page, 1);
-    SET p_page_size = GREATEST(p_page_size, 1);
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_debtors;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
     SET v_offset    = (p_page - 1) * p_page_size;
     SET v_limit     = p_page_size;
 
+    DROP TEMPORARY TABLE IF EXISTS tmp_debtors;
+
+    CREATE TEMPORARY TABLE tmp_debtors AS
     WITH
     eligible_periods AS (
         SELECT
@@ -899,23 +1037,27 @@ BEGIN
          AND ep.payment_date >= s.entry_date
     ),
     exemptions_applied AS (
-		SELECT
+        SELECT
             pa.company_id,
             pa.student_id,
             pa.payment_period_id,
             pa.amount,
             LEAST(COALESCE(SUM(pe.percentage), 0), 100) AS periodic_percentage,
             LEAST(COALESCE(SUM(se.percentage), 0), 100) AS specific_percentage
-		FROM periods_applied pa
+        FROM periods_applied pa
         LEFT JOIN periodic_exemption pe
           ON pe.company_id = pa.company_id
-          AND pe.student_id = pa.student_id
-          AND pa.payment_date BETWEEN pe.start_date AND pe.end_date
-		LEFT JOIN specific_exemption se
+         AND pe.student_id = pa.student_id
+         AND pa.payment_date BETWEEN pe.start_date AND pe.end_date
+        LEFT JOIN specific_exemption se
           ON se.company_id = pa.company_id
-		  AND se.student_id = pa.student_id
-          AND se.payment_period_id = pa.payment_period_id
-        GROUP BY pa.company_id, pa.student_id, pa.payment_period_id, pa.amount
+         AND se.student_id = pa.student_id
+         AND se.payment_period_id = pa.payment_period_id
+        GROUP BY
+            pa.company_id,
+            pa.student_id,
+            pa.payment_period_id,
+            pa.amount
     ),
     due AS (
         SELECT
@@ -923,12 +1065,17 @@ BEGIN
             ea.student_id,
             SUM(
                 ea.amount * (
-                    1 - LEAST(COALESCE(ea.specific_percentage + ea.periodic_percentage, 0), 100) / 100
+                    1 - LEAST(
+                        COALESCE(ea.specific_percentage + ea.periodic_percentage, 0),
+                        100
+                    ) / 100
                 )
             ) AS due_amount,
             COUNT(*) AS periods_count
         FROM exemptions_applied ea
-        GROUP BY ea.company_id, ea.student_id
+        GROUP BY
+            ea.company_id,
+            ea.student_id
     ),
     payments AS (
         SELECT
@@ -938,9 +1085,11 @@ BEGIN
             COUNT(*) AS payments_count
         FROM payment p
         INNER JOIN students_scope ss
-		 ON ss.company_id = p.company_id
+          ON ss.company_id = p.company_id
          AND ss.id = p.student_id
-        GROUP BY p.company_id, p.student_id
+        GROUP BY
+            p.company_id,
+            p.student_id
     )
     SELECT
         ss.id,
@@ -951,19 +1100,38 @@ BEGIN
         ss.route_id,
         ss.entry_date,
         ss.is_active,
-        (d.due_amount - p.payments_amount) AS due_amount,
+        d.due_amount - COALESCE(p.payments_amount, 0) AS due_amount,
         d.periods_count,
-        p.payments_count
-    FROM payments p
-	INNER JOIN due d
-      ON d.company_id = p.company_id
-	  AND d.student_id = p.student_id
-	INNER JOIN students_scope ss
-	  ON ss.company_id = p.company_id
-	  AND ss.id = p.student_id
-	WHERE d.due_amount > p.payments_amount
-    ORDER BY ss.last_name, ss.name, ss.id
+        COALESCE(p.payments_count, 0) AS payments_count
+    FROM due d
+    INNER JOIN students_scope ss
+      ON ss.company_id = d.company_id
+     AND ss.id = d.student_id
+    LEFT JOIN payments p
+      ON p.company_id = d.company_id
+     AND p.student_id = d.student_id
+    WHERE d.due_amount > COALESCE(p.payments_amount, 0);
+
+    SELECT
+        id,
+        name,
+        last_name,
+        identity_document,
+        grade_id,
+        route_id,
+        entry_date,
+        is_active,
+        due_amount,
+        periods_count,
+        payments_count
+    FROM tmp_debtors
+    ORDER BY last_name, name, id
     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+    FROM tmp_debtors;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_debtors;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4394,4 +4562,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-05 12:20:35
+-- Dump completed on 2026-08-08 15:18:17
