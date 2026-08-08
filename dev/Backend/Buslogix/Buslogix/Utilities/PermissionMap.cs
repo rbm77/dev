@@ -43,7 +43,8 @@
             { "37", $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.WRITE}" },
             { "38", $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.READ}" },
             { "39", $"{Resources.PAYMENT}.{PermissionMode.WRITE}" },
-            { "40", $"{Resources.PAYMENT}.{PermissionMode.READ}" }
+            { "40", $"{Resources.PAYMENT}.{PermissionMode.READ}" },
+            { "41", $"{Resources.DEBTOR}.{PermissionMode.READ}" }
 
         };
 

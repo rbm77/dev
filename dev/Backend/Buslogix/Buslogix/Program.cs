@@ -19,6 +19,8 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.DefaultIgnoreCondition =
             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new NullableDateOnlyJsonConverter());
     });
 
 builder.Services.AddSingleton<ILogHandler, LogHandler>();
@@ -77,6 +79,8 @@ builder.Services.AddScoped<IPeriodicExemptionRepository, PeriodicExemptionReposi
 builder.Services.AddScoped<IPeriodicExemptionService, PeriodicExemptionService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";

@@ -23,6 +23,7 @@
         public const string SPECIFIC_EXEMPTION = "SPECIFIC_EXEMPTION";
         public const string PERIODIC_EXEMPTION = "PERIODIC_EXEMPTION";
         public const string PAYMENT = "PAYMENT";
+        public const string DEBTOR = "DEBTOR";
 
     }
 }

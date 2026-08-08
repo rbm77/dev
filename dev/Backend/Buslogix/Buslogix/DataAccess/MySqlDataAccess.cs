@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Buslogix.Interfaces;
+using Buslogix.Utilities;
 using MySqlConnector;
 
 namespace Buslogix.DataAccess
@@ -49,6 +50,38 @@ namespace Buslogix.DataAccess
             }
 
             return results;
+        }
+
+        public async Task<(List<T> Items, long TotalCount)> ExecuteReaderPaged<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object?>? parameters)
+        {
+            List<T> results = [];
+            long totalCount = 0;
+
+            await using MySqlConnection connection = new(connectionString);
+            await connection.OpenAsync();
+
+            await using MySqlCommand command = new(commandText, connection)
+            {
+                CommandType = commandType
+            };
+
+            if (parameters != null && parameters.Count > 0)
+            {
+                command.Parameters.AddRange(parameters.Select(static p => new MySqlParameter(p.Key, p.Value ?? DBNull.Value)).ToArray());
+            }
+
+            await using MySqlDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                results.Add(map(reader));
+            }
+
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+            {
+                totalCount = reader.GetInt64OrDefault(0);
+            }
+
+            return (results, totalCount);
         }
 
         public async Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object?>? parameters)
