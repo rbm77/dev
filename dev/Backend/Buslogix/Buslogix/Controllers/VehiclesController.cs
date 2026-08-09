@@ -17,10 +17,12 @@ namespace Buslogix.Controllers
             [FromQuery] bool? isActive = null,
             [FromQuery] string? licensePlate = null,
             [FromQuery] string? make = null,
-            [FromQuery] string? model = null)
+            [FromQuery] string? model = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Vehicle> vehicles = await vehicleService.GetVehicles(companyId, isActive, licensePlate, make, model);
+            PagedResult<Vehicle> vehicles = await vehicleService.GetVehicles(companyId, isActive, licensePlate, make, model, page, pageSize);
             return Ok(vehicles);
         }
 

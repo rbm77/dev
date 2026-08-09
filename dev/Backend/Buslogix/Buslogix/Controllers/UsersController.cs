@@ -43,11 +43,13 @@ namespace Buslogix.Controllers
             [FromQuery] bool? isActive = null,
             [FromQuery] string? identityDocument = null,
             [FromQuery] string? name = null,
-            [FromQuery] string? lastName = null)
+            [FromQuery] string? lastName = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<User> users = await userService.GetUsers(
-                companyId, roleId, isActive, identityDocument, name, lastName);
+            PagedResult<User> users = await userService.GetUsers(
+                companyId, roleId, isActive, identityDocument, name, lastName, page, pageSize);
             return Ok(users);
         }
 
@@ -137,10 +139,12 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.USER}.{PermissionMode.READ}")]
         [HttpGet("critical-process")]
-        public async Task<IActionResult> GetCriticalProcessUsers()
+        public async Task<IActionResult> GetCriticalProcessUsers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<CriticalProcessUser> users = await userService.GetCriticalProcessUsers(companyId);
+            PagedResult<CriticalProcessUser> users = await userService.GetCriticalProcessUsers(companyId, page, pageSize);
             return Ok(users);
         }
 

@@ -12,14 +12,16 @@ namespace Buslogix.Services
             return await incidentRepository.GetIncident(companyId, id);
         }
 
-        public async Task<List<Incident>> GetIncidents(
+        public async Task<PagedResult<Incident>> GetIncidents(
             int companyId,
             int? vehicleId = null,
             int? driverId = null,
-            IncidentType? type = null
+            IncidentType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await incidentRepository.GetIncidents(companyId, vehicleId, driverId, type);
+            return await incidentRepository.GetIncidents(companyId, vehicleId, driverId, type, page, pageSize);
         }
 
         public async Task<int> InsertIncident(int companyId, Incident incident)

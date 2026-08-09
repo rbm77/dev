@@ -11,9 +11,9 @@ namespace Buslogix.Services
             return await paymentPeriodRequestRepository.GetPaymentPeriodRequest(companyId, id);
         }
 
-        public async Task<List<PaymentPeriodRequest>> GetPaymentPeriodRequests(int companyId)
+        public async Task<PagedResult<PaymentPeriodRequest>> GetPaymentPeriodRequests(int companyId, int page = 1, int pageSize = 20)
         {
-            return await paymentPeriodRequestRepository.GetPaymentPeriodRequests(companyId);
+            return await paymentPeriodRequestRepository.GetPaymentPeriodRequests(companyId, page, pageSize);
         }
 
         public async Task<int> InsertPaymentPeriodRequest(int companyId, PaymentPeriodRequest request)

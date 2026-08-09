@@ -58,21 +58,29 @@ namespace Buslogix.Repositories
             return await dataAccess.ExecuteNonQuery("delete_role", CommandType.StoredProcedure, parameters);
         }
 
-        public async Task<List<Role>> GetRoles(int companyId, string? description = null)
+        public async Task<PagedResult<Role>> GetRoles(int companyId, string? description = null, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_description"] = description
+                ["p_description"] = description,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
-            List<Role> rows = await dataAccess.ExecuteReader("get_roles", CommandType.StoredProcedure,
+            (List<Role> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_roles", CommandType.StoredProcedure,
                 static reader => new Role
                 {
                     Id = reader.GetInt32OrDefault(0),
                     Description = reader.GetStringOrDefault(1)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Role>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> UpdatePermissions(int companyId, int roleId, string permissionsJson)
@@ -88,15 +96,17 @@ namespace Buslogix.Repositories
             return result != null ? Convert.ToInt32(result) : 0;
         }
 
-        public async Task<List<RolePermission>> GetPermissions(int companyId, int roleId)
+        public async Task<PagedResult<RolePermission>> GetPermissions(int companyId, int roleId, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_role_id"] = roleId
+                ["p_role_id"] = roleId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            return await dataAccess.ExecuteReader(
+            (List<RolePermission> items, long totalCount) = await dataAccess.ExecuteReaderPaged(
                 "get_permissions",
                 CommandType.StoredProcedure,
                 static reader => new RolePermission
@@ -108,6 +118,14 @@ namespace Buslogix.Repositories
                 },
                 parameters
             );
+
+            return new PagedResult<RolePermission>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

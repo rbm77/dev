@@ -14,10 +14,13 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetRoles([FromQuery] string? description = null)
+        public async Task<IActionResult> GetRoles(
+            [FromQuery] string? description = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Role> roles = await roleService.GetRoles(companyId, description);
+            PagedResult<Role> roles = await roleService.GetRoles(companyId, description, page, pageSize);
             return Ok(roles);
         }
 
@@ -63,10 +66,13 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.READ}")]
         [HttpGet("{roleId:int}/permissions")]
-        public async Task<IActionResult> GetPermissions(int roleId)
+        public async Task<IActionResult> GetPermissions(
+            int roleId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<RolePermission> permissions = await roleService.GetPermissions(companyId, roleId);
+            PagedResult<RolePermission> permissions = await roleService.GetPermissions(companyId, roleId, page, pageSize);
             return Ok(permissions);
         }
 

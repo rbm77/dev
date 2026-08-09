@@ -15,10 +15,12 @@ namespace Buslogix.Controllers
         [HttpGet]
         public async Task<IActionResult> GetIncidentExpenses(
             [FromQuery] DateTime? date = null,
-            [FromQuery] int? incidentId = null)
+            [FromQuery] int? incidentId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<IncidentExpense> expenses = await incidentExpenseService.GetIncidentExpenses(companyId, date, incidentId);
+            PagedResult<IncidentExpense> expenses = await incidentExpenseService.GetIncidentExpenses(companyId, date, incidentId, page, pageSize);
             return Ok(expenses);
         }
 

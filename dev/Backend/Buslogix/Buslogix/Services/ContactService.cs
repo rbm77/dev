@@ -6,9 +6,9 @@ namespace Buslogix.Services
     public class ContactService(IContactRepository contactRepository) : IContactService
     {
 
-        public async Task<List<Contact>> GetContacts(int companyId, int studentId)
+        public async Task<PagedResult<Contact>> GetContacts(int companyId, int studentId, int page = 1, int pageSize = 20)
         {
-            return await contactRepository.GetContacts(companyId, studentId);
+            return await contactRepository.GetContacts(companyId, studentId, page, pageSize);
         }
 
         public async Task<int> InsertContact(int companyId, int studentId, Contact contact)

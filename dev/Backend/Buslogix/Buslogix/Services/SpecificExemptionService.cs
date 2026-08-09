@@ -11,13 +11,15 @@ namespace Buslogix.Services
             return await specificExemptionRepository.GetSpecificExemption(companyId, id);
         }
 
-        public async Task<List<SpecificExemption>> GetSpecificExemptions(
+        public async Task<PagedResult<SpecificExemption>> GetSpecificExemptions(
             int companyId,
-            int? studentId = null,
-            int? paymentPeriodId = null
+            int? studentId,
+            int? paymentPeriodId,
+            int page,
+            int pageSize
         )
         {
-            return await specificExemptionRepository.GetSpecificExemptions(companyId, studentId, paymentPeriodId);
+            return await specificExemptionRepository.GetSpecificExemptions(companyId, studentId, paymentPeriodId, page, pageSize);
         }
 
         public async Task<int> InsertSpecificExemption(int companyId, SpecificExemption exemption)

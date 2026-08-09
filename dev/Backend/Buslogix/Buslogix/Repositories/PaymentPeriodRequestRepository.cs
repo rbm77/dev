@@ -28,21 +28,29 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<PaymentPeriodRequest>> GetPaymentPeriodRequests(int companyId)
+        public async Task<PagedResult<PaymentPeriodRequest>> GetPaymentPeriodRequests(int companyId, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
-                ["p_company_id"] = companyId
+                ["p_company_id"] = companyId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<PaymentPeriodRequest> rows = await dataAccess.ExecuteReader("get_payment_period_requests", CommandType.StoredProcedure,
+            (List<PaymentPeriodRequest> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_payment_period_requests", CommandType.StoredProcedure,
                 static reader => new PaymentPeriodRequest
                 {
                     Id = reader.GetInt32OrDefault(0),
                     StartDate = reader.GetDateTimeOrDefault(1),
                 }, parameters);
 
-            return rows;
+            return new PagedResult<PaymentPeriodRequest>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertPaymentPeriodRequest(int companyId, PaymentPeriodRequest request)

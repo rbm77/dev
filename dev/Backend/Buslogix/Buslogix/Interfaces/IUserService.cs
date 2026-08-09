@@ -13,15 +13,17 @@ namespace Buslogix.Interfaces
         Task<bool> UpdateOwnUser(int companyId, int id, User user);
         Task<bool> UpdateUser(int companyId, int id, User user);
         Task<bool> DeleteUser(int companyId, int id);
-        Task<List<User>> GetUsers(
+        Task<PagedResult<User>> GetUsers(
             int companyId,
             int? roleId = null,
             bool? isActive = null,
             string? identityDocument = null,
             string? name = null,
-            string? lastName = null
+            string? lastName = null,
+            int page = 1,
+            int pageSize = 20
         );
-        Task<List<CriticalProcessUser>> GetCriticalProcessUsers(int companyId);
+        Task<PagedResult<CriticalProcessUser>> GetCriticalProcessUsers(int companyId, int page = 1, int pageSize = 20);
         Task<bool> UpdateCriticalProcessUsers(int companyId, List<CriticalProcessUser> users);
         Task<bool> IsCriticalProcessUser(int companyId, int id);
     }

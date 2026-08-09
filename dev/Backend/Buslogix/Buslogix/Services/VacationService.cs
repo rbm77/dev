@@ -11,9 +11,9 @@ namespace Buslogix.Services
             return await vacationRepository.GetVacation(companyId, id);
         }
 
-        public async Task<List<Vacation>> GetAllVacation(int companyId)
+        public async Task<PagedResult<Vacation>> GetAllVacation(int companyId, int page, int pageSize)
         {
-            return await vacationRepository.GetAllVacation(companyId);
+            return await vacationRepository.GetAllVacation(companyId, page, pageSize);
         }
 
         public async Task<int> InsertVacation(int companyId, Vacation vacation)

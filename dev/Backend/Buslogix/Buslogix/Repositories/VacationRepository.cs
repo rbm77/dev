@@ -28,14 +28,16 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Vacation>> GetAllVacation(int companyId)
+        public async Task<PagedResult<Vacation>> GetAllVacation(int companyId, int page, int pageSize)
         {
             Dictionary<string, object?> parameters = new()
             {
-                ["p_company_id"] = companyId
+                ["p_company_id"] = companyId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Vacation> rows = await dataAccess.ExecuteReader("get_all_vacation", CommandType.StoredProcedure,
+            (List<Vacation> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_all_vacation", CommandType.StoredProcedure,
                 static reader => new Vacation
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -43,7 +45,13 @@ namespace Buslogix.Repositories
                     EndDate = reader.GetDateTimeOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Vacation>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertVacation(int companyId, Vacation vacation)

@@ -21,15 +21,17 @@ namespace Buslogix.Repositories
             return result != null ? (int)result : 0;
         }
 
-        public async Task<List<Salary>> GetSalaries(int companyId, int employeeId)
+        public async Task<PagedResult<Salary>> GetSalaries(int companyId, int employeeId, int page, int pageSize)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_employee_id"] = employeeId
+                ["p_employee_id"] = employeeId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Salary> rows = await dataAccess.ExecuteReader("get_salaries", CommandType.StoredProcedure,
+            (List<Salary> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_salaries", CommandType.StoredProcedure,
                 static reader => new Salary
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -37,7 +39,13 @@ namespace Buslogix.Repositories
                     StartDate = reader.GetDateTimeOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Salary>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> DeleteSalary(int companyId, int employeeId, int salaryId)

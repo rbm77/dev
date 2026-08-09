@@ -14,10 +14,12 @@ namespace Buslogix.Controllers
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.READ}")]
         [HttpGet]
         public async Task<IActionResult> GetExpenses(
-            [FromQuery] DateTime? date = null)
+            [FromQuery] DateTime? date = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Expense> expenses = await expenseService.GetExpenses(companyId, date);
+            PagedResult<Expense> expenses = await expenseService.GetExpenses(companyId, date, page, pageSize);
             return Ok(expenses);
         }
 

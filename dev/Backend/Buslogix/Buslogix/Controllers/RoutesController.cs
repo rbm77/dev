@@ -1,4 +1,5 @@
 ﻿using Buslogix.Interfaces;
+using Buslogix.Models;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,12 @@ namespace Buslogix.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRoutes(
             [FromQuery] bool? isActive = null,
-            [FromQuery] string? name = null)
+            [FromQuery] string? name = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Route> routes = await routeService.GetRoutes(companyId, isActive, name);
+            PagedResult<Route> routes = await routeService.GetRoutes(companyId, isActive, name, page, pageSize);
             return Ok(routes);
         }
 

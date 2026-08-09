@@ -11,13 +11,15 @@ namespace Buslogix.Services
             return await incidentExpenseRepository.GetIncidentExpense(companyId, id);
         }
 
-        public async Task<List<IncidentExpense>> GetIncidentExpenses(
+        public async Task<PagedResult<IncidentExpense>> GetIncidentExpenses(
             int companyId,
             DateTime? date = null,
-            int? incidentId = null
+            int? incidentId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await incidentExpenseRepository.GetIncidentExpenses(companyId, date, incidentId);
+            return await incidentExpenseRepository.GetIncidentExpenses(companyId, date, incidentId, page, pageSize);
         }
 
         public async Task<long> InsertIncidentExpense(int companyId, IncidentExpense expense)

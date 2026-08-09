@@ -11,22 +11,26 @@ namespace Buslogix.Services
             return await customTransportRepository.GetCustomTransport(companyId, id);
         }
 
-        public async Task<List<CustomTransport>> GetPendingCustomTransports(
+        public async Task<PagedResult<CustomTransport>> GetPendingCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await customTransportRepository.GetPendingCustomTransports(companyId, vehicleId, driverId);
+            return await customTransportRepository.GetPendingCustomTransports(companyId, vehicleId, driverId, page, pageSize);
         }
 
-        public async Task<List<CustomTransport>> GetCompletedCustomTransports(
+        public async Task<PagedResult<CustomTransport>> GetCompletedCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await customTransportRepository.GetCompletedCustomTransports(companyId, vehicleId, driverId);
+            return await customTransportRepository.GetCompletedCustomTransports(companyId, vehicleId, driverId, page, pageSize);
         }
 
         public async Task<int> InsertCustomTransport(int companyId, CustomTransport customTransport)

@@ -49,16 +49,18 @@ namespace Buslogix.Services
             return affected > 0;
         }
 
-        public async Task<List<User>> GetUsers(
+        public async Task<PagedResult<User>> GetUsers(
             int companyId,
             int? roleId = null,
             bool? isActive = null,
             string? identityDocument = null,
             string? name = null,
-            string? lastName = null
+            string? lastName = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await userRepository.GetUsers(companyId, roleId, isActive, identityDocument, name, lastName);
+            return await userRepository.GetUsers(companyId, roleId, isActive, identityDocument, name, lastName, page, pageSize);
         }
 
         public async Task ResetPassword(Credentials credentials)
@@ -71,9 +73,9 @@ namespace Buslogix.Services
             }
         }
 
-        public async Task<List<CriticalProcessUser>> GetCriticalProcessUsers(int companyId)
+        public async Task<PagedResult<CriticalProcessUser>> GetCriticalProcessUsers(int companyId, int page = 1, int pageSize = 20)
         {
-            return await userRepository.GetCriticalProcessUsers(companyId);
+            return await userRepository.GetCriticalProcessUsers(companyId, page, pageSize);
         }
 
         public async Task<bool> UpdateCriticalProcessUsers(int companyId, List<CriticalProcessUser> users)

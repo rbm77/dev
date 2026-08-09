@@ -7,12 +7,14 @@ namespace Buslogix.Interfaces
 
         Task<Vehicle?> GetVehicle(int companyId, int id);
 
-        Task<List<Vehicle>> GetVehicles(
+        Task<PagedResult<Vehicle>> GetVehicles(
             int companyId,
-            bool? isActive = null,
-            string? licensePlate = null,
-            string? make = null,
-            string? model = null
+            bool? isActive,
+            string? licensePlate,
+            string? make,
+            string? model,
+            int page,
+            int pageSize
         );
 
         Task<int> InsertVehicle(int companyId, Vehicle vehicle);

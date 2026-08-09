@@ -31,20 +31,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Maintenance>> GetPendingMaintenances(
+        public async Task<PagedResult<Maintenance>> GetPendingMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_vehicle_id"] = vehicleId,
-                ["p_type"] = type.HasValue ? (int?)type.Value : null
+                ["p_type"] = type.HasValue ? (int?)type.Value : null,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Maintenance> rows = await dataAccess.ExecuteReader("get_pending_maintenances", CommandType.StoredProcedure,
+            (List<Maintenance> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_pending_maintenances", CommandType.StoredProcedure,
                 static reader => new Maintenance
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -53,23 +57,33 @@ namespace Buslogix.Repositories
                     ScheduledDate = reader.GetDateTimeOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Maintenance>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<List<Maintenance>> GetCompletedMaintenances(
+        public async Task<PagedResult<Maintenance>> GetCompletedMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_vehicle_id"] = vehicleId,
-                ["p_type"] = type.HasValue ? (int?)type.Value : null
+                ["p_type"] = type.HasValue ? (int?)type.Value : null,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Maintenance> rows = await dataAccess.ExecuteReader("get_completed_maintenances", CommandType.StoredProcedure,
+            (List<Maintenance> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_completed_maintenances", CommandType.StoredProcedure,
                 static reader => new Maintenance
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -78,7 +92,13 @@ namespace Buslogix.Repositories
                     CompletedDate = reader.GetDateTimeOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Maintenance>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertMaintenance(int companyId, Maintenance maintenance)

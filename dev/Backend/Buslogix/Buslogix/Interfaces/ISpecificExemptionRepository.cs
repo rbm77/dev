@@ -6,10 +6,12 @@ namespace Buslogix.Interfaces
     {
         Task<SpecificExemption?> GetSpecificExemption(int companyId, int id);
 
-        Task<List<SpecificExemption>> GetSpecificExemptions(
+        Task<PagedResult<SpecificExemption>> GetSpecificExemptions(
             int companyId,
-            int? studentId = null,
-            int? paymentPeriodId = null
+            int? studentId,
+            int? paymentPeriodId,
+            int page,
+            int pageSize
         );
 
         Task<int> InsertSpecificExemption(int companyId, SpecificExemption exemption);

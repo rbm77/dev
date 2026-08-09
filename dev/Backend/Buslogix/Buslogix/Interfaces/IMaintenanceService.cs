@@ -7,16 +7,20 @@ namespace Buslogix.Interfaces
     {
         Task<Maintenance?> GetMaintenance(int companyId, int id);
 
-        Task<List<Maintenance>> GetPendingMaintenances(
+        Task<PagedResult<Maintenance>> GetPendingMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         );
 
-        Task<List<Maintenance>> GetCompletedMaintenances(
+        Task<PagedResult<Maintenance>> GetCompletedMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         );
 
         Task<int> InsertMaintenance(int companyId, Maintenance maintenance);

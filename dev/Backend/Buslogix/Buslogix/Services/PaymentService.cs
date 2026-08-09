@@ -11,13 +11,15 @@ namespace Buslogix.Services
             return await paymentRepository.GetPayment(companyId, id);
         }
 
-        public async Task<List<Payment>> GetPayments(
+        public async Task<PagedResult<Payment>> GetPayments(
             int companyId,
             DateTime? date = null,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await paymentRepository.GetPayments(companyId, date, studentId);
+            return await paymentRepository.GetPayments(companyId, date, studentId, page, pageSize);
         }
 
         public async Task<long> InsertPayment(int companyId, Payment payment)

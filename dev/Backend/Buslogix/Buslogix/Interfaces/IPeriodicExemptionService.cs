@@ -6,9 +6,11 @@ namespace Buslogix.Interfaces
     {
         Task<PeriodicExemption?> GetPeriodicExemption(int companyId, int id);
 
-        Task<List<PeriodicExemption>> GetPeriodicExemptions(
+        Task<PagedResult<PeriodicExemption>> GetPeriodicExemptions(
             int companyId,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         );
 
         Task<int> InsertPeriodicExemption(int companyId, PeriodicExemption exemption);

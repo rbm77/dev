@@ -7,7 +7,7 @@ namespace Buslogix.Interfaces
 
         Task<Grade?> GetGrade(int companyId, int id);
 
-        Task<List<Grade>> GetGrades(int companyId, string? description = null);
+        Task<PagedResult<Grade>> GetGrades(int companyId, string? description = null, int page = 1, int pageSize = 20);
 
         Task<int> InsertGrade(int companyId, Grade grade);
 

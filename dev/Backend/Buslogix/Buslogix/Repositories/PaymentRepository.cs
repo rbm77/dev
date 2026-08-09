@@ -28,20 +28,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Payment>> GetPayments(
+        public async Task<PagedResult<Payment>> GetPayments(
             int companyId,
             DateTime? date = null,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_date"] = date,
-                ["p_student_id"] = studentId
+                ["p_student_id"] = studentId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Payment> rows = await dataAccess.ExecuteReader("get_payments", CommandType.StoredProcedure,
+            (List<Payment> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_payments", CommandType.StoredProcedure,
                 static reader => new Payment
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -49,7 +53,13 @@ namespace Buslogix.Repositories
                     StudentId = reader.GetInt32OrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Payment>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<long> InsertPayment(int companyId, Payment payment)

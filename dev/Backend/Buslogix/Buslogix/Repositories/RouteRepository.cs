@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Buslogix.Interfaces;
+using Buslogix.Models;
 using Buslogix.Utilities;
 using Route = Buslogix.Models.Route;
 
@@ -28,16 +29,18 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Route>> GetRoutes(int companyId, bool? isActive = null, string? name = null)
+        public async Task<PagedResult<Route>> GetRoutes(int companyId, bool? isActive, string? name, int page, int pageSize)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_is_active"] = isActive,
-                ["p_name"] = name
+                ["p_name"] = name,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Route> rows = await dataAccess.ExecuteReader("get_routes", CommandType.StoredProcedure,
+            (List<Route> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_routes", CommandType.StoredProcedure,
                 static reader => new Route
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -46,7 +49,13 @@ namespace Buslogix.Repositories
                     IsActive = reader.GetBooleanOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Route>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertRoute(int companyId, Route route)

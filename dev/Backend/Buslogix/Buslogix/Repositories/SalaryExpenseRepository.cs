@@ -29,20 +29,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<SalaryExpense>> GetSalaryExpenses(
+        public async Task<PagedResult<SalaryExpense>> GetSalaryExpenses(
             int companyId,
-            DateTime? date = null,
-            int? employeeId = null
+            DateTime? date,
+            int? employeeId,
+            int page,
+            int pageSize
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_date"] = date,
-                ["p_employee_id"] = employeeId
+                ["p_employee_id"] = employeeId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<SalaryExpense> rows = await dataAccess.ExecuteReader("get_salary_expenses", CommandType.StoredProcedure,
+            (List<SalaryExpense> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_salary_expenses", CommandType.StoredProcedure,
                 static reader => new SalaryExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -50,7 +54,13 @@ namespace Buslogix.Repositories
                     Amount = reader.GetDecimalOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<SalaryExpense>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<long> InsertSalaryExpense(int companyId, SalaryExpense expense)

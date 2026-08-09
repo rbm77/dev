@@ -148,13 +148,15 @@ namespace Buslogix.Repositories
             return await dataAccess.ExecuteNonQuery("delete_user", CommandType.StoredProcedure, parameters);
         }
 
-        public async Task<List<User>> GetUsers(
+        public async Task<PagedResult<User>> GetUsers(
             int companyId,
             int? roleId = null,
             bool? isActive = null,
             string? identityDocument = null,
             string? name = null,
-            string? lastName = null
+            string? lastName = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -164,10 +166,12 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = isActive,
                 ["p_identity_document"] = identityDocument,
                 ["p_name"] = name,
-                ["p_lastname"] = lastName
+                ["p_lastname"] = lastName,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<User> rows = await dataAccess.ExecuteReader("get_users", CommandType.StoredProcedure,
+            (List<User> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_users", CommandType.StoredProcedure,
                 static reader => new User
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -180,7 +184,13 @@ namespace Buslogix.Repositories
                     LastName = reader.GetStringOrDefault(6)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<User>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<NotificationData?> ResetPassword(Credentials credentials)
@@ -216,14 +226,16 @@ namespace Buslogix.Repositories
             return result != null ? Convert.ToInt32(result) : 0;
         }
 
-        public async Task<List<CriticalProcessUser>> GetCriticalProcessUsers(int companyId)
+        public async Task<PagedResult<CriticalProcessUser>> GetCriticalProcessUsers(int companyId, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
-                ["p_company_id"] = companyId
+                ["p_company_id"] = companyId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            return await dataAccess.ExecuteReader(
+            (List<CriticalProcessUser> items, long totalCount) = await dataAccess.ExecuteReaderPaged(
                 "get_critical_process_users",
                 CommandType.StoredProcedure,
                 static reader => new CriticalProcessUser
@@ -234,6 +246,14 @@ namespace Buslogix.Repositories
                 },
                 parameters
             );
+
+            return new PagedResult<CriticalProcessUser>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<bool> IsCriticalProcessUser(int companyId, int id)

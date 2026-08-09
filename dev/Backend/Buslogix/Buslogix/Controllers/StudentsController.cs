@@ -19,10 +19,12 @@ namespace Buslogix.Controllers
             [FromQuery] string? name = null,
             [FromQuery] string? lastName = null,
             [FromQuery] int? routeId = null,
-            [FromQuery] int? gradeId = null)
+            [FromQuery] int? gradeId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Student> students = await studentService.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId);
+            PagedResult<Student> students = await studentService.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId, page, pageSize);
             return Ok(students);
         }
 

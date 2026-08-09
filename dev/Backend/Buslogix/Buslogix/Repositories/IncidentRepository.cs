@@ -32,11 +32,13 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Incident>> GetIncidents(
+        public async Task<PagedResult<Incident>> GetIncidents(
             int companyId,
             int? vehicleId = null,
             int? driverId = null,
-            IncidentType? type = null
+            IncidentType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -44,10 +46,12 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_vehicle_id"] = vehicleId,
                 ["p_driver_id"] = driverId,
-                ["p_type"] = type
+                ["p_type"] = type,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Incident> rows = await dataAccess.ExecuteReader("get_incidents", CommandType.StoredProcedure,
+            (List<Incident> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_incidents", CommandType.StoredProcedure,
                 static reader => new Incident
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -57,7 +61,13 @@ namespace Buslogix.Repositories
                     Type = (IncidentType)reader.GetInt32OrDefault(4)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Incident>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertIncident(int companyId, Incident incident)

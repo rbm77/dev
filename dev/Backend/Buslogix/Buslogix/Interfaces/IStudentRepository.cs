@@ -7,14 +7,16 @@ namespace Buslogix.Interfaces
 
         Task<Student?> GetStudent(int companyId, int id);
 
-        Task<List<Student>> GetStudents(
+        Task<PagedResult<Student>> GetStudents(
             int companyId,
-            bool? isActive = null,
-            string? identityDocument = null,
-            string? name = null,
-            string? lastName = null,
-            int? routeId = null,
-            int? gradeId = null
+            bool? isActive,
+            string? identityDocument,
+            string? name,
+            string? lastName,
+            int? routeId,
+            int? gradeId,
+            int page,
+            int pageSize
         );
 
         Task<int> InsertStudent(int companyId, Student student);

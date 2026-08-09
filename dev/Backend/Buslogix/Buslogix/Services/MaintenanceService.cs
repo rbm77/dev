@@ -12,22 +12,26 @@ namespace Buslogix.Services
             return await maintenanceRepository.GetMaintenance(companyId, id);
         }
 
-        public async Task<List<Maintenance>> GetPendingMaintenances(
+        public async Task<PagedResult<Maintenance>> GetPendingMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await maintenanceRepository.GetPendingMaintenances(companyId, vehicleId, type);
+            return await maintenanceRepository.GetPendingMaintenances(companyId, vehicleId, type, page, pageSize);
         }
 
-        public async Task<List<Maintenance>> GetCompletedMaintenances(
+        public async Task<PagedResult<Maintenance>> GetCompletedMaintenances(
             int companyId,
             int? vehicleId = null,
-            MaintenanceType? type = null
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await maintenanceRepository.GetCompletedMaintenances(companyId, vehicleId, type);
+            return await maintenanceRepository.GetCompletedMaintenances(companyId, vehicleId, type, page, pageSize);
         }
 
         public async Task<int> InsertMaintenance(int companyId, Maintenance maintenance)

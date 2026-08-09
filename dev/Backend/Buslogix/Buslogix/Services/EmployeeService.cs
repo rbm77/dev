@@ -11,15 +11,17 @@ namespace Buslogix.Services
             return await employeeRepository.GetEmployee(companyId, id);
         }
 
-        public async Task<List<Employee>> GetEmployees(
+        public async Task<PagedResult<Employee>> GetEmployees(
             int companyId,
             bool? isActive = null,
             string? identityDocument = null,
             string? name = null,
-            string? lastName = null
+            string? lastName = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await employeeRepository.GetEmployees(companyId, isActive, identityDocument, name, lastName);
+            return await employeeRepository.GetEmployees(companyId, isActive, identityDocument, name, lastName, page, pageSize);
         }
 
         public async Task<int> InsertEmployee(int companyId, Employee employee)

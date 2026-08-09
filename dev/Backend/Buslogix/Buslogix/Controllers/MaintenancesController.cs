@@ -16,10 +16,12 @@ namespace Buslogix.Controllers
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingMaintenances(
             [FromQuery] int? vehicleId = null,
-            [FromQuery] MaintenanceType? type = null)
+            [FromQuery] MaintenanceType? type = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Maintenance> maintenances = await maintenanceService.GetPendingMaintenances(companyId, vehicleId, type);
+            PagedResult<Maintenance> maintenances = await maintenanceService.GetPendingMaintenances(companyId, vehicleId, type, page, pageSize);
             return Ok(maintenances);
         }
 
@@ -27,10 +29,12 @@ namespace Buslogix.Controllers
         [HttpGet("completed")]
         public async Task<IActionResult> GetCompletedMaintenances(
             [FromQuery] int? vehicleId = null,
-            [FromQuery] MaintenanceType? type = null)
+            [FromQuery] MaintenanceType? type = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Maintenance> maintenances = await maintenanceService.GetCompletedMaintenances(companyId, vehicleId, type);
+            PagedResult<Maintenance> maintenances = await maintenanceService.GetCompletedMaintenances(companyId, vehicleId, type, page, pageSize);
             return Ok(maintenances);
         }
 

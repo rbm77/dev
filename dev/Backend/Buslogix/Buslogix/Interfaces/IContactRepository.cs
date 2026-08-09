@@ -5,7 +5,7 @@ namespace Buslogix.Interfaces
     public interface IContactRepository
     {
 
-        Task<List<Contact>> GetContacts(int companyId, int studentId);
+        Task<PagedResult<Contact>> GetContacts(int companyId, int studentId, int page = 1, int pageSize = 20);
 
         Task<int> InsertContact(int companyId, int studentId, Contact contact);
 

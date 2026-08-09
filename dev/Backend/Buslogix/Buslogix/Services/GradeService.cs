@@ -11,9 +11,9 @@ namespace Buslogix.Services
             return await gradeRepository.GetGrade(companyId, id);
         }
 
-        public async Task<List<Grade>> GetGrades(int companyId, string? description = null)
+        public async Task<PagedResult<Grade>> GetGrades(int companyId, string? description = null, int page = 1, int pageSize = 20)
         {
-            return await gradeRepository.GetGrades(companyId, description);
+            return await gradeRepository.GetGrades(companyId, description, page, pageSize);
         }
 
         public async Task<int> InsertGrade(int companyId, Grade grade)

@@ -1,4 +1,5 @@
 ﻿using Buslogix.Interfaces;
+using Buslogix.Models;
 using Route = Buslogix.Models.Route;
 
 namespace Buslogix.Services
@@ -11,9 +12,9 @@ namespace Buslogix.Services
             return await routeRepository.GetRoute(companyId, id);
         }
 
-        public async Task<List<Route>> GetRoutes(int companyId, bool? isActive = null, string? name = null)
+        public async Task<PagedResult<Route>> GetRoutes(int companyId, bool? isActive, string? name, int page, int pageSize)
         {
-            return await routeRepository.GetRoutes(companyId, isActive, name);
+            return await routeRepository.GetRoutes(companyId, isActive, name, page, pageSize);
         }
 
         public async Task<int> InsertRoute(int companyId, Route route)

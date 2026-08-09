@@ -1,4 +1,5 @@
-﻿using Route = Buslogix.Models.Route;
+﻿using Buslogix.Models;
+using Route = Buslogix.Models.Route;
 
 namespace Buslogix.Interfaces
 {
@@ -7,7 +8,7 @@ namespace Buslogix.Interfaces
 
         Task<Route?> GetRoute(int companyId, int id);
 
-        Task<List<Route>> GetRoutes(int companyId, bool? isActive = null, string? name = null);
+        Task<PagedResult<Route>> GetRoutes(int companyId, bool? isActive, string? name, int page, int pageSize);
 
         Task<int> InsertRoute(int companyId, Route route);
 

@@ -11,12 +11,14 @@ namespace Buslogix.Services
             return await periodicExemptionRepository.GetPeriodicExemption(companyId, id);
         }
 
-        public async Task<List<PeriodicExemption>> GetPeriodicExemptions(
+        public async Task<PagedResult<PeriodicExemption>> GetPeriodicExemptions(
             int companyId,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await periodicExemptionRepository.GetPeriodicExemptions(companyId, studentId);
+            return await periodicExemptionRepository.GetPeriodicExemptions(companyId, studentId, page, pageSize);
         }
 
         public async Task<int> InsertPeriodicExemption(int companyId, PeriodicExemption exemption)

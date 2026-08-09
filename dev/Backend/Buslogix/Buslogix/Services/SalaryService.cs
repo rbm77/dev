@@ -11,9 +11,9 @@ namespace Buslogix.Services
             return await salaryRepository.InsertSalary(companyId, employeeId, salary);
         }
 
-        public async Task<List<Salary>> GetSalaries(int companyId, int employeeId)
+        public async Task<PagedResult<Salary>> GetSalaries(int companyId, int employeeId, int page, int pageSize)
         {
-            return await salaryRepository.GetSalaries(companyId, employeeId);
+            return await salaryRepository.GetSalaries(companyId, employeeId, page, pageSize);
         }
 
         public async Task<bool> DeleteSalary(int companyId, int employeeId, int salaryId)

@@ -6,7 +6,7 @@ namespace Buslogix.Interfaces
     {
         Task<Vacation?> GetVacation(int companyId, int id);
 
-        Task<List<Vacation>> GetAllVacation(int companyId);
+        Task<PagedResult<Vacation>> GetAllVacation(int companyId, int page, int pageSize);
 
         Task<int> InsertVacation(int companyId, Vacation vacation);
 

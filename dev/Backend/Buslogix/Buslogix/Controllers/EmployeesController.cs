@@ -17,11 +17,13 @@ namespace Buslogix.Controllers
             [FromQuery] bool? isActive = null,
             [FromQuery] string? identityDocument = null,
             [FromQuery] string? name = null,
-            [FromQuery] string? lastName = null)
+            [FromQuery] string? lastName = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Employee> employees = await employeeService.GetEmployees(
-                companyId, isActive, identityDocument, name, lastName);
+            PagedResult<Employee> employees = await employeeService.GetEmployees(
+                companyId, isActive, identityDocument, name, lastName, page, pageSize);
             return Ok(employees);
         }
 

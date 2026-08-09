@@ -32,14 +32,16 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Student>> GetStudents(
+        public async Task<PagedResult<Student>> GetStudents(
             int companyId,
-            bool? isActive = null,
-            string? identityDocument = null,
-            string? name = null,
-            string? lastName = null,
-            int? routeId = null,
-            int? gradeId = null
+            bool? isActive,
+            string? identityDocument,
+            string? name,
+            string? lastName,
+            int? routeId,
+            int? gradeId,
+            int page,
+            int pageSize
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -50,10 +52,12 @@ namespace Buslogix.Repositories
                 ["p_name"] = name,
                 ["p_lastname"] = lastName,
                 ["p_route_id"] = routeId,
-                ["p_grade_id"] = gradeId
+                ["p_grade_id"] = gradeId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Student> rows = await dataAccess.ExecuteReader("get_students", CommandType.StoredProcedure,
+            (List<Student> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_students", CommandType.StoredProcedure,
                 static reader => new Student
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -65,7 +69,13 @@ namespace Buslogix.Repositories
                     IsActive = reader.GetBooleanOrDefault(6)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Student>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertStudent(int companyId, Student student)

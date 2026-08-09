@@ -13,10 +13,10 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.SALARY}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetSalaries(int employeeId)
+        public async Task<IActionResult> GetSalaries(int employeeId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Salary> salaries = await salaryService.GetSalaries(companyId, employeeId);
+            PagedResult<Salary> salaries = await salaryService.GetSalaries(companyId, employeeId, page, pageSize);
             return Ok(salaries);
         }
 

@@ -11,13 +11,15 @@ namespace Buslogix.Services
             return await maintenanceExpenseRepository.GetMaintenanceExpense(companyId, id);
         }
 
-        public async Task<List<MaintenanceExpense>> GetMaintenanceExpenses(
+        public async Task<PagedResult<MaintenanceExpense>> GetMaintenanceExpenses(
             int companyId,
             DateTime? date = null,
-            int? maintenanceId = null
+            int? maintenanceId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
-            return await maintenanceExpenseRepository.GetMaintenanceExpenses(companyId, date, maintenanceId);
+            return await maintenanceExpenseRepository.GetMaintenanceExpenses(companyId, date, maintenanceId, page, pageSize);
         }
 
         public async Task<long> InsertMaintenanceExpense(int companyId, MaintenanceExpense expense)

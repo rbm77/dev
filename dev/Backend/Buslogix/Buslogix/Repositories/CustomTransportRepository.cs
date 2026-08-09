@@ -31,20 +31,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<CustomTransport>> GetPendingCustomTransports(
+        public async Task<PagedResult<CustomTransport>> GetPendingCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_vehicle_id"] = vehicleId,
-                ["p_driver_id"] = driverId
+                ["p_driver_id"] = driverId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<CustomTransport> rows = await dataAccess.ExecuteReader("get_pending_custom_transports", CommandType.StoredProcedure,
+            (List<CustomTransport> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_pending_custom_transports", CommandType.StoredProcedure,
                 static reader => new CustomTransport
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -53,23 +57,33 @@ namespace Buslogix.Repositories
                     ScheduledDate = reader.GetDateTimeOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<CustomTransport>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<List<CustomTransport>> GetCompletedCustomTransports(
+        public async Task<PagedResult<CustomTransport>> GetCompletedCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_vehicle_id"] = vehicleId,
-                ["p_driver_id"] = driverId
+                ["p_driver_id"] = driverId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<CustomTransport> rows = await dataAccess.ExecuteReader("get_completed_custom_transports", CommandType.StoredProcedure,
+            (List<CustomTransport> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_completed_custom_transports", CommandType.StoredProcedure,
                 static reader => new CustomTransport
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -78,7 +92,13 @@ namespace Buslogix.Repositories
                     CompletedDate = reader.GetDateTimeOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<CustomTransport>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertCustomTransport(int companyId, CustomTransport customTransport)

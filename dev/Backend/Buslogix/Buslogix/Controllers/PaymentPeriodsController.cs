@@ -13,10 +13,13 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetPaymentPeriods([FromQuery] int? requestId = null)
+        public async Task<IActionResult> GetPaymentPeriods(
+            [FromQuery] int? requestId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<PaymentPeriod> paymentPeriods = await paymentPeriodService.GetPaymentPeriods(companyId, requestId);
+            PagedResult<PaymentPeriod> paymentPeriods = await paymentPeriodService.GetPaymentPeriods(companyId, requestId, page, pageSize);
             return Ok(paymentPeriods);
         }
 

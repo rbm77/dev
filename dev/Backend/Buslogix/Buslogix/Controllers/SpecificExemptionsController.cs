@@ -15,11 +15,13 @@ namespace Buslogix.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSpecificExemptions(
             [FromQuery] int? studentId = null,
-            [FromQuery] int? paymentPeriodId = null)
+            [FromQuery] int? paymentPeriodId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<SpecificExemption> specificExemptions =
-                await specificExemptionService.GetSpecificExemptions(companyId, studentId, paymentPeriodId);
+            PagedResult<SpecificExemption> specificExemptions =
+                await specificExemptionService.GetSpecificExemptions(companyId, studentId, paymentPeriodId, page, pageSize);
             return Ok(specificExemptions);
         }
 

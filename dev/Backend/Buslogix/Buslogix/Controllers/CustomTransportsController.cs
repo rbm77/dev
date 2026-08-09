@@ -15,10 +15,12 @@ namespace Buslogix.Controllers
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingCustomTransports(
             [FromQuery] int? vehicleId = null,
-            [FromQuery] int? driverId = null)
+            [FromQuery] int? driverId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<CustomTransport> customTransports = await customTransportService.GetPendingCustomTransports(companyId, vehicleId, driverId);
+            PagedResult<CustomTransport> customTransports = await customTransportService.GetPendingCustomTransports(companyId, vehicleId, driverId, page, pageSize);
             return Ok(customTransports);
         }
 
@@ -26,10 +28,12 @@ namespace Buslogix.Controllers
         [HttpGet("completed")]
         public async Task<IActionResult> GetCompletedCustomTransports(
             [FromQuery] int? vehicleId = null,
-            [FromQuery] int? driverId = null)
+            [FromQuery] int? driverId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<CustomTransport> customTransports = await customTransportService.GetCompletedCustomTransports(companyId, vehicleId, driverId);
+            PagedResult<CustomTransport> customTransports = await customTransportService.GetCompletedCustomTransports(companyId, vehicleId, driverId, page, pageSize);
             return Ok(customTransports);
         }
 

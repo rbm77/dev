@@ -17,10 +17,12 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetIncidents(
             [FromQuery] int? vehicleId = null,
             [FromQuery] int? driverId = null,
-            [FromQuery] IncidentType? type = null)
+            [FromQuery] IncidentType? type = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Incident> incidents = await incidentService.GetIncidents(companyId, vehicleId, driverId, type);
+            PagedResult<Incident> incidents = await incidentService.GetIncidents(companyId, vehicleId, driverId, type, page, pageSize);
             return Ok(incidents);
         }
 

@@ -31,11 +31,13 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<FuelExpense>> GetFuelExpenses(
+        public async Task<PagedResult<FuelExpense>> GetFuelExpenses(
             int companyId,
             DateTime? date = null,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -43,10 +45,12 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_date"] = date,
                 ["p_vehicle_id"] = vehicleId,
-                ["p_driver_id"] = driverId
+                ["p_driver_id"] = driverId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<FuelExpense> rows = await dataAccess.ExecuteReader("get_fuel_expenses", CommandType.StoredProcedure,
+            (List<FuelExpense> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_fuel_expenses", CommandType.StoredProcedure,
                 static reader => new FuelExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -54,7 +58,13 @@ namespace Buslogix.Repositories
                     Amount = reader.GetDecimalOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<FuelExpense>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<long> InsertFuelExpense(int companyId, FuelExpense expense)

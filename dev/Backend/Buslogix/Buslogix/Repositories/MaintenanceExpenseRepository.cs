@@ -29,20 +29,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<MaintenanceExpense>> GetMaintenanceExpenses(
+        public async Task<PagedResult<MaintenanceExpense>> GetMaintenanceExpenses(
             int companyId,
             DateTime? date = null,
-            int? maintenanceId = null
+            int? maintenanceId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_date"] = date,
-                ["p_maintenance_id"] = maintenanceId
+                ["p_maintenance_id"] = maintenanceId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<MaintenanceExpense> rows = await dataAccess.ExecuteReader("get_maintenance_expenses", CommandType.StoredProcedure,
+            (List<MaintenanceExpense> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_maintenance_expenses", CommandType.StoredProcedure,
                 static reader => new MaintenanceExpense
                 {
                     Id = reader.GetInt64OrDefault(0),
@@ -50,7 +54,13 @@ namespace Buslogix.Repositories
                     Amount = reader.GetDecimalOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<MaintenanceExpense>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<long> InsertMaintenanceExpense(int companyId, MaintenanceExpense expense)

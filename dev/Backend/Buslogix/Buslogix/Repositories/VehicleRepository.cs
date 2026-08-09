@@ -33,12 +33,14 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Vehicle>> GetVehicles(
+        public async Task<PagedResult<Vehicle>> GetVehicles(
             int companyId,
-            bool? isActive = null,
-            string? licensePlate = null,
-            string? make = null,
-            string? model = null
+            bool? isActive,
+            string? licensePlate,
+            string? make,
+            string? model,
+            int page,
+            int pageSize
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -47,10 +49,12 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = isActive,
                 ["p_license_plate"] = licensePlate,
                 ["p_make"] = make,
-                ["p_model"] = model
+                ["p_model"] = model,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Vehicle> rows = await dataAccess.ExecuteReader("get_vehicles", CommandType.StoredProcedure,
+            (List<Vehicle> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_vehicles", CommandType.StoredProcedure,
                 static reader => new Vehicle
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -60,7 +64,13 @@ namespace Buslogix.Repositories
                     IsActive = reader.GetBooleanOrDefault(4)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Vehicle>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertVehicle(int companyId, Vehicle vehicle)

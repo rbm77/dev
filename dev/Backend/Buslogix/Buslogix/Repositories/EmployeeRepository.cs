@@ -32,7 +32,7 @@ namespace Buslogix.Repositories
                         Email = reader.GetStringOrDefault(8)
                     };
 
-                    string licenseNumber = reader.GetStringOrDefault(9);
+                    string? licenseNumber = reader.GetStringOrDefault(9);
                     DateTime? licenseExpiry = reader.GetDateTimeOrDefault(10);
                     if (!string.IsNullOrWhiteSpace(licenseNumber))
                     {
@@ -49,12 +49,14 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Employee>> GetEmployees(
+        public async Task<PagedResult<Employee>> GetEmployees(
             int companyId,
             bool? isActive = null,
             string? identityDocument = null,
             string? name = null,
-            string? lastName = null
+            string? lastName = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
@@ -63,10 +65,12 @@ namespace Buslogix.Repositories
                 ["p_is_active"] = isActive,
                 ["p_identity_document"] = identityDocument,
                 ["p_name"] = name,
-                ["p_lastname"] = lastName
+                ["p_lastname"] = lastName,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Employee> rows = await dataAccess.ExecuteReader("get_employees", CommandType.StoredProcedure,
+            (List<Employee> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_employees", CommandType.StoredProcedure,
                 static reader =>
                 {
                     Employee employee = new()
@@ -79,7 +83,7 @@ namespace Buslogix.Repositories
                         LastName = reader.GetStringOrDefault(5)
                     };
 
-                    string licenseNumber = reader.GetStringOrDefault(6);
+                    string? licenseNumber = reader.GetStringOrDefault(6);
                     if (!string.IsNullOrWhiteSpace(licenseNumber))
                     {
                         employee.DriverDetails = new Driver
@@ -91,7 +95,13 @@ namespace Buslogix.Repositories
                     return employee;
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Employee>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertEmployee(int companyId, Employee employee)

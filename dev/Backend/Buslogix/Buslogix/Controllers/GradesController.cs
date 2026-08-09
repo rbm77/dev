@@ -13,10 +13,10 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.GRADE}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetGrades([FromQuery] string? description = null)
+        public async Task<IActionResult> GetGrades([FromQuery] string? description = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Grade> items = await gradeService.GetGrades(companyId, description);
+            PagedResult<Grade> items = await gradeService.GetGrades(companyId, description, page, pageSize);
             return Ok(items);
         }
 

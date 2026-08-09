@@ -13,11 +13,14 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetPeriodicExemptions([FromQuery] int? studentId = null)
+        public async Task<IActionResult> GetPeriodicExemptions(
+            [FromQuery] int? studentId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<PeriodicExemption> periodicExemptions =
-                await periodicExemptionService.GetPeriodicExemptions(companyId, studentId);
+            PagedResult<PeriodicExemption> periodicExemptions =
+                await periodicExemptionService.GetPeriodicExemptions(companyId, studentId, page, pageSize);
             return Ok(periodicExemptions);
         }
 

@@ -11,15 +11,17 @@ namespace Buslogix.Services
             return await vehicleRepository.GetVehicle(companyId, id);
         }
 
-        public async Task<List<Vehicle>> GetVehicles(
+        public async Task<PagedResult<Vehicle>> GetVehicles(
             int companyId,
-            bool? isActive = null,
-            string? licensePlate = null,
-            string? make = null,
-            string? model = null
+            bool? isActive,
+            string? licensePlate,
+            string? make,
+            string? model,
+            int page,
+            int pageSize
         )
         {
-            return await vehicleRepository.GetVehicles(companyId, isActive, licensePlate, make, model);
+            return await vehicleRepository.GetVehicles(companyId, isActive, licensePlate, make, model, page, pageSize);
         }
 
         public async Task<int> InsertVehicle(int companyId, Vehicle vehicle)

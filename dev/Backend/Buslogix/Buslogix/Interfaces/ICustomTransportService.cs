@@ -6,16 +6,20 @@ namespace Buslogix.Interfaces
     {
         Task<CustomTransport?> GetCustomTransport(int companyId, int id);
 
-        Task<List<CustomTransport>> GetPendingCustomTransports(
+        Task<PagedResult<CustomTransport>> GetPendingCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         );
 
-        Task<List<CustomTransport>> GetCompletedCustomTransports(
+        Task<PagedResult<CustomTransport>> GetCompletedCustomTransports(
             int companyId,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         );
 
         Task<int> InsertCustomTransport(int companyId, CustomTransport customTransport);

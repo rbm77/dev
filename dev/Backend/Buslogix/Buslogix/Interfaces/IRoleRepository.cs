@@ -9,8 +9,8 @@ namespace Buslogix.Interfaces
         Task<int> InsertRole(int companyId, Role role);
         Task<int> UpdateRole(int companyId, int id, Role role);
         Task<int> DeleteRole(int companyId, int id);
-        Task<List<Role>> GetRoles(int companyId, string? description = null);
+        Task<PagedResult<Role>> GetRoles(int companyId, string? description = null, int page = 1, int pageSize = 20);
         Task<int> UpdatePermissions(int companyId, int roleId, string permissionsJson);
-        Task<List<RolePermission>> GetPermissions(int companyId, int roleId);
+        Task<PagedResult<RolePermission>> GetPermissions(int companyId, int roleId, int page = 1, int pageSize = 20);
     }
 }

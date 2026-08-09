@@ -11,17 +11,19 @@ namespace Buslogix.Services
             return await studentRepository.GetStudent(companyId, id);
         }
 
-        public async Task<List<Student>> GetStudents(
+        public async Task<PagedResult<Student>> GetStudents(
             int companyId,
-            bool? isActive = null,
-            string? identityDocument = null,
-            string? name = null,
-            string? lastName = null,
-            int? routeId = null,
-            int? gradeId = null
+            bool? isActive,
+            string? identityDocument,
+            string? name,
+            string? lastName,
+            int? routeId,
+            int? gradeId,
+            int page,
+            int pageSize
         )
         {
-            return await studentRepository.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId);
+            return await studentRepository.GetStudents(companyId, isActive, identityDocument, name, lastName, routeId, gradeId, page, pageSize);
         }
 
         public async Task<int> InsertStudent(int companyId, Student student)

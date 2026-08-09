@@ -8,15 +8,17 @@ namespace Buslogix.Repositories
     public class ContactRepository(IDataAccess dataAccess) : IContactRepository
     {
 
-        public async Task<List<Contact>> GetContacts(int companyId, int studentId)
+        public async Task<PagedResult<Contact>> GetContacts(int companyId, int studentId, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_student_id"] = studentId
+                ["p_student_id"] = studentId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Contact> rows = await dataAccess.ExecuteReader("get_contacts", CommandType.StoredProcedure,
+            (List<Contact> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_contacts", CommandType.StoredProcedure,
                 static reader => new Contact
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -25,7 +27,13 @@ namespace Buslogix.Repositories
                     IsActive = reader.GetBooleanOrDefault(3)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Contact>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertContact(int companyId, int studentId, Contact contact)

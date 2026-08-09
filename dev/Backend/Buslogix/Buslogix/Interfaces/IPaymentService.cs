@@ -6,10 +6,12 @@ namespace Buslogix.Interfaces
     {
         Task<Payment?> GetPayment(int companyId, long id);
 
-        Task<List<Payment>> GetPayments(
+        Task<PagedResult<Payment>> GetPayments(
             int companyId,
             DateTime? date = null,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         );
 
         Task<long> InsertPayment(int companyId, Payment payment);

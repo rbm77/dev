@@ -15,10 +15,12 @@ namespace Buslogix.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMaintenanceExpenses(
             [FromQuery] DateTime? date = null,
-            [FromQuery] int? maintenanceId = null)
+            [FromQuery] int? maintenanceId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<MaintenanceExpense> expenses = await maintenanceExpenseService.GetMaintenanceExpenses(companyId, date, maintenanceId);
+            PagedResult<MaintenanceExpense> expenses = await maintenanceExpenseService.GetMaintenanceExpenses(companyId, date, maintenanceId, page, pageSize);
             return Ok(expenses);
         }
 

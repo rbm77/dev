@@ -16,10 +16,12 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetFuelExpenses(
             [FromQuery] DateTime? date = null,
             [FromQuery] int? vehicleId = null,
-            [FromQuery] int? driverId = null)
+            [FromQuery] int? driverId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<FuelExpense> expenses = await fuelExpenseService.GetFuelExpenses(companyId, date, vehicleId, driverId);
+            PagedResult<FuelExpense> expenses = await fuelExpenseService.GetFuelExpenses(companyId, date, vehicleId, driverId, page, pageSize);
             return Ok(expenses);
         }
 

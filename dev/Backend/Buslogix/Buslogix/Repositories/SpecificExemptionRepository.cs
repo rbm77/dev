@@ -29,20 +29,24 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<SpecificExemption>> GetSpecificExemptions(
+        public async Task<PagedResult<SpecificExemption>> GetSpecificExemptions(
             int companyId,
-            int? studentId = null,
-            int? paymentPeriodId = null
+            int? studentId,
+            int? paymentPeriodId,
+            int page,
+            int pageSize
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
                 ["p_student_id"] = studentId,
-                ["p_payment_period"] = paymentPeriodId
+                ["p_payment_period"] = paymentPeriodId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<SpecificExemption> rows = await dataAccess.ExecuteReader("get_specific_exemptions", CommandType.StoredProcedure,
+            (List<SpecificExemption> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_specific_exemptions", CommandType.StoredProcedure,
                 static reader => new SpecificExemption
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -50,7 +54,13 @@ namespace Buslogix.Repositories
                     PaymentPeriodId = reader.GetInt32OrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<SpecificExemption>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertSpecificExemption(int companyId, SpecificExemption exemption)

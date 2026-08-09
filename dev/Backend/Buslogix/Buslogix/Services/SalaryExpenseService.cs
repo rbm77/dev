@@ -11,13 +11,15 @@ namespace Buslogix.Services
             return await salaryExpenseRepository.GetSalaryExpense(companyId, id);
         }
 
-        public async Task<List<SalaryExpense>> GetSalaryExpenses(
+        public async Task<PagedResult<SalaryExpense>> GetSalaryExpenses(
             int companyId,
-            DateTime? date = null,
-            int? employeeId = null
+            DateTime? date,
+            int? employeeId,
+            int page,
+            int pageSize
         )
         {
-            return await salaryExpenseRepository.GetSalaryExpenses(companyId, date, employeeId);
+            return await salaryExpenseRepository.GetSalaryExpenses(companyId, date, employeeId, page, pageSize);
         }
 
         public async Task<long> InsertSalaryExpense(int companyId, SalaryExpense expense)

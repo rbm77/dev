@@ -13,10 +13,10 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.CONTACT}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetContacts(int studentId)
+        public async Task<IActionResult> GetContacts(int studentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Contact> contacts = await contactService.GetContacts(companyId, studentId);
+            PagedResult<Contact> contacts = await contactService.GetContacts(companyId, studentId, page, pageSize);
             return Ok(contacts);
         }
 

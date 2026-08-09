@@ -28,14 +28,14 @@ namespace Buslogix.Services
             return (await roleRepository.DeleteRole(companyId, id)) > 0;
         }
 
-        public async Task<List<Role>> GetRoles(int companyId, string? description = null)
+        public async Task<PagedResult<Role>> GetRoles(int companyId, string? description = null, int page = 1, int pageSize = 20)
         {
-            return await roleRepository.GetRoles(companyId, description);
+            return await roleRepository.GetRoles(companyId, description, page, pageSize);
         }
 
-        public async Task<List<RolePermission>> GetPermissions(int companyId, int roleId)
+        public async Task<PagedResult<RolePermission>> GetPermissions(int companyId, int roleId, int page = 1, int pageSize = 20)
         {
-            return await roleRepository.GetPermissions(companyId, roleId);
+            return await roleRepository.GetPermissions(companyId, roleId, page, pageSize);
         }
 
         public async Task<bool> UpdatePermissions(int companyId, int roleId, List<RolePermission> permissions)

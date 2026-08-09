@@ -13,10 +13,10 @@ namespace Buslogix.Controllers
 
         [Authorize(Policy = $"{Resources.VACATION}.{PermissionMode.READ}")]
         [HttpGet]
-        public async Task<IActionResult> GetAllVacation()
+        public async Task<IActionResult> GetAllVacation([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            List<Vacation> vacations = await vacationService.GetAllVacation(companyId);
+            PagedResult<Vacation> vacations = await vacationService.GetAllVacation(companyId, page, pageSize);
             return Ok(vacations);
         }
 

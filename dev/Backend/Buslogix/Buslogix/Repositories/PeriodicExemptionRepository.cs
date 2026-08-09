@@ -30,18 +30,22 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<PeriodicExemption>> GetPeriodicExemptions(
+        public async Task<PagedResult<PeriodicExemption>> GetPeriodicExemptions(
             int companyId,
-            int? studentId = null
+            int? studentId = null,
+            int page = 1,
+            int pageSize = 20
         )
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_student_id"] = studentId
+                ["p_student_id"] = studentId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<PeriodicExemption> rows = await dataAccess.ExecuteReader("get_periodic_exemptions", CommandType.StoredProcedure,
+            (List<PeriodicExemption> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_periodic_exemptions", CommandType.StoredProcedure,
                 static reader => new PeriodicExemption
                 {
                     Id = reader.GetInt32OrDefault(0),
@@ -49,7 +53,13 @@ namespace Buslogix.Repositories
                     Percentage = reader.GetDecimalOrDefault(2)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<PeriodicExemption>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertPeriodicExemption(int companyId, PeriodicExemption exemption)

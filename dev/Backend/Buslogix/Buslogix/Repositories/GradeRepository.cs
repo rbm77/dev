@@ -26,22 +26,30 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
-        public async Task<List<Grade>> GetGrades(int companyId, string? description = null)
+        public async Task<PagedResult<Grade>> GetGrades(int companyId, string? description = null, int page = 1, int pageSize = 20)
         {
             Dictionary<string, object?> parameters = new()
             {
                 ["p_company_id"] = companyId,
-                ["p_description"] = description
+                ["p_description"] = description,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
             };
 
-            List<Grade> rows = await dataAccess.ExecuteReader("get_grades", CommandType.StoredProcedure,
+            (List<Grade> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_grades", CommandType.StoredProcedure,
                 static reader => new Grade
                 {
                     Id = reader.GetInt32OrDefault(0),
                     Description = reader.GetStringOrDefault(1)
                 }, parameters);
 
-            return rows;
+            return new PagedResult<Grade>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<int> InsertGrade(int companyId, Grade grade)

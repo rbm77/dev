@@ -6,11 +6,13 @@ namespace Buslogix.Interfaces
     {
         Task<FuelExpense?> GetFuelExpense(int companyId, long id);
 
-        Task<List<FuelExpense>> GetFuelExpenses(
+        Task<PagedResult<FuelExpense>> GetFuelExpenses(
             int companyId,
             DateTime? date = null,
             int? vehicleId = null,
-            int? driverId = null
+            int? driverId = null,
+            int page = 1,
+            int pageSize = 20
         );
 
         Task<long> InsertFuelExpense(int companyId, FuelExpense expense);

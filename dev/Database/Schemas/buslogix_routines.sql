@@ -907,9 +907,28 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_critical_process_users`(
-    IN p_company_id INT
+    IN p_company_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_critical_process_users;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_critical_process_users;
+
+    CREATE TEMPORARY TABLE tmp_critical_process_users AS
     SELECT
         c.user_id,
         p.name,
@@ -918,8 +937,17 @@ BEGIN
     INNER JOIN personal_data p
 		ON p.company_id = c.company_id
         AND p.id = c.user_id
-	WHERE c.company_id = p_company_id
-    ORDER BY p.name desc, p.last_name desc;
+	WHERE c.company_id = p_company_id;
+
+    SELECT *
+    FROM tmp_critical_process_users
+    ORDER BY name desc, last_name desc
+    LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+    FROM tmp_critical_process_users;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_critical_process_users;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1195,9 +1223,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_employees`(
     IN p_is_active TINYINT(1),
     IN p_identity_document VARCHAR(12),
     IN p_name VARCHAR(50),
-    IN p_lastname VARCHAR(50)
+    IN p_lastname VARCHAR(50),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_employees;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_employees;
+
+    CREATE TEMPORARY TABLE tmp_employees AS
     SELECT
         e.id,
         e.hire_date,
@@ -1217,8 +1264,17 @@ INNER JOIN personal_data p
        AND (p_is_active IS NULL OR e.is_active = p_is_active)
        AND (p_identity_document IS NULL OR p.identity_document = p_identity_document)
        AND (p_name IS NULL OR p.name LIKE CONCAT('%', p_name, '%'))
-       AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'))
-  ORDER BY p.name ASC, p.last_name ASC;
+       AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'));
+
+    SELECT *
+      FROM tmp_employees
+  ORDER BY name ASC, last_name ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_employees;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_employees;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1266,9 +1322,28 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_expenses`(
     IN p_company_id INT,
-    IN p_date DATE
+    IN p_date DATE,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_expenses;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_expenses;
+
+    CREATE TEMPORARY TABLE tmp_expenses AS
     SELECT
         e.id,
         e.`date`,
@@ -1300,6 +1375,16 @@ BEGIN
               WHERE i.company_id = e.company_id
                 AND i.id = e.id
        );
+
+    SELECT *
+      FROM tmp_expenses
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_expenses;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_expenses;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1355,9 +1440,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_fuel_expenses`(
     IN p_company_id INT,
     IN p_date DATE,
     IN p_vehicle_id INT,
-    IN p_driver_id INT
+    IN p_driver_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_fuel_expenses;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_fuel_expenses;
+
+    CREATE TEMPORARY TABLE tmp_fuel_expenses AS
     SELECT
         e.id,
         e.`date`,
@@ -1370,6 +1474,16 @@ BEGIN
        AND (p_date IS NULL OR e.`date` = p_date)
        AND (p_vehicle_id IS NULL OR f.vehicle_id = p_vehicle_id)
        AND (p_driver_id IS NULL OR f.driver_id = p_driver_id);
+
+    SELECT *
+      FROM tmp_fuel_expenses
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_fuel_expenses;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_fuel_expenses;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1415,16 +1529,44 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_grades`(
     IN p_company_id INT,
-    IN p_description VARCHAR(30)
+    IN p_description VARCHAR(30),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_grades;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_grades;
+
+    CREATE TEMPORARY TABLE tmp_grades AS
     SELECT
         g.id,
         g.description
       FROM grade g
      WHERE g.company_id = p_company_id
-       AND (p_description IS NULL OR g.description LIKE CONCAT('%', p_description, '%'))
-  ORDER BY g.description ASC, g.id ASC;
+       AND (p_description IS NULL OR g.description LIKE CONCAT('%', p_description, '%'));
+
+    SELECT *
+      FROM tmp_grades
+  ORDER BY description ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_grades;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_grades;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1477,9 +1619,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_incidents`(
     IN p_company_id INT,
     IN p_vehicle_id INT,
     IN p_driver_id INT,
-    IN p_type INT
+    IN p_type INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_incidents;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_incidents;
+
+    CREATE TEMPORARY TABLE tmp_incidents AS
     SELECT
         i.id,
         i.vehicle_id,
@@ -1490,8 +1651,17 @@ BEGIN
      WHERE i.company_id = p_company_id
        AND (p_vehicle_id IS NULL OR i.vehicle_id = p_vehicle_id)
        AND (p_driver_id IS NULL OR i.driver_id = p_driver_id)
-       AND (p_type IS NULL OR i.`type` = p_type)
-  ORDER BY i.`date` DESC, i.id ASC;
+       AND (p_type IS NULL OR i.`type` = p_type);
+
+    SELECT *
+      FROM tmp_incidents
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_incidents;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_incidents;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1544,9 +1714,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_incident_expenses`(
     IN p_company_id INT,
     IN p_date DATE,
-    IN p_incident_id INT
+    IN p_incident_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_incident_expenses;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_incident_expenses;
+
+    CREATE TEMPORARY TABLE tmp_incident_expenses AS
     SELECT
         e.id,
         e.`date`,
@@ -1558,6 +1747,16 @@ BEGIN
      WHERE i.company_id = p_company_id
        AND (p_date IS NULL OR e.`date` = p_date)
        AND (p_incident_id IS NULL OR i.incident_id = p_incident_id);
+
+    SELECT *
+      FROM tmp_incident_expenses
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_incident_expenses;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_incident_expenses;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1644,9 +1843,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_maintenance_expenses`(
     IN p_company_id INT,
     IN p_date DATE,
-    IN p_maintenance_id INT
+    IN p_maintenance_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_maintenance_expenses;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_maintenance_expenses;
+
+    CREATE TEMPORARY TABLE tmp_maintenance_expenses AS
     SELECT
         e.id,
         e.`date`,
@@ -1658,6 +1876,16 @@ BEGIN
      WHERE m.company_id = p_company_id
        AND (p_date IS NULL OR e.`date` = p_date)
        AND (p_maintenance_id IS NULL OR m.maintenance_id = p_maintenance_id);
+
+    SELECT *
+      FROM tmp_maintenance_expenses
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_maintenance_expenses;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_maintenance_expenses;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1706,9 +1934,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payments`(
     IN p_company_id INT,
     IN p_date DATE,
-    IN p_student_id INT
+    IN p_student_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_payments;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payments;
+
+    CREATE TEMPORARY TABLE tmp_payments AS
     SELECT
         p.id,
         p.`date`,
@@ -1716,8 +1963,17 @@ BEGIN
       FROM `payment` p
      WHERE p.company_id = p_company_id
        AND (p_date IS NULL OR p.`date` = p_date)
-       AND (p_student_id IS NULL OR p.student_id = p_student_id)
-  ORDER BY p.`date` ASC, p.id ASC;
+       AND (p_student_id IS NULL OR p.student_id = p_student_id);
+
+    SELECT *
+      FROM tmp_payments
+  ORDER BY `date` ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_payments;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payments;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1736,17 +1992,45 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment_periods`(
     IN p_company_id INT,
-    IN p_request_id INT
+    IN p_request_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_payment_periods;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_periods;
+
+    CREATE TEMPORARY TABLE tmp_payment_periods AS
     SELECT
         pp.id,
         pp.request_id,
         pp.payment_date
       FROM `payment_period` pp
      WHERE pp.company_id = p_company_id
-       AND (p_request_id IS NULL OR pp.request_id = p_request_id)
-  ORDER BY pp.payment_date DESC;
+       AND (p_request_id IS NULL OR pp.request_id = p_request_id);
+
+    SELECT *
+      FROM tmp_payment_periods
+  ORDER BY payment_date DESC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_payment_periods;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_periods;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1793,15 +2077,43 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment_period_requests`(
-    IN p_company_id INT
+    IN p_company_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_payment_period_requests;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_period_requests;
+
+    CREATE TEMPORARY TABLE tmp_payment_period_requests AS
     SELECT
         ppr.id,
         ppr.start_date
       FROM `payment_period_request` ppr
-     WHERE ppr.company_id = p_company_id
-  ORDER BY ppr.start_date ASC, ppr.id ASC;
+     WHERE ppr.company_id = p_company_id;
+
+    SELECT *
+      FROM tmp_payment_period_requests
+  ORDER BY start_date ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_payment_period_requests;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_period_requests;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1821,14 +2133,34 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_pending_custom_transports`(
     IN p_company_id INT,
     IN p_vehicle_id INT,
-    IN p_driver_id INT
+    IN p_driver_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_pending_custom_transports;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_pending_custom_transports;
+
+    CREATE TEMPORARY TABLE tmp_pending_custom_transports AS
     SELECT
         m.id,
         m.vehicle_id,
         m.driver_id,
-        s.scheduled_date
+        s.scheduled_date,
+        s.custom_transport_id
       FROM scheduled_custom_transport s
       INNER JOIN `custom_transport` m
         ON s.company_id = m.company_id
@@ -1836,8 +2168,21 @@ BEGIN
      WHERE m.company_id = p_company_id
        AND m.completed_date IS NULL
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
-       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id)
-  ORDER BY s.scheduled_date ASC, s.custom_transport_id ASC;
+       AND (p_driver_id IS NULL OR m.driver_id = p_driver_id);
+
+    SELECT
+        id,
+        vehicle_id,
+        driver_id,
+        scheduled_date
+      FROM tmp_pending_custom_transports
+  ORDER BY scheduled_date ASC, custom_transport_id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_pending_custom_transports;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_pending_custom_transports;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1857,14 +2202,34 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_pending_maintenances`(
     IN p_company_id INT,
     IN p_vehicle_id INT,
-    IN p_type INT
+    IN p_type INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_pending_maintenances;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_pending_maintenances;
+
+    CREATE TEMPORARY TABLE tmp_pending_maintenances AS
     SELECT
         m.id,
         m.vehicle_id,
         m.type,
-        s.scheduled_date
+        s.scheduled_date,
+        s.maintenance_id
       FROM scheduled_maintenance s
 		INNER JOIN `maintenance` m
         ON s.company_id = m.company_id
@@ -1872,8 +2237,21 @@ BEGIN
      WHERE m.company_id = p_company_id
        AND m.completed_date IS NULL
        AND (p_vehicle_id IS NULL OR m.vehicle_id = p_vehicle_id)
-       AND (p_type IS NULL OR m.type = p_type)
-  ORDER BY s.scheduled_date ASC, s.maintenance_id ASC;
+       AND (p_type IS NULL OR m.type = p_type);
+
+    SELECT
+        id,
+        vehicle_id,
+        type,
+        scheduled_date
+      FROM tmp_pending_maintenances
+  ORDER BY scheduled_date ASC, maintenance_id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_pending_maintenances;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_pending_maintenances;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1923,17 +2301,50 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_periodic_exemptions`(
     IN p_company_id INT,
-    IN p_student_id INT
+    IN p_student_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_periodic_exemptions;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_periodic_exemptions;
+
+    CREATE TEMPORARY TABLE tmp_periodic_exemptions AS
     SELECT
         e.id,
         e.student_id,
-        e.percentage
+        e.percentage,
+        e.start_date,
+        e.end_date
       FROM `periodic_exemption` e
      WHERE e.company_id = p_company_id
-       AND (p_student_id IS NULL OR e.student_id = p_student_id)
-  ORDER BY e.start_date ASC, e.end_date ASC, e.id ASC;
+       AND (p_student_id IS NULL OR e.student_id = p_student_id);
+
+    SELECT
+        id,
+        student_id,
+        percentage
+      FROM tmp_periodic_exemptions
+  ORDER BY start_date ASC, end_date ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_periodic_exemptions;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_periodic_exemptions;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1952,9 +2363,28 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_permissions`(
     IN p_company_id INT,
-    IN p_role_id INT
+    IN p_role_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_permissions;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_permissions;
+
+    CREATE TEMPORARY TABLE tmp_permissions AS
     SELECT
         r.id AS resource_id,
         r.description AS description,
@@ -1964,8 +2394,17 @@ BEGIN
     LEFT JOIN permission p
       ON p.resource_id = r.id
      AND p.company_id  = p_company_id
-     AND p.role_id     = p_role_id
-    ORDER BY r.id;
+     AND p.role_id     = p_role_id;
+
+    SELECT *
+    FROM tmp_permissions
+    ORDER BY resource_id
+    LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+    FROM tmp_permissions;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_permissions;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2008,14 +2447,42 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_roles`(
     IN p_company_id INT,
-    IN p_description VARCHAR(30)
+    IN p_description VARCHAR(30),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_roles;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_roles;
+
+    CREATE TEMPORARY TABLE tmp_roles AS
     SELECT id, description
     FROM role
     WHERE company_id = p_company_id
-      AND (p_description IS NULL OR description LIKE CONCAT('%', p_description, '%'))
-    ORDER BY description ASC;
+      AND (p_description IS NULL OR description LIKE CONCAT('%', p_description, '%'));
+
+    SELECT *
+    FROM tmp_roles
+    ORDER BY description ASC
+    LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+    FROM tmp_roles;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_roles;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2064,9 +2531,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_routes`(
     IN p_company_id INT,
     IN p_is_active TINYINT(1),
-    IN p_name VARCHAR(30)
+    IN p_name VARCHAR(30),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_routes;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_routes;
+
+    CREATE TEMPORARY TABLE tmp_routes AS
     SELECT
         r.id,
         r.name,
@@ -2075,8 +2561,17 @@ BEGIN
       FROM route r
      WHERE r.company_id = p_company_id
        AND (p_is_active IS NULL OR r.is_active = p_is_active)
-       AND (p_name IS NULL OR r.name LIKE CONCAT('%', p_name, '%'))
-  ORDER BY r.name ASC, r.id ASC;
+       AND (p_name IS NULL OR r.name LIKE CONCAT('%', p_name, '%'));
+
+    SELECT *
+      FROM tmp_routes
+  ORDER BY name ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_routes;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_routes;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2095,17 +2590,45 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_salaries`(
     IN p_company_id INT,
-    IN p_employee_id INT
+    IN p_employee_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_salaries;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_salaries;
+
+    CREATE TEMPORARY TABLE tmp_salaries AS
     SELECT
         id,
         amount,
         start_date
       FROM salary
      WHERE company_id = p_company_id
-       AND employee_id = p_employee_id
-  ORDER BY start_date DESC, id DESC;
+       AND employee_id = p_employee_id;
+
+    SELECT *
+      FROM tmp_salaries
+  ORDER BY start_date DESC, id DESC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_salaries;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_salaries;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2158,9 +2681,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_salary_expenses`(
     IN p_company_id INT,
     IN p_date DATE,
-    IN p_employee_id INT
+    IN p_employee_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_salary_expenses;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_salary_expenses;
+
+    CREATE TEMPORARY TABLE tmp_salary_expenses AS
     SELECT
         e.id,
         e.`date`,
@@ -2172,6 +2714,16 @@ BEGIN
      WHERE s.company_id = p_company_id
        AND (p_date IS NULL OR e.`date` = p_date)
        AND (p_employee_id IS NULL OR s.employee_id = p_employee_id);
+
+    SELECT *
+      FROM tmp_salary_expenses
+  ORDER BY `date` DESC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_salary_expenses;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_salary_expenses;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2221,9 +2773,28 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_specific_exemptions`(
     IN p_company_id INT,
     IN p_student_id INT,
-    IN p_payment_period INT
+    IN p_payment_period INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_specific_exemptions;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_specific_exemptions;
+
+    CREATE TEMPORARY TABLE tmp_specific_exemptions AS
     SELECT
         e.id,
         e.student_id,
@@ -2231,8 +2802,17 @@ BEGIN
       FROM `specific_exemption` e
      WHERE e.company_id = p_company_id
        AND (p_student_id IS NULL OR e.student_id = p_student_id)
-       AND (p_payment_period IS NULL OR e.payment_period_id = p_payment_period)
-  ORDER BY e.student_id ASC, e.payment_period_id ASC, e.id ASC;
+       AND (p_payment_period IS NULL OR e.payment_period_id = p_payment_period);
+
+    SELECT *
+      FROM tmp_specific_exemptions
+  ORDER BY student_id ASC, payment_period_id ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_specific_exemptions;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_specific_exemptions;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2289,9 +2869,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_students`(
     IN p_name VARCHAR(50),
     IN p_lastname VARCHAR(50),
     IN p_route_id INT,
-    IN p_grade_id INT
+    IN p_grade_id INT,
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_students;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_students;
+
+    CREATE TEMPORARY TABLE tmp_students AS
     SELECT
         s.id,
         s.name,
@@ -2307,8 +2906,17 @@ BEGIN
        AND (p_name IS NULL OR s.name LIKE CONCAT('%', p_name, '%'))
        AND (p_lastname IS NULL OR s.last_name LIKE CONCAT('%', p_lastname, '%'))
        AND (p_route_id IS NULL OR s.route_id = p_route_id)
-       AND (p_grade_id IS NULL OR s.grade_id = p_grade_id)
-  ORDER BY s.name ASC, s.last_name ASC, s.id ASC;
+       AND (p_grade_id IS NULL OR s.grade_id = p_grade_id);
+
+    SELECT *
+      FROM tmp_students
+  ORDER BY name ASC, last_name ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_students;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_students;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2369,9 +2977,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_users`(
     IN p_is_active TINYINT(1),
     IN p_identity_document VARCHAR(12),
     IN p_name VARCHAR(50),
-    IN p_lastname VARCHAR(50)
+    IN p_lastname VARCHAR(50),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_users;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_users;
+
+    CREATE TEMPORARY TABLE tmp_users AS
     SELECT
         u.id,
         u.username,
@@ -2389,8 +3016,17 @@ BEGIN
       AND (p_is_active IS NULL OR u.is_active = p_is_active)
       AND (p_identity_document IS NULL OR p.identity_document = p_identity_document)
       AND (p_name IS NULL OR p.name LIKE CONCAT('%', p_name, '%'))
-      AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'))
-    ORDER BY p.name ASC, p.last_name ASC;
+      AND (p_lastname IS NULL OR p.last_name LIKE CONCAT('%', p_lastname, '%'));
+
+    SELECT *
+    FROM tmp_users
+    ORDER BY name ASC, last_name ASC
+    LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+    FROM tmp_users;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_users;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2475,9 +3111,28 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_vehicles`(
     IN p_is_active TINYINT(1),
     IN p_license_plate VARCHAR(10),
     IN p_make VARCHAR(15),
-    IN p_model VARCHAR(15)
+    IN p_model VARCHAR(15),
+    IN p_page       INT,
+    IN p_page_size  INT
 )
 BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_vehicles;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_vehicles;
+
+    CREATE TEMPORARY TABLE tmp_vehicles AS
     SELECT
         v.id,
         v.license_plate,
@@ -2489,8 +3144,17 @@ BEGIN
        AND (p_is_active IS NULL OR v.is_active = p_is_active)
        AND (p_license_plate IS NULL OR v.license_plate = p_license_plate)
        AND (p_make IS NULL OR v.make LIKE CONCAT('%', p_make, '%'))
-       AND (p_model IS NULL OR v.model LIKE CONCAT('%', p_model, '%'))
-  ORDER BY v.make ASC, v.model ASC, v.id ASC;
+       AND (p_model IS NULL OR v.model LIKE CONCAT('%', p_model, '%'));
+
+    SELECT *
+      FROM tmp_vehicles
+  ORDER BY make ASC, model ASC, id ASC
+     LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count
+      FROM tmp_vehicles;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_vehicles;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4562,4 +5226,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-08 15:18:17
+-- Dump completed on 2026-08-09 17:03:20
