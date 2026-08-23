@@ -16,11 +16,12 @@ namespace Buslogix.Controllers
         public async Task<IActionResult> GetPayments(
             [FromQuery] DateTime? date = null,
             [FromQuery] int? studentId = null,
+            [FromQuery] string? receiptReference = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
             int companyId = HttpContext.GetCompanyId();
-            PagedResult<Payment> payments = await paymentService.GetPayments(companyId, date, studentId, page, pageSize);
+            PagedResult<Payment> payments = await paymentService.GetPayments(companyId, date, studentId, receiptReference, page, pageSize);
             return Ok(payments);
         }
 

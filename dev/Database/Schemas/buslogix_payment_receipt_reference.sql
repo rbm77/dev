@@ -16,18 +16,19 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `grade`
+-- Table structure for table `payment_receipt_reference`
 --
 
-DROP TABLE IF EXISTS `grade`;
+DROP TABLE IF EXISTS `payment_receipt_reference`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `grade` (
+CREATE TABLE `payment_receipt_reference` (
+  `receipt_reference` varchar(50) NOT NULL,
   `company_id` int NOT NULL,
-  `id` int NOT NULL,
-  `description` varchar(30) NOT NULL,
-  PRIMARY KEY (`company_id`,`id`),
-  CONSTRAINT `fk_grade_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  `payment_id` bigint NOT NULL,
+  PRIMARY KEY (`receipt_reference`),
+  KEY `fk_payment_receipt_reference_payment` (`company_id`,`payment_id`),
+  CONSTRAINT `fk_payment_receipt_reference_payment` FOREIGN KEY (`company_id`, `payment_id`) REFERENCES `payment` (`company_id`, `id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -40,4 +41,4 @@ CREATE TABLE `grade` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-22 21:45:54
+-- Dump completed on 2026-08-22 21:45:52

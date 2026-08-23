@@ -44,7 +44,10 @@
             { "38", $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.READ}" },
             { "39", $"{Resources.PAYMENT}.{PermissionMode.WRITE}" },
             { "40", $"{Resources.PAYMENT}.{PermissionMode.READ}" },
-            { "41", $"{Resources.DEBTOR}.{PermissionMode.READ}" }
+            { "41", $"{Resources.DEBTOR}.{PermissionMode.READ}" },
+            { "42", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.WRITE}" },
+            { "43", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.READ}" },
+            { "44", $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}" }
 
         };
 

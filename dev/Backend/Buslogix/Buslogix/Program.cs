@@ -79,8 +79,11 @@ builder.Services.AddScoped<IPeriodicExemptionRepository, PeriodicExemptionReposi
 builder.Services.AddScoped<IPeriodicExemptionService, PeriodicExemptionService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentRequestRepository, PaymentRequestRepository>();
+builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";

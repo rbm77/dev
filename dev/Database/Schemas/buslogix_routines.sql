@@ -18,6 +18,73 @@
 --
 -- Dumping routines for database 'buslogix'
 --
+/*!50003 DROP PROCEDURE IF EXISTS `approve_payment_request` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `approve_payment_request`(
+    IN  p_company_id INT,
+    IN  p_id INT,
+    OUT p_new_payment_id BIGINT
+)
+BEGIN
+    DECLARE v_date DATE;
+    DECLARE v_amount DECIMAL(10,2);
+    DECLARE v_student_id INT;
+    DECLARE v_receipt_reference VARCHAR(50);
+    DECLARE v_new_payment_id BIGINT;
+    DECLARE v_found INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    SELECT COUNT(*) INTO v_found
+      FROM `payment_request`
+     WHERE company_id = p_company_id AND id = p_id AND is_validated = 1;
+
+    IF v_found = 0 THEN
+        SET p_new_payment_id = 0;
+    ELSE
+        START TRANSACTION;
+
+        SELECT `date`, amount, student_id, receipt_reference
+          INTO v_date, v_amount, v_student_id, v_receipt_reference
+          FROM `payment_request`
+         WHERE company_id = p_company_id AND id = p_id
+           FOR UPDATE;
+
+        SELECT IFNULL(MAX(id), 0) + 1 INTO v_new_payment_id
+          FROM `payment`
+         WHERE company_id = p_company_id;
+
+        INSERT INTO `payment` (company_id, id, `date`, amount, student_id)
+        VALUES (p_company_id, v_new_payment_id, v_date, v_amount, v_student_id);
+
+        INSERT INTO `payment_receipt_reference` (receipt_reference, company_id, payment_id)
+        VALUES (v_receipt_reference, p_company_id, v_new_payment_id);
+
+        DELETE FROM `payment_request`
+         WHERE company_id = p_company_id AND id = p_id;
+
+        COMMIT;
+
+        SET p_new_payment_id = v_new_payment_id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `authenticate_user` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -84,6 +151,75 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `auto_approve_payment_requests` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `auto_approve_payment_requests`()
+BEGIN
+    DECLARE v_done            INT DEFAULT 0;   
+    DECLARE v_company_id      INT;
+    DECLARE v_request_id      INT;
+    DECLARE v_new_payment_id  BIGINT;           
+    DECLARE v_call_failed     INT DEFAULT 0;
+    DECLARE v_processed_count INT DEFAULT 0;
+    DECLARE v_approved_count  INT DEFAULT 0;
+    DECLARE v_failed_count    INT DEFAULT 0;
+
+    DECLARE cur_ready_requests CURSOR FOR
+        SELECT pr.company_id, pr.id
+          FROM `payment_request` pr
+          JOIN `company` c
+            ON c.id = pr.company_id
+         WHERE pr.is_validated = 1
+           AND c.auto_approval_enabled = 1
+           AND c.is_active = 1
+         ORDER BY pr.company_id ASC, pr.id ASC;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
+
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET v_call_failed = 1;
+
+    OPEN cur_ready_requests;
+
+    read_loop: LOOP
+        FETCH cur_ready_requests INTO v_company_id, v_request_id;
+        IF v_done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        SET v_processed_count = v_processed_count + 1;
+        SET v_call_failed = 0;
+        SET v_new_payment_id = 0;
+
+        CALL approve_payment_request(v_company_id, v_request_id, v_new_payment_id);
+
+        IF v_call_failed = 1 THEN
+            SET v_failed_count = v_failed_count + 1;
+        ELSEIF v_new_payment_id > 0 THEN
+            SET v_approved_count = v_approved_count + 1;
+        ELSE
+            SET v_failed_count = v_failed_count + 1;
+        END IF;
+    END LOOP;
+
+    CLOSE cur_ready_requests;
+
+    SELECT v_processed_count AS processed_count,
+           v_approved_count  AS approved_count,
+           v_failed_count    AS failed_count;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `complete_custom_transport` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -100,6 +236,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `complete_custom_transport`(
     IN p_completed_date DATE
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     DELETE FROM `scheduled_custom_transport`
      WHERE company_id = p_company_id
        AND custom_transport_id = p_id;
@@ -108,6 +252,8 @@ BEGIN
        SET completed_date = p_completed_date
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -130,6 +276,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `complete_maintenance`(
     IN p_completed_date DATE
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     DELETE FROM `scheduled_maintenance`
      WHERE company_id = p_company_id
        AND maintenance_id = p_id;
@@ -138,6 +292,8 @@ BEGIN
        SET completed_date = p_completed_date
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -185,13 +341,23 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_custom_transport`(
     IN p_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     DELETE FROM `scheduled_custom_transport`
      WHERE company_id = p_company_id
        AND custom_transport_id = p_id;
-       
+
     DELETE FROM `custom_transport`
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -213,11 +379,18 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_employee`(
     IN p_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
 
     DELETE FROM driver
 	WHERE company_id = p_company_id
      AND id = p_id;
-           
+
     DELETE FROM employee
      WHERE company_id = p_company_id
        AND id = p_id;
@@ -232,6 +405,8 @@ BEGIN
          WHERE company_id = p_company_id
            AND id = p_id;
     END IF;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -325,13 +500,23 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_maintenance`(
     IN p_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     DELETE FROM `scheduled_maintenance`
      WHERE company_id = p_company_id
        AND maintenance_id = p_id;
-       
+
 	DELETE FROM `maintenance`
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -546,6 +731,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user`(
     IN p_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     DELETE FROM user
     WHERE company_id = p_company_id
       AND id = p_id;
@@ -560,6 +753,8 @@ BEGIN
         WHERE company_id = p_company_id
           AND id = p_id;
     END IF;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -687,12 +882,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_company`(
     IN p_id INT
 )
 BEGIN
-    SELECT 
+    SELECT
         id,
         name,
         phone_number,
         email,
-        is_active
+        is_active,
+        auto_approval_enabled
     FROM company
     WHERE id = p_id;
 END ;;
@@ -1911,8 +2107,12 @@ BEGIN
         p.id,
         p.`date`,
         p.amount,
-        p.student_id
+        p.student_id,
+        prr.receipt_reference
       FROM `payment` p
+      LEFT JOIN `payment_receipt_reference` prr
+        ON prr.company_id = p.company_id
+       AND prr.payment_id = p.id
      WHERE p.company_id = p_company_id
        AND p.id = p_id;
 END ;;
@@ -1935,6 +2135,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payments`(
     IN p_company_id INT,
     IN p_date DATE,
     IN p_student_id INT,
+    IN p_receipt_reference VARCHAR(50),
     IN p_page       INT,
     IN p_page_size  INT
 )
@@ -1959,11 +2160,16 @@ BEGIN
     SELECT
         p.id,
         p.`date`,
-        p.student_id
+        p.student_id,
+        prr.receipt_reference
       FROM `payment` p
+      LEFT JOIN `payment_receipt_reference` prr
+        ON prr.company_id = p.company_id
+       AND prr.payment_id = p.id
      WHERE p.company_id = p_company_id
        AND (p_date IS NULL OR p.`date` = p_date)
-       AND (p_student_id IS NULL OR p.student_id = p_student_id);
+       AND (p_student_id IS NULL OR p.student_id = p_student_id)
+       AND (p_receipt_reference IS NULL OR prr.receipt_reference = p_receipt_reference);
 
     SELECT *
       FROM tmp_payments
@@ -2114,6 +2320,85 @@ BEGIN
       FROM tmp_payment_period_requests;
 
     DROP TEMPORARY TABLE IF EXISTS tmp_payment_period_requests;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_payment_request` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment_request`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    SELECT id, `date`, amount, student_id, receipt_reference, requested_at, is_validated
+      FROM `payment_request`
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_payment_requests` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payment_requests`(
+    IN p_company_id INT,
+    IN p_requested_at DATE,
+    IN p_is_validated TINYINT(1),
+    IN p_receipt_reference VARCHAR(50),
+    IN p_page       INT,
+    IN p_page_size  INT
+)
+BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_payment_requests;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_requests;
+
+    CREATE TEMPORARY TABLE tmp_payment_requests AS
+    SELECT pr.id, pr.`date`, pr.amount, pr.student_id, pr.receipt_reference, pr.requested_at, pr.is_validated
+      FROM `payment_request` pr
+     WHERE pr.company_id = p_company_id
+       AND (p_requested_at IS NULL OR DATE(pr.requested_at) = p_requested_at)
+       AND (p_is_validated IS NULL OR pr.is_validated = p_is_validated)
+       AND (p_receipt_reference IS NULL OR pr.receipt_reference = p_receipt_reference);
+
+    SELECT * FROM tmp_payment_requests ORDER BY requested_at ASC, id ASC LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count FROM tmp_payment_requests;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_payment_requests;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -3215,6 +3500,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_custom_transport`(
 )
 BEGIN
     DECLARE v_id INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
       FROM `custom_transport`
      WHERE company_id = p_company_id;
@@ -3224,7 +3518,7 @@ BEGIN
     ) VALUES (
         p_company_id, v_id, p_vehicle_id, p_driver_id, p_amount, p_description
     );
-    
+
     IF p_scheduled_date IS NOT NULL THEN
         INSERT INTO `scheduled_custom_transport` (
             company_id, custom_transport_id, scheduled_date
@@ -3232,6 +3526,8 @@ BEGIN
             p_company_id, v_id, p_scheduled_date
         );
     END IF;
+
+    COMMIT;
 
     SELECT v_id AS new_id;
 END ;;
@@ -3268,6 +3564,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_employee`(
 BEGIN
     DECLARE v_id INT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT id
       INTO v_id
       FROM personal_data
@@ -3297,11 +3601,13 @@ BEGIN
     INSERT INTO employee (company_id, id, hire_date, is_active)
     VALUES (p_company_id, v_id, p_hire_date, p_is_active);
 
-    IF p_license_number IS NOT NULL AND p_license_number <> '' 
+    IF p_license_number IS NOT NULL AND p_license_number <> ''
        AND p_license_expiry_date IS NOT NULL THEN
         INSERT INTO driver (company_id, id, license_number, license_expiry_date)
         VALUES (p_company_id, v_id, p_license_number, p_license_expiry_date);
     END IF;
+
+    COMMIT;
 
     SELECT v_id AS new_id;
 END ;;
@@ -3366,6 +3672,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_fuel_expense`(
 BEGIN
     DECLARE v_new_id BIGINT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT COALESCE(MAX(x.id) + 1, 1)
       INTO v_new_id
       FROM `expense` x
@@ -3376,6 +3690,8 @@ BEGIN
 
     INSERT INTO `fuel_expense`(company_id, id, vehicle_id, driver_id, liters)
     VALUES (p_company_id, v_new_id, p_vehicle_id, p_driver_id, p_liters);
+
+    COMMIT;
 
     SELECT v_new_id AS id;
 END ;;
@@ -3473,6 +3789,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_incident_expense`(
 BEGIN
     DECLARE v_new_id BIGINT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT COALESCE(MAX(x.id) + 1, 1)
       INTO v_new_id
       FROM `expense` x
@@ -3483,6 +3807,8 @@ BEGIN
 
     INSERT INTO `incident_expense`(company_id, id, incident_id)
     VALUES (p_company_id, v_new_id, p_incident_id);
+
+    COMMIT;
 
     SELECT v_new_id AS id;
 END ;;
@@ -3510,6 +3836,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_maintenance`(
 )
 BEGIN
     DECLARE v_id INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
       FROM `maintenance`
      WHERE company_id = p_company_id;
@@ -3519,7 +3854,7 @@ BEGIN
     ) VALUES (
         p_company_id, v_id, p_vehicle_id, p_description, p_type
     );
-    
+
     IF p_scheduled_date IS NOT NULL THEN
 		INSERT INTO `scheduled_maintenance` (
         company_id, maintenance_id, scheduled_date
@@ -3527,6 +3862,8 @@ BEGIN
 			p_company_id, v_id, p_scheduled_date
 		);
     END IF;
+
+    COMMIT;
 
     SELECT v_id AS new_id;
 END ;;
@@ -3555,6 +3892,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_maintenance_expense`(
 BEGIN
     DECLARE v_new_id BIGINT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT COALESCE(MAX(x.id) + 1, 1)
       INTO v_new_id
       FROM `expense` x
@@ -3565,6 +3910,8 @@ BEGIN
 
     INSERT INTO `maintenance_expense`(company_id, id, maintenance_id)
     VALUES (p_company_id, v_new_id, p_maintenance_id);
+
+    COMMIT;
 
     SELECT v_new_id AS id;
 END ;;
@@ -3587,21 +3934,53 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_payment`(
     IN p_company_id INT,
     IN p_date DATE,
     IN p_amount DECIMAL(10,2),
-    IN p_student_id INT
+    IN p_student_id INT,
+    IN p_receipt_reference VARCHAR(50)
 )
 BEGIN
     DECLARE v_id BIGINT;
-    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
-      FROM `payment`
-     WHERE company_id = p_company_id;
+    DECLARE v_exists INT DEFAULT 0;
 
-    INSERT INTO `payment` (
-        company_id, id, `date`, amount, student_id
-    ) VALUES (
-        p_company_id, v_id, p_date, p_amount, p_student_id
-    );
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
 
-    SELECT v_id AS new_id;
+    IF p_receipt_reference IS NOT NULL THEN
+        SELECT
+            (SELECT COUNT(*) FROM `payment_receipt_reference` WHERE receipt_reference = p_receipt_reference)
+          + (SELECT COUNT(*) FROM `payment_request`           WHERE receipt_reference = p_receipt_reference)
+          INTO v_exists;
+    END IF;
+
+    IF v_exists > 0 THEN
+        SELECT -1 AS new_id;
+    ELSE
+        START TRANSACTION;
+
+        SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+          FROM `payment`
+         WHERE company_id = p_company_id;
+
+        INSERT INTO `payment` (
+            company_id, id, `date`, amount, student_id
+        ) VALUES (
+            p_company_id, v_id, p_date, p_amount, p_student_id
+        );
+
+        IF p_receipt_reference IS NOT NULL THEN
+            INSERT INTO `payment_receipt_reference` (
+                receipt_reference, company_id, payment_id
+            ) VALUES (
+                p_receipt_reference, p_company_id, v_id
+            );
+        END IF;
+
+        COMMIT;
+
+        SELECT v_id AS new_id;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -3629,12 +4008,21 @@ BEGIN
     DECLARE v_id INT;
     DECLARE v_pp_id INT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT MAX(payment_date)
       INTO v_last_period_date
       FROM payment_period
      WHERE company_id = p_company_id;
 
     IF v_last_period_date IS NOT NULL AND p_start_date <> v_last_period_date THEN
+        COMMIT;
         SELECT NULL AS new_id;
     ELSE
         SELECT IFNULL(MAX(id), 0) + 1
@@ -3660,6 +4048,55 @@ BEGIN
                 p_company_id, v_pp_id, v_id, p_start_date
             );
         END IF;
+
+        COMMIT;
+
+        SELECT v_id AS new_id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_payment_request` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_payment_request`(
+    IN p_company_id INT,
+    IN p_date DATE,
+    IN p_amount DECIMAL(10,2),
+    IN p_student_id INT,
+    IN p_receipt_reference VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_exists INT DEFAULT 0;
+
+    SELECT
+        (SELECT COUNT(*) FROM `payment_receipt_reference` WHERE receipt_reference = p_receipt_reference)
+      + (SELECT COUNT(*) FROM `payment_request`           WHERE receipt_reference = p_receipt_reference)
+      INTO v_exists;
+
+    IF v_exists > 0 THEN
+        SELECT -1 AS new_id;
+    ELSE
+        SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+          FROM `payment_request`
+         WHERE company_id = p_company_id;
+
+        INSERT INTO `payment_request` (
+            company_id, id, `date`, amount, student_id, receipt_reference, requested_at
+        ) VALUES (
+            p_company_id, v_id, p_date, p_amount, p_student_id, p_receipt_reference, NOW()
+        );
 
         SELECT v_id AS new_id;
     END IF;
@@ -3818,6 +4255,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_salary_expense`(
 BEGIN
     DECLARE v_new_id BIGINT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT COALESCE(MAX(x.id) + 1, 1)
       INTO v_new_id
       FROM `expense` x
@@ -3828,6 +4273,8 @@ BEGIN
 
     INSERT INTO `salary_expense`(company_id, id, employee_id)
     VALUES (p_company_id, v_new_id, p_employee_id);
+
+    COMMIT;
 
     SELECT v_new_id AS id;
 END ;;
@@ -3937,6 +4384,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_user`(
 BEGIN
     DECLARE v_id INT;
 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     SELECT id
     INTO v_id
     FROM personal_data
@@ -3965,6 +4420,8 @@ BEGIN
 
     INSERT INTO user (company_id, id, username, password, role_id, is_active)
     VALUES (p_company_id, v_id, p_username, p_password, p_role_id, p_is_active);
+
+    COMMIT;
 
     SELECT v_id AS new_id;
 END ;;
@@ -4071,6 +4528,30 @@ BEGIN
 		AND c.user_id    = p_id
 	) AS found;
 
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `reject_payment_request` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `reject_payment_request`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM `payment_request`
+     WHERE company_id = p_company_id
+       AND id = p_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4231,15 +4712,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_company`(
     IN p_name VARCHAR(50),
     IN p_phone_number VARCHAR(12),
     IN p_email VARCHAR(50),
-    IN p_is_active BOOLEAN
+    IN p_is_active BOOLEAN,
+    IN p_auto_approval_enabled TINYINT(1)
 )
 BEGIN
     UPDATE company
-    SET 
+    SET
         name = p_name,
         phone_number = p_phone_number,
         email = p_email,
-        is_active = p_is_active
+        is_active = p_is_active,
+        auto_approval_enabled = p_auto_approval_enabled
     WHERE id = p_id;
 END ;;
 DELIMITER ;
@@ -4300,7 +4783,6 @@ BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SELECT 0 AS rows_affected;
         RESIGNAL;
     END;
 
@@ -4319,12 +4801,12 @@ BEGIN
                 id INT     PATH '$.Id'
             )
          ) AS jt;
-	
+
 	INSERT INTO critical_process_user (company_id, user_id)
 	SELECT p_company_id, t.id
 	FROM users_tmp t
 	ON DUPLICATE KEY UPDATE user_id = user_id;
-    
+
     SET v_upserted = ROW_COUNT();
 
     DELETE c
@@ -4365,6 +4847,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_custom_transport`(
     IN p_scheduled_date DATE
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     IF p_scheduled_date IS NOT NULL THEN
        UPDATE `scheduled_custom_transport`
           SET scheduled_date = p_scheduled_date
@@ -4379,6 +4869,8 @@ BEGIN
            description = p_description
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4412,6 +4904,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_employee`(
     IN p_license_expiry_date DATE
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE employee
        SET hire_date = p_hire_date,
            is_active = p_is_active
@@ -4439,6 +4939,8 @@ BEGIN
          WHERE company_id = p_company_id
            AND id = p_id;
     END IF;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4496,6 +4998,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_fuel_expense`(
     IN p_liters INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE `expense`
        SET `date` = p_date,
            amount = p_amount,
@@ -4509,6 +5019,8 @@ BEGIN
            liters = p_liters
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4596,6 +5108,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_incident_expense`(
     IN p_incident_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE `expense`
        SET `date` = p_date,
            amount = p_amount,
@@ -4607,6 +5127,8 @@ BEGIN
        SET incident_id = p_incident_id
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4632,6 +5154,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_maintenance`(
     IN p_scheduled_date DATE
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
 
     IF p_scheduled_date IS NOT NULL THEN
 	   UPDATE `scheduled_maintenance`
@@ -4646,6 +5175,8 @@ BEGIN
            type = p_type
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4671,6 +5202,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_maintenance_expense`(
     IN p_maintenance_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE `expense`
        SET `date` = p_date,
            amount = p_amount,
@@ -4682,6 +5221,8 @@ BEGIN
        SET maintenance_id = p_maintenance_id
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4710,6 +5251,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_own_user`(
     IN p_email VARCHAR(50)
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE user
     SET username = p_username
     WHERE company_id = p_company_id
@@ -4724,6 +5273,8 @@ BEGIN
         email = p_email
     WHERE company_id = p_company_id
       AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4745,15 +5296,57 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_payment`(
     IN p_id BIGINT,
     IN p_date DATE,
     IN p_amount DECIMAL(10,2),
-    IN p_student_id INT
+    IN p_student_id INT,
+    IN p_receipt_reference VARCHAR(50)
 )
 BEGIN
-    UPDATE `payment`
-       SET `date` = p_date,
-           amount = p_amount,
-           student_id = p_student_id
-     WHERE company_id = p_company_id
-       AND id = p_id;
+    DECLARE v_exists INT DEFAULT 0;
+    DECLARE v_affected INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    IF p_receipt_reference IS NOT NULL THEN
+        SELECT
+            (SELECT COUNT(*) FROM `payment_receipt_reference`
+              WHERE receipt_reference = p_receipt_reference
+                AND NOT (company_id = p_company_id AND payment_id = p_id))
+          + (SELECT COUNT(*) FROM `payment_request` WHERE receipt_reference = p_receipt_reference)
+          INTO v_exists;
+    END IF;
+
+    IF v_exists > 0 THEN
+        SELECT -1 AS affected_rows;
+    ELSE
+        START TRANSACTION;
+
+        UPDATE `payment`
+           SET `date` = p_date,
+               amount = p_amount,
+               student_id = p_student_id
+         WHERE company_id = p_company_id
+           AND id = p_id;
+
+        SET v_affected = ROW_COUNT();
+
+        DELETE FROM `payment_receipt_reference`
+         WHERE company_id = p_company_id AND payment_id = p_id;
+
+        IF p_receipt_reference IS NOT NULL THEN
+            INSERT INTO `payment_receipt_reference` (
+                receipt_reference, company_id, payment_id
+            ) VALUES (
+                p_receipt_reference, p_company_id, p_id
+            );
+        END IF;
+
+        COMMIT;
+
+        SELECT v_affected AS affected_rows;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4864,7 +5457,6 @@ BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SELECT 0 AS rows_affected;
         RESIGNAL;
     END;
 
@@ -4987,6 +5579,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_salary_expense`(
     IN p_employee_id INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE `expense`
        SET `date` = p_date,
            amount = p_amount,
@@ -4998,6 +5598,8 @@ BEGIN
        SET employee_id = p_employee_id
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -5098,6 +5700,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user`(
     IN p_email VARCHAR(50)
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     UPDATE user
     SET username = p_username,
         role_id = p_role_id,
@@ -5114,6 +5724,8 @@ BEGIN
         email = p_email
     WHERE company_id = p_company_id
       AND id = p_id;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -5216,6 +5828,31 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `validate_payment_request` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `validate_payment_request`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    UPDATE `payment_request`
+       SET is_validated = 1
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -5226,4 +5863,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-09 17:03:20
+-- Dump completed on 2026-08-22 21:45:54

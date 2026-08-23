@@ -22,7 +22,8 @@ namespace Buslogix.Repositories
                     Id = reader.GetInt64OrDefault(0),
                     Date = reader.GetDateTimeOrDefault(1),
                     Amount = reader.GetDecimalOrDefault(2),
-                    StudentId = reader.GetInt32OrDefault(3)
+                    StudentId = reader.GetInt32OrDefault(3),
+                    ReceiptReference = reader.GetStringOrDefault(4)
                 }, parameters);
 
             return rows.Count > 0 ? rows[0] : null;
@@ -32,6 +33,7 @@ namespace Buslogix.Repositories
             int companyId,
             DateTime? date = null,
             int? studentId = null,
+            string? receiptReference = null,
             int page = 1,
             int pageSize = 20
         )
@@ -41,6 +43,7 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_date"] = date,
                 ["p_student_id"] = studentId,
+                ["p_receipt_reference"] = receiptReference,
                 ["p_page"] = page,
                 ["p_page_size"] = pageSize
             };
@@ -50,7 +53,8 @@ namespace Buslogix.Repositories
                 {
                     Id = reader.GetInt64OrDefault(0),
                     Date = reader.GetDateTimeOrDefault(1),
-                    StudentId = reader.GetInt32OrDefault(2)
+                    StudentId = reader.GetInt32OrDefault(2),
+                    ReceiptReference = reader.GetStringOrDefault(3)
                 }, parameters);
 
             return new PagedResult<Payment>
@@ -69,7 +73,8 @@ namespace Buslogix.Repositories
                 ["p_company_id"] = companyId,
                 ["p_date"] = payment.Date,
                 ["p_amount"] = payment.Amount,
-                ["p_student_id"] = payment.StudentId
+                ["p_student_id"] = payment.StudentId,
+                ["p_receipt_reference"] = payment.ReceiptReference
             };
 
             object? result = await dataAccess.ExecuteScalar("insert_payment", CommandType.StoredProcedure, parameters);
@@ -84,10 +89,12 @@ namespace Buslogix.Repositories
                 ["p_id"] = id,
                 ["p_date"] = payment.Date,
                 ["p_amount"] = payment.Amount,
-                ["p_student_id"] = payment.StudentId
+                ["p_student_id"] = payment.StudentId,
+                ["p_receipt_reference"] = payment.ReceiptReference
             };
 
-            return await dataAccess.ExecuteNonQuery("update_payment", CommandType.StoredProcedure, parameters);
+            object? result = await dataAccess.ExecuteScalar("update_payment", CommandType.StoredProcedure, parameters);
+            return result != null ? (int)result : 0;
         }
 
         public async Task<int> DeletePayment(int companyId, long id)

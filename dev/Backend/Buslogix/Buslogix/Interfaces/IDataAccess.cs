@@ -5,6 +5,7 @@ namespace Buslogix.Interfaces
     public interface IDataAccess
     {
         Task<int> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object?>? parameters);
+        Task<(int AffectedRows, IDictionary<string, object?> OutputValues)> ExecuteNonQuery(string commandText, CommandType commandType, IDictionary<string, object?>? parameters, IDictionary<string, DbType> outputParameters);
         Task<object?> ExecuteScalar(string commandText, CommandType commandType, IDictionary<string, object?>? parameters);
         Task<List<T>> ExecuteReader<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object?>? parameters);
         Task<(List<T> Items, long TotalCount)> ExecuteReaderPaged<T>(string commandText, CommandType commandType, Func<IDataReader, T> map, IDictionary<string, object?>? parameters);

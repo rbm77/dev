@@ -24,6 +24,8 @@
         public const string PERIODIC_EXEMPTION = "PERIODIC_EXEMPTION";
         public const string PAYMENT = "PAYMENT";
         public const string DEBTOR = "DEBTOR";
+        public const string PAYMENT_REQUEST = "PAYMENT_REQUEST";
+        public const string PAYMENT_APPROVAL = "PAYMENT_APPROVAL";
 
     }
 }

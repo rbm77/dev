@@ -28,6 +28,7 @@ CREATE TABLE `company` (
   `phone_number` varchar(12) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
+  `auto_approval_enabled` tinyint(1) NOT NULL DEFAULT '0',
   `token` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `critical_token_UNIQUE` (`token`)
@@ -43,4 +44,4 @@ CREATE TABLE `company` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-09 17:03:19
+-- Dump completed on 2026-08-22 21:45:52

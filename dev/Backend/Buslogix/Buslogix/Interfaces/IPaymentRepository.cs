@@ -10,6 +10,7 @@ namespace Buslogix.Interfaces
             int companyId,
             DateTime? date = null,
             int? studentId = null,
+            string? receiptReference = null,
             int page = 1,
             int pageSize = 20
         );
