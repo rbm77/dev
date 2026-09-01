@@ -364,6 +364,54 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_email_account` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_email_account`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM email_account
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_email_sender` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_email_sender`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM email_sender
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_employee` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1356,6 +1404,106 @@ BEGIN
     FROM tmp_debtors;
 
     DROP TEMPORARY TABLE IF EXISTS tmp_debtors;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_email_accounts` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_email_accounts`(
+    IN p_company_id INT,
+    IN p_is_active  TINYINT(1),
+    IN p_page       INT,
+    IN p_page_size  INT
+)
+BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_email_accounts;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_email_accounts;
+
+    CREATE TEMPORARY TABLE tmp_email_accounts AS
+    SELECT company_id, id, email_address, app_password, imap_host, imap_port, is_active, last_checked_at
+      FROM `email_account`
+     WHERE (p_company_id IS NULL OR company_id = p_company_id)
+       AND (p_is_active IS NULL OR is_active = p_is_active);
+
+    SELECT * FROM tmp_email_accounts ORDER BY company_id ASC, id ASC LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count FROM tmp_email_accounts;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_email_accounts;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_email_senders` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_email_senders`(
+    IN p_company_id INT,
+    IN p_is_active  TINYINT(1),
+    IN p_page       INT,
+    IN p_page_size  INT
+)
+BEGIN
+    DECLARE v_offset INT DEFAULT 0;
+    DECLARE v_limit  INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        DROP TEMPORARY TABLE IF EXISTS tmp_email_senders;
+        RESIGNAL;
+    END;
+
+    SET p_page      = GREATEST(COALESCE(p_page, 1), 1);
+    SET p_page_size = GREATEST(COALESCE(p_page_size, 1), 1);
+    SET v_offset    = (p_page - 1) * p_page_size;
+    SET v_limit     = p_page_size;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_email_senders;
+
+    CREATE TEMPORARY TABLE tmp_email_senders AS
+    SELECT company_id, id, sender_address, description, is_active
+      FROM `email_sender`
+     WHERE (p_company_id IS NULL OR company_id = p_company_id)
+       AND (p_is_active IS NULL OR is_active = p_is_active);
+
+    SELECT * FROM tmp_email_senders ORDER BY company_id ASC, id ASC LIMIT v_offset, v_limit;
+
+    SELECT COUNT(*) AS total_count FROM tmp_email_senders;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_email_senders;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -3208,6 +3356,56 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_students_by_ids` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_students_by_ids`(
+    IN p_company_id INT,
+    IN p_ids_json JSON
+)
+BEGIN
+    DROP TEMPORARY TABLE IF EXISTS tmp_student_ids;
+
+    CREATE TEMPORARY TABLE tmp_student_ids (
+        id INT PRIMARY KEY
+    ) ENGINE=MEMORY;
+
+    INSERT IGNORE INTO tmp_student_ids (id)
+    SELECT jt.id
+      FROM JSON_TABLE(
+            p_ids_json, '$[*]'
+            COLUMNS(
+                id INT PATH '$'
+            )
+           ) AS jt;
+
+    SELECT
+        s.id,
+        s.name,
+        s.last_name,
+        s.address,
+        s.identity_document,
+        s.route_id,
+        s.grade_id,
+        s.is_active
+      FROM student s
+      JOIN tmp_student_ids t ON t.id = s.id
+     WHERE s.company_id = p_company_id;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_student_ids;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_user` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -3528,6 +3726,78 @@ BEGIN
     END IF;
 
     COMMIT;
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_email_account` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_email_account`(
+    IN p_company_id INT,
+    IN p_email_address VARCHAR(50),
+    IN p_app_password VARCHAR(30),
+    IN p_imap_host VARCHAR(50),
+    IN p_imap_port INT,
+    IN p_is_active TINYINT(1)
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM email_account
+     WHERE company_id = p_company_id;
+
+    INSERT INTO email_account (
+        company_id, id, email_address, app_password, imap_host, imap_port, is_active
+    ) VALUES (
+        p_company_id, v_id, p_email_address, p_app_password, p_imap_host, p_imap_port, p_is_active
+    );
+
+    SELECT v_id AS new_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_email_sender` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_email_sender`(
+    IN p_company_id INT,
+    IN p_sender_address VARCHAR(50),
+    IN p_description VARCHAR(50),
+    IN p_is_active TINYINT(1)
+)
+BEGIN
+    DECLARE v_id INT;
+    SELECT IFNULL(MAX(id), 0) + 1 INTO v_id
+      FROM email_sender
+     WHERE company_id = p_company_id;
+
+    INSERT INTO email_sender (
+        company_id, id, sender_address, description, is_active
+    ) VALUES (
+        p_company_id, v_id, p_sender_address, p_description, p_is_active
+    );
 
     SELECT v_id AS new_id;
 END ;;
@@ -4605,7 +4875,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `schedule_payment_period` */;
+/*!50003 DROP PROCEDURE IF EXISTS `schedule_payment_periods` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -4615,82 +4885,115 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `schedule_payment_period`(
-    IN p_company_token VARCHAR(30)
-)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `schedule_payment_periods`()
 BEGIN
-    DECLARE v_company_id INT;
-    DECLARE v_request_id INT;
-    DECLARE v_start_date DATE;
-    DECLARE v_days INT;
-    DECLARE v_last_or_start DATE;
+    DECLARE v_done             INT DEFAULT 0;
+    DECLARE v_call_failed      INT DEFAULT 0;
+    DECLARE v_ignore_not_found TINYINT DEFAULT 0;
+    DECLARE v_company_id       INT;
+    DECLARE v_request_id       INT;
+    DECLARE v_start_date       DATE;
+    DECLARE v_days             INT;
+    DECLARE v_last_or_start    DATE;
     DECLARE v_new_payment_date DATE;
-    DECLARE v_new_id INT;
-    DECLARE v_exist_future_id INT;
-    DECLARE v_exist_future_request INT;
-    DECLARE v_exist_future_date DATE;
-    DECLARE v_today DATE;
+    DECLARE v_new_id           INT;
+    DECLARE v_exist_future_id  INT;
+    DECLARE v_is_skipped       TINYINT;
+    DECLARE v_today            DATE;
+    DECLARE v_processed_count  INT DEFAULT 0;
+    DECLARE v_scheduled_count  INT DEFAULT 0;
+    DECLARE v_skipped_count    INT DEFAULT 0;
+    DECLARE v_failed_count     INT DEFAULT 0;
+
+    DECLARE cur_companies CURSOR FOR
+        SELECT c.id
+          FROM company c
+         WHERE c.is_active = 1
+         ORDER BY c.id ASC;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
 
     SET v_today = CURRENT_DATE;
 
-    SELECT c.id
-      INTO v_company_id
-      FROM company c
-     WHERE c.token = p_company_token;
+    OPEN cur_companies;
 
-    IF v_company_id IS NULL THEN
-        SELECT NULL AS id, NULL AS request_id, NULL AS payment_date;
-    ELSE
-        SELECT pp.id, pp.request_id, pp.payment_date
-          INTO v_exist_future_id, v_exist_future_request, v_exist_future_date
-          FROM payment_period pp
-         WHERE pp.company_id = v_company_id
-           AND pp.payment_date > v_today
-         ORDER BY pp.payment_date ASC
-         LIMIT 1;
+    company_loop: LOOP
+        FETCH cur_companies INTO v_company_id;
+        IF v_done = 1 THEN
+            LEAVE company_loop;
+        END IF;
 
-        IF v_exist_future_id IS NOT NULL THEN
-            SELECT v_exist_future_id AS id,
-                   v_exist_future_request AS request_id,
-                   v_exist_future_date AS payment_date;
-        ELSE
-            SELECT pr.id, pr.start_date, pr.days_to_next_payment
-              INTO v_request_id, v_start_date, v_days
-              FROM payment_period_request pr
-             WHERE pr.company_id = v_company_id
-               AND pr.start_date <= v_today
-             ORDER BY pr.start_date DESC
+        SET v_processed_count = v_processed_count + 1;
+        SET v_call_failed = 0;
+        SET v_is_skipped = 0;
+        SET v_exist_future_id = NULL;
+        SET v_request_id = NULL;
+
+        per_company: BEGIN
+
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_ignore_not_found = 1;
+            DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET v_call_failed = 1;
+
+            SELECT pp.id
+              INTO v_exist_future_id
+              FROM payment_period pp
+             WHERE pp.company_id = v_company_id
+               AND pp.payment_date > v_today
+             ORDER BY pp.payment_date ASC
              LIMIT 1;
 
-            IF v_request_id IS NULL THEN
-                SELECT NULL AS id, NULL AS request_id, NULL AS payment_date;
+            IF v_exist_future_id IS NOT NULL THEN
+                SET v_is_skipped = 1;
             ELSE
-                SELECT COALESCE(MAX(pp.payment_date), v_start_date)
-                  INTO v_last_or_start
-                  FROM payment_period pp
-                 WHERE pp.company_id = v_company_id
-                   AND pp.request_id = v_request_id;
-
-                SET v_new_payment_date = DATE_ADD(v_last_or_start, INTERVAL v_days DAY);
-
-                SELECT id
-                  INTO v_new_id
-                  FROM payment_period
-                 WHERE company_id = v_company_id
-                 ORDER BY id DESC
+                SELECT pr.id, pr.start_date, pr.days_to_next_payment
+                  INTO v_request_id, v_start_date, v_days
+                  FROM payment_period_request pr
+                 WHERE pr.company_id = v_company_id
+                   AND pr.start_date <= v_today
+                 ORDER BY pr.start_date DESC
                  LIMIT 1;
 
-                SET v_new_id = IFNULL(v_new_id, 0) + 1;
+                IF v_request_id IS NULL THEN
+                    SET v_is_skipped = 1;
+                ELSE
+                    SELECT COALESCE(MAX(pp.payment_date), v_start_date)
+                      INTO v_last_or_start
+                      FROM payment_period pp
+                     WHERE pp.company_id = v_company_id
+                       AND pp.request_id = v_request_id;
 
-                INSERT INTO payment_period (company_id, id, request_id, payment_date)
-                VALUES (v_company_id, v_new_id, v_request_id, v_new_payment_date);
+                    SET v_new_payment_date = DATE_ADD(v_last_or_start, INTERVAL v_days DAY);
 
-                SELECT v_new_id AS id,
-                       v_request_id AS request_id,
-                       v_new_payment_date AS payment_date;
+                    SELECT id
+                      INTO v_new_id
+                      FROM payment_period
+                     WHERE company_id = v_company_id
+                     ORDER BY id DESC
+                     LIMIT 1;
+
+                    SET v_new_id = IFNULL(v_new_id, 0) + 1;
+
+                    INSERT INTO payment_period (company_id, id, request_id, payment_date)
+                    VALUES (v_company_id, v_new_id, v_request_id, v_new_payment_date);
+                END IF;
             END IF;
+        END per_company;
+
+        IF v_call_failed = 1 THEN
+            SET v_failed_count = v_failed_count + 1;
+        ELSEIF v_is_skipped = 1 THEN
+            SET v_skipped_count = v_skipped_count + 1;
+        ELSE
+            SET v_scheduled_count = v_scheduled_count + 1;
         END IF;
-    END IF;
+    END LOOP;
+
+    CLOSE cur_companies;
+
+    SELECT v_processed_count AS processed_count,
+           v_scheduled_count AS scheduled_count,
+           v_skipped_count   AS skipped_count,
+           v_failed_count    AS failed_count;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -4871,6 +5174,95 @@ BEGIN
        AND id = p_id;
 
     COMMIT;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_email_account` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_email_account`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_email_address VARCHAR(50),
+    IN p_app_password VARCHAR(30),
+    IN p_imap_host VARCHAR(50),
+    IN p_imap_port INT,
+    IN p_is_active TINYINT(1)
+)
+BEGIN
+    UPDATE email_account
+       SET email_address = p_email_address,
+           app_password = p_app_password,
+           imap_host = p_imap_host,
+           imap_port = p_imap_port,
+           is_active = p_is_active
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_email_account_last_checked` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_email_account_last_checked`(
+    IN p_company_id INT,
+    IN p_id INT
+)
+BEGIN
+    UPDATE email_account
+       SET last_checked_at = NOW()
+     WHERE company_id = p_company_id
+       AND id = p_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_email_sender` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_email_sender`(
+    IN p_company_id INT,
+    IN p_id INT,
+    IN p_sender_address VARCHAR(50),
+    IN p_description VARCHAR(50),
+    IN p_is_active TINYINT(1)
+)
+BEGIN
+    UPDATE email_sender
+       SET sender_address = p_sender_address,
+           description = p_description,
+           is_active = p_is_active
+     WHERE company_id = p_company_id
+       AND id = p_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -5843,10 +6235,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `validate_payment_request`(
     IN p_id INT
 )
 BEGIN
+    DECLARE v_rows_updated INT DEFAULT 0;
+    DECLARE v_auto_approval_enabled INT DEFAULT 0;
+    DECLARE v_new_payment_id BIGINT DEFAULT 0;
+    DECLARE v_approval_failed INT DEFAULT 0;
+
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET v_approval_failed = 1;
+
     UPDATE `payment_request`
        SET is_validated = 1
      WHERE company_id = p_company_id
        AND id = p_id;
+
+    SET v_rows_updated = ROW_COUNT();
+
+    IF v_rows_updated > 0 THEN
+        SELECT COUNT(*) INTO v_auto_approval_enabled
+          FROM `company` c
+         WHERE c.id = p_company_id
+           AND c.auto_approval_enabled = 1
+           AND c.is_active = 1;
+
+        IF v_auto_approval_enabled > 0 THEN
+            CALL approve_payment_request(p_company_id, p_id, v_new_payment_id);
+        END IF;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -5863,4 +6276,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-22 21:45:54
+-- Dump completed on 2026-08-31 22:02:56

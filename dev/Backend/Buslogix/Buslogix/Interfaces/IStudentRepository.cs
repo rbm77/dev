@@ -7,6 +7,8 @@ namespace Buslogix.Interfaces
 
         Task<Student?> GetStudent(int companyId, int id);
 
+        Task<List<Student>> GetStudentsByIds(int companyId, string idsJson);
+
         Task<PagedResult<Student>> GetStudents(
             int companyId,
             bool? isActive,

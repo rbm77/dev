@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Buslogix.Models.DTO;
+using Buslogix.Utilities;
 
 namespace Buslogix.Middlewares
 {
@@ -11,6 +12,12 @@ namespace Buslogix.Middlewares
         {
 
             if (context.User?.Identity?.IsAuthenticated == false)
+            {
+                await _next(context);
+                return;
+            }
+
+            if (context.User?.FindFirst(ServiceAuth.ServiceTokenClaimType)?.Value == ServiceAuth.ServiceTokenClaimValue)
             {
                 await _next(context);
                 return;

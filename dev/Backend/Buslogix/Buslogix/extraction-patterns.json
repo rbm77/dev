@@ -1,0 +1,24 @@
+{
+  "ExtractionPatterns": {
+    "Patterns": [
+      {
+        "Name": "spei-transfer-notification",
+        "Regex": "Recibiste\\s+una\\s+transferencia\\s+SPEI\\s+por\\s+\\$(?<Amount>[\\d,]+\\.\\d{2})\\s+con\\s+referencia\\s+(?<Reference>[A-Za-z0-9-]+)\\s+el\\s+(?<Date>\\d{2}/\\d{2}/\\d{4})",
+        "AmountGroup": "Amount",
+        "ReferenceGroup": "Reference",
+        "DateGroup": "Date"
+      },
+      {
+        "Name": "oxxo-deposit-confirmation",
+        "Regex": "Dep[oó]sito\\s+en\\s+OXXO\\s+confirmado:\\s+monto\\s+\\$(?<Amount>[\\d,]+\\.\\d{2}),\\s+folio\\s+(?<Reference>[A-Za-z0-9]+)",
+        "AmountGroup": "Amount",
+        "ReferenceGroup": "Reference",
+        "DateGroup": null
+      }
+    ]
+  },
+  "LlmFallback": {
+    "PromptTemplate": "Extract the amount, reference, and date from the following message. Respond ONLY with JSON matching {\"amount\": number, \"reference\": string, \"date\": \"yyyy-MM-dd or null\"}.\n\nMessage: \"{{message}}\"",
+    "Model": "claude-sonnet-5"
+  }
+}

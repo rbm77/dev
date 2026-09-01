@@ -26,6 +26,8 @@
         public const string DEBTOR = "DEBTOR";
         public const string PAYMENT_REQUEST = "PAYMENT_REQUEST";
         public const string PAYMENT_APPROVAL = "PAYMENT_APPROVAL";
+        public const string EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
+        public const string EMAIL_SENDER = "EMAIL_SENDER";
 
     }
 }

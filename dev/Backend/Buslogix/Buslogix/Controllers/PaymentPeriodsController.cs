@@ -1,5 +1,6 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,13 @@ namespace Buslogix.Controllers
             return Ok(paymentPeriods);
         }
 
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> SchedulePaymentPeriod([FromHeader(Name = "Cia-Tkn")] string? companyToken)
+        [Authorize(AuthenticationSchemes = ServiceAuth.SchemeName)]
+        [HttpPost("schedule")]
+        public async Task<IActionResult> SchedulePaymentPeriods()
         {
-            if (string.IsNullOrEmpty(companyToken)) return BadRequest();
-            PaymentPeriod? paymentPeriod = await paymentPeriodService.SchedulePaymentPeriod(companyToken);
-            return paymentPeriod?.Id <= 0 ? BadRequest() : Ok(paymentPeriod);
+            if (HttpContext.GetServiceName() != "PaymentPeriodSchedulingService") return Forbid();
+            SchedulePaymentPeriodsResult result = await paymentPeriodService.SchedulePaymentPeriods();
+            return Ok(result);
         }
     }
 }

@@ -73,10 +73,11 @@ namespace Buslogix.Controllers
             return validated ? NoContent() : NotFound();
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}")]
+        [Authorize(AuthenticationSchemes = ServiceAuth.SchemeName)]
         [HttpPost("auto-approve")]
         public async Task<IActionResult> AutoApprovePaymentRequests()
         {
+            if (HttpContext.GetServiceName() != "PaymentAutoApprovalService") return Forbid();
             AutoApprovalResult result = await paymentRequestService.AutoApprovePaymentRequests();
             return Ok(result);
         }

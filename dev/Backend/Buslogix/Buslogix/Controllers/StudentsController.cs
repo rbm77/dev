@@ -1,5 +1,6 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,15 @@ namespace Buslogix.Controllers
             int companyId = HttpContext.GetCompanyId();
             Student? student = await studentService.GetStudent(companyId, id);
             return student == null ? NotFound() : Ok(student);
+        }
+
+        [Authorize(Policy = $"{Resources.STUDENT}.{PermissionMode.READ}")]
+        [HttpPost("qr-codes")]
+        public async Task<IActionResult> GenerateStudentQrCodes([FromBody] StudentQrCodeRequest request)
+        {
+            int companyId = HttpContext.GetCompanyId();
+            List<QrCodeResponseItem> result = await studentService.GenerateStudentQrCodes(companyId, request.StudentIds, request.Size);
+            return Ok(result);
         }
 
         [Authorize(Policy = $"{Resources.STUDENT}.{PermissionMode.WRITE}")]

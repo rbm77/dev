@@ -46,4 +46,4 @@ CREATE TABLE `specific_exemption` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-22 21:45:51
+-- Dump completed on 2026-08-31 22:02:53

@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Utilities;
 
 namespace Buslogix.Repositories
@@ -35,22 +36,18 @@ namespace Buslogix.Repositories
             };
         }
 
-        public async Task<PaymentPeriod?> SchedulePaymentPeriod(string companyToken)
+        public async Task<SchedulePaymentPeriodsResult> SchedulePaymentPeriods()
         {
-            Dictionary<string, object?> parameters = new()
-            {
-                ["p_company_token"] = companyToken
-            };
-
-            List<PaymentPeriod> rows = await dataAccess.ExecuteReader("schedule_payment_period", CommandType.StoredProcedure,
-                static reader => new PaymentPeriod
+            List<SchedulePaymentPeriodsResult> rows = await dataAccess.ExecuteReader("schedule_payment_periods", CommandType.StoredProcedure,
+                static reader => new SchedulePaymentPeriodsResult
                 {
-                    Id = reader.GetInt32OrDefault(0),
-                    RequestId = reader.GetInt32OrDefault(1),
-                    PaymentDate = reader.GetDateTimeOrDefault(2)
-                }, parameters);
+                    ProcessedCount = reader.GetInt32OrDefault(0),
+                    ScheduledCount = reader.GetInt32OrDefault(1),
+                    SkippedCount = reader.GetInt32OrDefault(2),
+                    FailedCount = reader.GetInt32OrDefault(3)
+                }, null);
 
-            return rows.Count > 0 ? rows[0] : null;
+            return rows.Count > 0 ? rows[0] : new SchedulePaymentPeriodsResult();
         }
     }
 }

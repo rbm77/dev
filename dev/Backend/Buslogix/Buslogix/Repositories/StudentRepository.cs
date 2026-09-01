@@ -32,6 +32,28 @@ namespace Buslogix.Repositories
             return rows.Count > 0 ? rows[0] : null;
         }
 
+        public async Task<List<Student>> GetStudentsByIds(int companyId, string idsJson)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_ids_json"] = idsJson
+            };
+
+            return await dataAccess.ExecuteReader("get_students_by_ids", CommandType.StoredProcedure,
+                static reader => new Student
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    Name = reader.GetStringOrDefault(1),
+                    LastName = reader.GetStringOrDefault(2),
+                    Address = reader.GetStringOrDefault(3),
+                    IdentityDocument = reader.GetStringOrDefault(4),
+                    RouteId = reader.GetInt32OrDefault(5),
+                    GradeId = reader.GetInt32OrDefault(6),
+                    IsActive = reader.GetBooleanOrDefault(7)
+                }, parameters);
+        }
+
         public async Task<PagedResult<Student>> GetStudents(
             int companyId,
             bool? isActive,

@@ -19,5 +19,10 @@ namespace Buslogix.Utilities
         {
             return int.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         }
+
+        public static string? GetServiceName(this HttpContext context)
+        {
+            return context.User.FindFirstValue(ServiceAuth.ServiceNameClaimType);
+        }
     }
 }

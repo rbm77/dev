@@ -1,5 +1,6 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 
 namespace Buslogix.Services
 {
@@ -11,9 +12,9 @@ namespace Buslogix.Services
             return await paymentPeriodRepository.GetPaymentPeriods(companyId, requestId, page, pageSize);
         }
 
-        public async Task<PaymentPeriod?> SchedulePaymentPeriod(string companyToken)
+        public async Task<SchedulePaymentPeriodsResult> SchedulePaymentPeriods()
         {
-            return await paymentPeriodRepository.SchedulePaymentPeriod(companyToken);
+            return await paymentPeriodRepository.SchedulePaymentPeriods();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Buslogix.Models;
+using Buslogix.Models.DTO;
 
 namespace Buslogix.Interfaces
 {
@@ -6,6 +7,8 @@ namespace Buslogix.Interfaces
     {
 
         Task<Student?> GetStudent(int companyId, int id);
+
+        Task<List<QrCodeResponseItem>> GenerateStudentQrCodes(int companyId, List<int> studentIds, int size);
 
         Task<PagedResult<Student>> GetStudents(
             int companyId,

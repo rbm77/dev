@@ -1,18 +1,23 @@
 using System.Text;
 using Buslogix.DataAccess;
+using Buslogix.EmailIngestion;
 using Buslogix.Handlers;
 using Buslogix.Interfaces;
+using Buslogix.MessageExtraction;
 using Buslogix.Middlewares;
 using Buslogix.Models;
 using Buslogix.Repositories;
 using Buslogix.Services;
 using Buslogix.Utilities;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using TokenHandler = Buslogix.Handlers.TokenHandler;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("extraction-patterns.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -84,6 +89,10 @@ builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
+builder.Services.AddScoped<IEmailAccountRepository, EmailAccountRepository>();
+builder.Services.AddScoped<IEmailAccountService, EmailAccountService>();
+builder.Services.AddScoped<IEmailSenderRepository, EmailSenderRepository>();
+builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
 
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
@@ -109,7 +118,8 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
-});
+})
+.AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ServiceAuth.SchemeName, _ => { });
 
 builder.Services.AddAuthorization(options =>
 {
@@ -125,6 +135,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddOpenApi();
+builder.Services.AddMessageExtraction();
+builder.Services.AddEmailIngestion();
 
 WebApplication app = builder.Build();
 

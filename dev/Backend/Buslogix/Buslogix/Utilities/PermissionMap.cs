@@ -47,7 +47,11 @@
             { "41", $"{Resources.DEBTOR}.{PermissionMode.READ}" },
             { "42", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.WRITE}" },
             { "43", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.READ}" },
-            { "44", $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}" }
+            { "44", $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}" },
+            { "45", $"{Resources.EMAIL_ACCOUNT}.{PermissionMode.WRITE}" },
+            { "46", $"{Resources.EMAIL_ACCOUNT}.{PermissionMode.READ}" },
+            { "47", $"{Resources.EMAIL_SENDER}.{PermissionMode.WRITE}" },
+            { "48", $"{Resources.EMAIL_SENDER}.{PermissionMode.READ}" }
 
         };
 
