@@ -4904,6 +4904,7 @@ BEGIN
     DECLARE v_scheduled_count  INT DEFAULT 0;
     DECLARE v_skipped_count    INT DEFAULT 0;
     DECLARE v_failed_count     INT DEFAULT 0;
+    DECLARE v_got_lock         INT DEFAULT 0;
 
     DECLARE cur_companies CURSOR FOR
         SELECT c.id
@@ -4913,87 +4914,98 @@ BEGIN
 
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
 
-    SET v_today = CURRENT_DATE;
+    SET v_got_lock = GET_LOCK('schedule_payment_periods_lock', 10);
 
-    OPEN cur_companies;
+    IF v_got_lock = 1 THEN
+        SET v_today = CURRENT_DATE;
 
-    company_loop: LOOP
-        FETCH cur_companies INTO v_company_id;
-        IF v_done = 1 THEN
-            LEAVE company_loop;
-        END IF;
+        OPEN cur_companies;
 
-        SET v_processed_count = v_processed_count + 1;
-        SET v_call_failed = 0;
-        SET v_is_skipped = 0;
-        SET v_exist_future_id = NULL;
-        SET v_request_id = NULL;
+        company_loop: LOOP
+            FETCH cur_companies INTO v_company_id;
+            IF v_done = 1 THEN
+                LEAVE company_loop;
+            END IF;
 
-        per_company: BEGIN
+            SET v_processed_count = v_processed_count + 1;
+            SET v_call_failed = 0;
+            SET v_is_skipped = 0;
+            SET v_exist_future_id = NULL;
+            SET v_request_id = NULL;
 
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_ignore_not_found = 1;
-            DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET v_call_failed = 1;
+            per_company: BEGIN
 
-            SELECT pp.id
-              INTO v_exist_future_id
-              FROM payment_period pp
-             WHERE pp.company_id = v_company_id
-               AND pp.payment_date > v_today
-             ORDER BY pp.payment_date ASC
-             LIMIT 1;
+                DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_ignore_not_found = 1;
+                DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET v_call_failed = 1;
 
-            IF v_exist_future_id IS NOT NULL THEN
-                SET v_is_skipped = 1;
-            ELSE
-                SELECT pr.id, pr.start_date, pr.days_to_next_payment
-                  INTO v_request_id, v_start_date, v_days
-                  FROM payment_period_request pr
-                 WHERE pr.company_id = v_company_id
-                   AND pr.start_date <= v_today
-                 ORDER BY pr.start_date DESC
+                SELECT pp.id
+                  INTO v_exist_future_id
+                  FROM payment_period pp
+                 WHERE pp.company_id = v_company_id
+                   AND pp.payment_date > v_today
+                 ORDER BY pp.payment_date ASC
                  LIMIT 1;
 
-                IF v_request_id IS NULL THEN
+                IF v_exist_future_id IS NOT NULL THEN
                     SET v_is_skipped = 1;
                 ELSE
-                    SELECT COALESCE(MAX(pp.payment_date), v_start_date)
-                      INTO v_last_or_start
-                      FROM payment_period pp
-                     WHERE pp.company_id = v_company_id
-                       AND pp.request_id = v_request_id;
-
-                    SET v_new_payment_date = DATE_ADD(v_last_or_start, INTERVAL v_days DAY);
-
-                    SELECT id
-                      INTO v_new_id
-                      FROM payment_period
-                     WHERE company_id = v_company_id
-                     ORDER BY id DESC
+                    SELECT pr.id, pr.start_date, pr.days_to_next_payment
+                      INTO v_request_id, v_start_date, v_days
+                      FROM payment_period_request pr
+                     WHERE pr.company_id = v_company_id
+                       AND pr.start_date <= v_today
+                     ORDER BY pr.start_date DESC
                      LIMIT 1;
 
-                    SET v_new_id = IFNULL(v_new_id, 0) + 1;
+                    IF v_request_id IS NULL THEN
+                        SET v_is_skipped = 1;
+                    ELSE
+                        SELECT COALESCE(MAX(pp.payment_date), v_start_date)
+                          INTO v_last_or_start
+                          FROM payment_period pp
+                         WHERE pp.company_id = v_company_id
+                           AND pp.request_id = v_request_id;
 
-                    INSERT INTO payment_period (company_id, id, request_id, payment_date)
-                    VALUES (v_company_id, v_new_id, v_request_id, v_new_payment_date);
+                        SET v_new_payment_date = DATE_ADD(v_last_or_start, INTERVAL v_days DAY);
+
+                        SELECT id
+                          INTO v_new_id
+                          FROM payment_period
+                         WHERE company_id = v_company_id
+                         ORDER BY id DESC
+                         LIMIT 1;
+
+                        SET v_new_id = IFNULL(v_new_id, 0) + 1;
+
+                        INSERT INTO payment_period (company_id, id, request_id, payment_date)
+                        VALUES (v_company_id, v_new_id, v_request_id, v_new_payment_date);
+                    END IF;
                 END IF;
+            END per_company;
+
+            IF v_call_failed = 1 THEN
+                SET v_failed_count = v_failed_count + 1;
+            ELSEIF v_is_skipped = 1 THEN
+                SET v_skipped_count = v_skipped_count + 1;
+            ELSE
+                SET v_scheduled_count = v_scheduled_count + 1;
             END IF;
-        END per_company;
+        END LOOP;
 
-        IF v_call_failed = 1 THEN
-            SET v_failed_count = v_failed_count + 1;
-        ELSEIF v_is_skipped = 1 THEN
-            SET v_skipped_count = v_skipped_count + 1;
-        ELSE
-            SET v_scheduled_count = v_scheduled_count + 1;
-        END IF;
-    END LOOP;
+        CLOSE cur_companies;
 
-    CLOSE cur_companies;
+        DO RELEASE_LOCK('schedule_payment_periods_lock');
 
-    SELECT v_processed_count AS processed_count,
-           v_scheduled_count AS scheduled_count,
-           v_skipped_count   AS skipped_count,
-           v_failed_count    AS failed_count;
+        SELECT v_processed_count AS processed_count,
+               v_scheduled_count AS scheduled_count,
+               v_skipped_count   AS skipped_count,
+               v_failed_count    AS failed_count;
+    ELSE
+        SELECT 0 AS processed_count,
+               0 AS scheduled_count,
+               0 AS skipped_count,
+               0 AS failed_count;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -6276,4 +6288,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-31 22:02:56
+-- Dump completed on 2026-09-01 22:00:53

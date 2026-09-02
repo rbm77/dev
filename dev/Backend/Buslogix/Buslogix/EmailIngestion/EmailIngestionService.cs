@@ -60,10 +60,6 @@ namespace Buslogix.EmailIngestion
             return result;
         }
 
-        // Extracts and logs the result for one candidate message. Returns true
-        // (label it as processed) for both a match and a clean "no match" -
-        // only a genuine technical failure returns false, so it gets retried on
-        // the next poll instead of being silently skipped forever.
         private async Task<bool> HandleMessageAsync(EmailAccount account, string text, EmailIngestionResult result, CancellationToken ct)
         {
             try

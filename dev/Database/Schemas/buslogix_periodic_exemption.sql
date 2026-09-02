@@ -45,4 +45,4 @@ CREATE TABLE `periodic_exemption` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-31 22:02:54
+-- Dump completed on 2026-09-01 22:00:52
