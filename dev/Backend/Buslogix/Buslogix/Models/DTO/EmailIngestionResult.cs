@@ -4,8 +4,7 @@ namespace Buslogix.Models.DTO
     {
         public int AccountsChecked { get; set; }
         public int MessagesFound { get; set; }
-        public int MessagesExtracted { get; set; }
-        public int MessagesUnmatched { get; set; }
+        public int MessagesQueued { get; set; }
 
         public EmailIngestionResult() { }
     }

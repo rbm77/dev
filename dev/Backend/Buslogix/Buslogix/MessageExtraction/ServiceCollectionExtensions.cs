@@ -3,6 +3,8 @@ using Buslogix.MessageExtraction.Abstractions;
 using Buslogix.MessageExtraction.Configuration;
 using Buslogix.MessageExtraction.Llm;
 using Buslogix.MessageExtraction.Parsers;
+using Buslogix.MessageExtraction.Persistence;
+using Buslogix.MessageExtraction.Queue;
 
 namespace Buslogix.MessageExtraction
 {
@@ -40,6 +42,15 @@ namespace Buslogix.MessageExtraction
 
             services.AddScoped<ILlmExtractionFallback, LlmExtractionFallback>();
             services.AddScoped<IMessageExtractionService, MessageExtractor>();
+
+            // Async ingestion queue: producers (EmailIngestion's worker, the
+            // SMS controller) enqueue raw text here without waiting for
+            // extraction; MessageExtractionWorker consumes it in the
+            // background, regardless of source.
+            services.AddSingleton<IMessageIngestionQueue, MessageIngestionQueue>();
+            services.AddScoped<IMessageExtractionFailureRepository, MessageExtractionFailureRepository>();
+            services.AddScoped<IMessageExtractionResultRepository, MessageExtractionResultRepository>();
+            services.AddHostedService<MessageExtractionWorker>();
 
             return services;
         }

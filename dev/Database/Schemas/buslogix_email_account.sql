@@ -31,7 +31,8 @@ CREATE TABLE `email_account` (
   `imap_port` int NOT NULL DEFAULT '993',
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
   `last_checked_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`company_id`,`id`)
+  PRIMARY KEY (`company_id`,`id`),
+  CONSTRAINT `fk_email_account_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -44,4 +45,4 @@ CREATE TABLE `email_account` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-01 22:00:51
+-- Dump completed on 2026-09-02 22:22:22

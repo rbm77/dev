@@ -1,6 +1,6 @@
 ﻿using Buslogix.Interfaces;
 using Buslogix.Models;
-using Buslogix.Models.DTO;
+using Buslogix.Triggers.Queues;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +9,9 @@ namespace Buslogix.Controllers
 {
     [Route("payment-periods")]
     [ApiController]
-    public class PaymentPeriodsController(IPaymentPeriodService paymentPeriodService) : ControllerBase
+    public class PaymentPeriodsController(
+        IPaymentPeriodService paymentPeriodService,
+        PaymentPeriodScheduleQueue paymentPeriodScheduleQueue) : ControllerBase
     {
 
         [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.READ}")]
@@ -26,11 +28,11 @@ namespace Buslogix.Controllers
 
         [Authorize(AuthenticationSchemes = ServiceAuth.SchemeName)]
         [HttpPost("schedule")]
-        public async Task<IActionResult> SchedulePaymentPeriods()
+        public IActionResult SchedulePaymentPeriods()
         {
             if (HttpContext.GetServiceName() != "PaymentPeriodSchedulingService") return Forbid();
-            SchedulePaymentPeriodsResult result = await paymentPeriodService.SchedulePaymentPeriods();
-            return Ok(result);
+            paymentPeriodScheduleQueue.TryTrigger();
+            return Accepted();
         }
     }
 }

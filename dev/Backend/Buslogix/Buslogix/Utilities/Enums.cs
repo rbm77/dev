@@ -24,5 +24,11 @@
             Error = 2,
             Warning = 3
         }
+
+        public enum IngestionSource
+        {
+            Email = 1,
+            Sms = 2
+        }
     }
 }

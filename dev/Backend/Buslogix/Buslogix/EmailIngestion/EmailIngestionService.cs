@@ -1,6 +1,7 @@
 using Buslogix.EmailIngestion.Abstractions;
 using Buslogix.Interfaces;
 using Buslogix.MessageExtraction.Abstractions;
+using Buslogix.MessageExtraction.Queue;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
 using static Buslogix.Utilities.Enums;
@@ -11,7 +12,7 @@ namespace Buslogix.EmailIngestion
         IEmailAccountRepository emailAccountRepository,
         IEmailSenderRepository emailSenderRepository,
         IEmailClient emailClient,
-        IMessageExtractionService messageExtractionService,
+        IMessageIngestionQueue messageIngestionQueue,
         ILogHandler logHandler) : IEmailIngestionService
     {
         private const int AllDataPageSize = 100000;
@@ -64,27 +65,26 @@ namespace Buslogix.EmailIngestion
         {
             try
             {
-                ExtractedData? extracted = await messageExtractionService.ExtractAsync(text, ct);
-                if (extracted != null)
-                {
-                    result.MessagesExtracted++;
-                    await logHandler.WriteLog(
-                        $"Email ingestion: extracted Amount={extracted.Amount}, Reference={extracted.Reference}, Date={extracted.Date} for company {account.CompanyId}.",
-                        LogType.Info);
-                }
-                else
-                {
-                    result.MessagesUnmatched++;
-                    await logHandler.WriteLog(
-                        $"Email ingestion: no extraction match for company {account.CompanyId}, account {account.EmailAddress}.",
-                        LogType.Warning);
-                }
+                // Hand the raw text off to the shared extraction queue and
+                // return immediately - extraction itself happens later, in
+                // the background, decoupled from this IMAP scan. "Processed"
+                // here means "queued", not "extracted": once labeled, MailKit
+                // will never surface this message again, so a failure past
+                // this point is handled by MessageExtractionWorker's own
+                // failure-table safety net, not by retrying the poll.
+                await messageIngestionQueue.EnqueueAsync(
+                    new IngestionItem(IngestionSource.Email, account.CompanyId, text, DateTime.UtcNow), ct);
+
+                result.MessagesQueued++;
+                await logHandler.WriteLog(
+                    $"Email ingestion: queued message for extraction, company {account.CompanyId}.",
+                    LogType.Info);
                 return true;
             }
             catch (Exception ex)
             {
                 await logHandler.WriteLog(
-                    $"Email ingestion: error extracting message for company {account.CompanyId}, account {account.EmailAddress}: {ex.Message}",
+                    $"Email ingestion: error queueing message for company {account.CompanyId}, account {account.EmailAddress}: {ex.Message}",
                     LogType.Error);
                 return false;
             }

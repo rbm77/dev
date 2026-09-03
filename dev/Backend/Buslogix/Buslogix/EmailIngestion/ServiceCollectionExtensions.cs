@@ -18,6 +18,11 @@ namespace Buslogix.EmailIngestion
             services.AddScoped<IEmailClient, MailKitEmailClient>();
             services.AddScoped<IEmailIngestionService, EmailIngestionService>();
 
+            // Trigger for the "poll" endpoint - its TriggerWorker is wired up
+            // in Program.cs, since it needs the ProcessAllAccountsAsync
+            // delegate composed there.
+            services.AddSingleton<EmailPollQueue>();
+
             return services;
         }
     }

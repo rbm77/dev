@@ -1,6 +1,6 @@
 using Buslogix.Interfaces;
 using Buslogix.Models;
-using Buslogix.Models.DTO;
+using Buslogix.Triggers.Queues;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +9,9 @@ namespace Buslogix.Controllers
 {
     [Route("payment-requests")]
     [ApiController]
-    public class PaymentRequestsController(IPaymentRequestService paymentRequestService) : ControllerBase
+    public class PaymentRequestsController(
+        IPaymentRequestService paymentRequestService,
+        PaymentAutoApprovalQueue paymentAutoApprovalQueue) : ControllerBase
     {
 
         [Authorize(Policy = $"{Resources.PAYMENT_REQUEST}.{PermissionMode.READ}")]
@@ -75,11 +77,11 @@ namespace Buslogix.Controllers
 
         [Authorize(AuthenticationSchemes = ServiceAuth.SchemeName)]
         [HttpPost("auto-approve")]
-        public async Task<IActionResult> AutoApprovePaymentRequests()
+        public IActionResult AutoApprovePaymentRequests()
         {
             if (HttpContext.GetServiceName() != "PaymentAutoApprovalService") return Forbid();
-            AutoApprovalResult result = await paymentRequestService.AutoApprovePaymentRequests();
-            return Ok(result);
+            paymentAutoApprovalQueue.TryTrigger();
+            return Accepted();
         }
     }
 }

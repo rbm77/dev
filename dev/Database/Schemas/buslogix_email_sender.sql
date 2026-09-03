@@ -28,7 +28,8 @@ CREATE TABLE `email_sender` (
   `sender_address` varchar(50) NOT NULL,
   `description` varchar(50) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`company_id`,`id`)
+  PRIMARY KEY (`company_id`,`id`),
+  CONSTRAINT `fk_email_sender_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -41,4 +42,4 @@ CREATE TABLE `email_sender` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-01 22:00:50
+-- Dump completed on 2026-09-02 22:22:22

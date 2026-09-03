@@ -1,18 +1,23 @@
 using System.Text;
 using Buslogix.DataAccess;
 using Buslogix.EmailIngestion;
+using Buslogix.EmailIngestion.Abstractions;
 using Buslogix.Handlers;
 using Buslogix.Interfaces;
 using Buslogix.MessageExtraction;
 using Buslogix.Middlewares;
 using Buslogix.Models;
+using Buslogix.Models.DTO;
 using Buslogix.Repositories;
 using Buslogix.Services;
+using Buslogix.Triggers;
+using Buslogix.Triggers.Queues;
 using Buslogix.Utilities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using static Buslogix.Utilities.Enums;
 using TokenHandler = Buslogix.Handlers.TokenHandler;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -137,6 +142,47 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddMessageExtraction();
 builder.Services.AddEmailIngestion();
+
+// Background triggers: each endpoint below only signals its TriggerQueue and
+// returns immediately - the actual work runs on its own TriggerWorker
+// instance, in its own DI scope, never overlapping with itself.
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<EmailPollQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        EmailIngestionResult result = await services.GetRequiredService<IEmailIngestionService>().ProcessAllAccountsAsync(ct);
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Email poll completed: {result.AccountsChecked} accounts checked, {result.MessagesFound} messages found, {result.MessagesQueued} queued for extraction.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
+
+builder.Services.AddSingleton<PaymentPeriodScheduleQueue>();
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<PaymentPeriodScheduleQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        SchedulePaymentPeriodsResult result = await services.GetRequiredService<IPaymentPeriodService>().SchedulePaymentPeriods();
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Payment period scheduling completed: {result.ProcessedCount} processed, {result.ScheduledCount} scheduled, {result.SkippedCount} skipped, {result.FailedCount} failed.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
+
+builder.Services.AddSingleton<PaymentAutoApprovalQueue>();
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<PaymentAutoApprovalQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        AutoApprovalResult result = await services.GetRequiredService<IPaymentRequestService>().AutoApprovePaymentRequests();
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Payment auto-approval completed: {result.ProcessedCount} processed, {result.ApprovedCount} approved, {result.FailedCount} failed.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
 
 WebApplication app = builder.Build();
 
