@@ -8,5 +8,13 @@ namespace Buslogix.MessageExtraction.Abstractions
     public interface IMessageExtractionFailureRepository
     {
         Task InsertAsync(int companyId, string rawText);
+
+        /// <summary>
+        /// Atomically reads and deletes every row currently in
+        /// message_extraction_failure, for the retry trigger to requeue.
+        /// The rows are gone from the table as soon as this returns -
+        /// there is no separate delete step.
+        /// </summary>
+        Task<List<ClaimedExtractionFailure>> ClaimAllForRetryAsync();
     }
 }

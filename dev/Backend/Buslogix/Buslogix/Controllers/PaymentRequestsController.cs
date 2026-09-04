@@ -11,7 +11,8 @@ namespace Buslogix.Controllers
     [ApiController]
     public class PaymentRequestsController(
         IPaymentRequestService paymentRequestService,
-        PaymentAutoApprovalQueue paymentAutoApprovalQueue) : ControllerBase
+        PaymentAutoApprovalQueue paymentAutoApprovalQueue,
+        PaymentMatchSweepQueue paymentMatchSweepQueue) : ControllerBase
     {
 
         [Authorize(Policy = $"{Resources.PAYMENT_REQUEST}.{PermissionMode.READ}")]
@@ -81,6 +82,15 @@ namespace Buslogix.Controllers
         {
             if (HttpContext.GetServiceName() != "PaymentAutoApprovalService") return Forbid();
             paymentAutoApprovalQueue.TryTrigger();
+            return Accepted();
+        }
+
+        [Authorize(AuthenticationSchemes = ServiceAuth.SchemeName)]
+        [HttpPost("match-pending")]
+        public IActionResult MatchPendingPaymentRequests()
+        {
+            if (HttpContext.GetServiceName() != "PaymentMatchingService") return Forbid();
+            paymentMatchSweepQueue.TryTrigger();
             return Accepted();
         }
     }

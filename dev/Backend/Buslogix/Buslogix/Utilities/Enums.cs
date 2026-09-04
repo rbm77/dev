@@ -28,7 +28,8 @@
         public enum IngestionSource
         {
             Email = 1,
-            Sms = 2
+            Sms = 2,
+            Retry = 3
         }
     }
 }

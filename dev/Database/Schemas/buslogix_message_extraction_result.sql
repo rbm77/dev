@@ -30,6 +30,7 @@ CREATE TABLE `message_extraction_result` (
   `date` date DEFAULT NULL,
   `extracted_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_message_extraction_result_reference` (`reference`),
   KEY `idx_message_extraction_result_company` (`company_id`),
   CONSTRAINT `fk_message_extraction_result_company` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -44,4 +45,4 @@ CREATE TABLE `message_extraction_result` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-02 22:22:22
+-- Dump completed on 2026-09-04  0:04:09

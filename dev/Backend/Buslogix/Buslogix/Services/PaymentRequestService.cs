@@ -1,10 +1,14 @@
 using Buslogix.Interfaces;
+using Buslogix.Matching;
+using Buslogix.Matching.Abstractions;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
 
 namespace Buslogix.Services
 {
-    public class PaymentRequestService(IPaymentRequestRepository paymentRequestRepository) : IPaymentRequestService
+    public class PaymentRequestService(
+        IPaymentRequestRepository paymentRequestRepository,
+        IPaymentMatchQueue paymentMatchQueue) : IPaymentRequestService
     {
 
         public async Task<PaymentRequest?> GetPaymentRequest(int companyId, int id)
@@ -19,7 +23,17 @@ namespace Buslogix.Services
 
         public async Task<int> InsertPaymentRequest(int companyId, PaymentRequest paymentRequest)
         {
-            return await paymentRequestRepository.InsertPaymentRequest(companyId, paymentRequest);
+            int id = await paymentRequestRepository.InsertPaymentRequest(companyId, paymentRequest);
+
+            if (id > 0)
+            {
+                // Inserted successfully - try to pair it against a pending
+                // message_extraction_result in the background, without
+                // holding up this request.
+                await paymentMatchQueue.EnqueueAsync(new PaymentMatchRequest(companyId, paymentRequest.ReceiptReference));
+            }
+
+            return id;
         }
 
         public async Task<long> ApprovePaymentRequest(int companyId, int id)

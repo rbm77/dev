@@ -4,7 +4,10 @@ using Buslogix.EmailIngestion;
 using Buslogix.EmailIngestion.Abstractions;
 using Buslogix.Handlers;
 using Buslogix.Interfaces;
+using Buslogix.Matching;
+using Buslogix.Matching.Abstractions;
 using Buslogix.MessageExtraction;
+using Buslogix.MessageExtraction.Abstractions;
 using Buslogix.Middlewares;
 using Buslogix.Models;
 using Buslogix.Models.DTO;
@@ -142,6 +145,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddMessageExtraction();
 builder.Services.AddEmailIngestion();
+builder.Services.AddPaymentMatching();
 
 // Background triggers: each endpoint below only signals its TriggerQueue and
 // returns immediately - the actual work runs on its own TriggerWorker
@@ -180,6 +184,45 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
         AutoApprovalResult result = await services.GetRequiredService<IPaymentRequestService>().AutoApprovePaymentRequests();
         await services.GetRequiredService<ILogHandler>().WriteLog(
             $"Payment auto-approval completed: {result.ProcessedCount} processed, {result.ApprovedCount} approved, {result.FailedCount} failed.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
+
+builder.Services.AddSingleton<PaymentMatchSweepQueue>();
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<PaymentMatchSweepQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        MatchSweepResult result = await services.GetRequiredService<IPaymentMatchingRepository>().MatchPendingPaymentRequests();
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Payment match sweep completed: {result.MatchedCount} matched. Auto-approval of newly-validated requests runs separately via auto_approve_payment_requests.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
+
+builder.Services.AddSingleton<MessageExtractionRetryQueue>();
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<MessageExtractionRetryQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        int requeuedCount = await services.GetRequiredService<IMessageExtractionMaintenanceService>().RetryFailedExtractionsAsync(ct);
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Message extraction retry completed: {requeuedCount} failed message(s) requeued for extraction.",
+            LogType.Info);
+    },
+    sp.GetRequiredService<ILogHandler>()));
+
+builder.Services.AddSingleton<MessageExtractionPurgeQueue>();
+builder.Services.AddHostedService(sp => new TriggerWorker(
+    sp.GetRequiredService<MessageExtractionPurgeQueue>(),
+    sp.GetRequiredService<IServiceScopeFactory>(),
+    async (services, ct) =>
+    {
+        MessageExtractionPurgeResult result = await services.GetRequiredService<IMessageExtractionMaintenanceService>().PurgeExpiredRecordsAsync();
+        await services.GetRequiredService<ILogHandler>().WriteLog(
+            $"Message extraction purge completed: {result.FailuresDeletedCount} failure record(s) and {result.ResultsDeletedCount} result record(s) older than 3 days deleted.",
             LogType.Info);
     },
     sp.GetRequiredService<ILogHandler>()));

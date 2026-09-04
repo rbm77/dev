@@ -52,6 +52,12 @@ namespace Buslogix.MessageExtraction
             services.AddScoped<IMessageExtractionResultRepository, MessageExtractionResultRepository>();
             services.AddHostedService<MessageExtractionWorker>();
 
+            // Housekeeping behind the retry-failures/purge-history trigger
+            // endpoints (see MessageExtractionController and the two
+            // TriggerWorker registrations in Program.cs).
+            services.AddScoped<IMessageExtractionHistoryRepository, MessageExtractionHistoryRepository>();
+            services.AddScoped<IMessageExtractionMaintenanceService, MessageExtractionMaintenanceService>();
+
             return services;
         }
     }
