@@ -1,0 +1,33 @@
+﻿namespace Buslogix.Common.Auth
+{
+    public static class Resources
+    {
+
+        public const string COMPANY = "COMPANY";
+        public const string ROLE = "ROLE";
+        public const string USER = "USER";
+        public const string OWN_USER = "OWN_USER";
+        public const string EMPLOYEE = "EMPLOYEE";
+        public const string SALARY = "SALARY";
+        public const string VEHICLE = "VEHICLE";
+        public const string ROUTE = "ROUTE";
+        public const string GRADE = "GRADE";
+        public const string STUDENT = "STUDENT";
+        public const string CONTACT = "CONTACT";
+        public const string MAINTENANCE = "MAINTENANCE";
+        public const string INCIDENT = "INCIDENT";
+        public const string CUSTOM_TRANSPORT = "CUSTOM_TRANSPORT";
+        public const string EXPENSE = "EXPENSE";
+        public const string PAYMENT_PERIOD = "PAYMENT_PERIOD";
+        public const string VACATION = "VACATION";
+        public const string SPECIFIC_EXEMPTION = "SPECIFIC_EXEMPTION";
+        public const string PERIODIC_EXEMPTION = "PERIODIC_EXEMPTION";
+        public const string PAYMENT = "PAYMENT";
+        public const string DEBTOR = "DEBTOR";
+        public const string PAYMENT_REQUEST = "PAYMENT_REQUEST";
+        public const string PAYMENT_APPROVAL = "PAYMENT_APPROVAL";
+        public const string EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
+        public const string EMAIL_SENDER = "EMAIL_SENDER";
+
+    }
+}

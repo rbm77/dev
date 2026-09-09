@@ -1,27 +1,16 @@
 using System.Text;
-using Buslogix.DataAccess;
-using Buslogix.EmailIngestion;
-using Buslogix.EmailIngestion.Abstractions;
-using Buslogix.Handlers;
-using Buslogix.Interfaces;
-using Buslogix.Matching;
-using Buslogix.Matching.Abstractions;
-using Buslogix.MessageExtraction;
-using Buslogix.MessageExtraction.Abstractions;
-using Buslogix.Middlewares;
-using Buslogix.Models;
-using Buslogix.Models.DTO;
-using Buslogix.Repositories;
-using Buslogix.Services;
-using Buslogix.Triggers;
-using Buslogix.Triggers.Queues;
-using Buslogix.Utilities;
+using Buslogix.Features.EmailIngestion;
+using Buslogix.Features.EmailIngestion.Abstractions;
+using Buslogix.Features.Matching;
+using Buslogix.Features.Matching.Abstractions;
+using Buslogix.Features.MessageExtraction;
+using Buslogix.Features.MessageExtraction.Abstractions;
+using Buslogix.Common.BackgroundJobs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using static Buslogix.Utilities.Enums;
-using TokenHandler = Buslogix.Handlers.TokenHandler;
+using static Buslogix.Common.Shared.Enums;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -41,67 +30,34 @@ builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySqlConnection") ?? "";
 builder.Services.AddScoped<IDataAccess>(provider => new MySqlDataAccess(connectionString));
-builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenHandler, TokenHandler>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
-builder.Services.AddScoped<ISalaryService, SalaryService>();
-builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
-builder.Services.AddScoped<IVehicleService, VehicleService>();
-builder.Services.AddScoped<IRouteRepository, RouteRepository>();
-builder.Services.AddScoped<IRouteService, RouteService>();
-builder.Services.AddScoped<IGradeRepository, GradeRepository>();
-builder.Services.AddScoped<IGradeService, GradeService>();
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<IContactRepository, ContactRepository>();
-builder.Services.AddScoped<IContactService, ContactService>();
-builder.Services.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
-builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
-builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
-builder.Services.AddScoped<IIncidentService, IncidentService>();
-builder.Services.AddScoped<ICustomTransportRepository, CustomTransportRepository>();
-builder.Services.AddScoped<ICustomTransportService, CustomTransportService>();
-builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
-builder.Services.AddScoped<IExpenseService, ExpenseService>();
-builder.Services.AddScoped<IFuelExpenseRepository, FuelExpenseRepository>();
-builder.Services.AddScoped<IFuelExpenseService, FuelExpenseService>();
-builder.Services.AddScoped<IMaintenanceExpenseRepository, MaintenanceExpenseRepository>();
-builder.Services.AddScoped<IMaintenanceExpenseService, MaintenanceExpenseService>();
-builder.Services.AddScoped<ISalaryExpenseRepository, SalaryExpenseRepository>();
-builder.Services.AddScoped<ISalaryExpenseService, SalaryExpenseService>();
-builder.Services.AddScoped<IIncidentExpenseRepository, IncidentExpenseRepository>();
-builder.Services.AddScoped<IIncidentExpenseService, IncidentExpenseService>();
-builder.Services.AddScoped<IPaymentPeriodRequestRepository, PaymentPeriodRequestRepository>();
-builder.Services.AddScoped<IPaymentPeriodRequestService, PaymentPeriodRequestService>();
-builder.Services.AddScoped<IPaymentPeriodRepository, PaymentPeriodRepository>();
-builder.Services.AddScoped<IPaymentPeriodService, PaymentPeriodService>();
-builder.Services.AddScoped<IVacationRepository, VacationRepository>();
-builder.Services.AddScoped<IVacationService, VacationService>();
-builder.Services.AddScoped<ISpecificExemptionRepository, SpecificExemptionRepository>();
-builder.Services.AddScoped<ISpecificExemptionService, SpecificExemptionService>();
-builder.Services.AddScoped<IPeriodicExemptionRepository, PeriodicExemptionRepository>();
-builder.Services.AddScoped<IPeriodicExemptionService, PeriodicExemptionService>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<IPaymentRequestRepository, PaymentRequestRepository>();
-builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
-builder.Services.AddScoped<IReportRepository, ReportRepository>();
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IQrCodeService, QrCodeService>();
-builder.Services.AddScoped<IEmailAccountRepository, EmailAccountRepository>();
-builder.Services.AddScoped<IEmailAccountService, EmailAccountService>();
-builder.Services.AddScoped<IEmailSenderRepository, EmailSenderRepository>();
-builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
-
+builder.Services.AddCompanies();
+builder.Services.AddUsers();
+builder.Services.AddRoles();
+builder.Services.AddEmployees();
+builder.Services.AddSalaries();
+builder.Services.AddVehicles();
+builder.Services.AddRoutes();
+builder.Services.AddGrades();
+builder.Services.AddStudents();
+builder.Services.AddContacts();
+builder.Services.AddMaintenances();
+builder.Services.AddIncidents();
+builder.Services.AddCustomTransports();
+builder.Services.AddExpenses();
+builder.Services.AddFuelExpenses();
+builder.Services.AddMaintenanceExpenses();
+builder.Services.AddSalaryExpenses();
+builder.Services.AddIncidentExpenses();
+builder.Services.AddPaymentPeriodRequests();
+builder.Services.AddPaymentPeriods();
+builder.Services.AddVacations();
+builder.Services.AddSpecificExemptions();
+builder.Services.AddPeriodicExemptions();
+builder.Services.AddPayments();
+builder.Services.AddPaymentRequests();
+builder.Services.AddReports();
+builder.Services.AddEmailAccounts();
+builder.Services.AddEmailSenders();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);
@@ -162,20 +118,18 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     },
     sp.GetRequiredService<ILogHandler>()));
 
-builder.Services.AddSingleton<PaymentPeriodScheduleQueue>();
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<PaymentPeriodScheduleQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),
     async (services, ct) =>
     {
-        SchedulePaymentPeriodsResult result = await services.GetRequiredService<IPaymentPeriodService>().SchedulePaymentPeriods();
+        SchedulePaymentPeriodsResult result = await services.GetRequiredService<IPaymentPeriodRepository>().SchedulePaymentPeriods();
         await services.GetRequiredService<ILogHandler>().WriteLog(
             $"Payment period scheduling completed: {result.ProcessedCount} processed, {result.ScheduledCount} scheduled, {result.SkippedCount} skipped, {result.FailedCount} failed.",
             LogType.Info);
     },
     sp.GetRequiredService<ILogHandler>()));
 
-builder.Services.AddSingleton<PaymentAutoApprovalQueue>();
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<PaymentAutoApprovalQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),
@@ -188,7 +142,6 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     },
     sp.GetRequiredService<ILogHandler>()));
 
-builder.Services.AddSingleton<PaymentMatchSweepQueue>();
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<PaymentMatchSweepQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),
@@ -201,7 +154,6 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     },
     sp.GetRequiredService<ILogHandler>()));
 
-builder.Services.AddSingleton<MessageExtractionRetryQueue>();
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<MessageExtractionRetryQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),
@@ -214,7 +166,6 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     },
     sp.GetRequiredService<ILogHandler>()));
 
-builder.Services.AddSingleton<MessageExtractionPurgeQueue>();
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<MessageExtractionPurgeQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),

@@ -1,0 +1,108 @@
+﻿using System.Data;
+
+namespace Buslogix.Features.Payments
+{
+    public class PaymentRepository(IDataAccess dataAccess) : IPaymentRepository
+    {
+
+        public async Task<Payment?> GetPayment(int companyId, long id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            List<Payment> rows = await dataAccess.ExecuteReader("get_payment", CommandType.StoredProcedure,
+                static reader => new Payment
+                {
+                    Id = reader.GetInt64OrDefault(0),
+                    Date = reader.GetDateTimeOrDefault(1),
+                    Amount = reader.GetDecimalOrDefault(2),
+                    StudentId = reader.GetInt32OrDefault(3),
+                    ReceiptReference = reader.GetStringOrDefault(4)
+                }, parameters);
+
+            return rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<PagedResult<Payment>> GetPayments(
+            int companyId,
+            DateTime? date = null,
+            int? studentId = null,
+            string? receiptReference = null,
+            int page = 1,
+            int pageSize = 20
+        )
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_date"] = date,
+                ["p_student_id"] = studentId,
+                ["p_receipt_reference"] = receiptReference,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
+            };
+
+            (List<Payment> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_payments", CommandType.StoredProcedure,
+                static reader => new Payment
+                {
+                    Id = reader.GetInt64OrDefault(0),
+                    Date = reader.GetDateTimeOrDefault(1),
+                    StudentId = reader.GetInt32OrDefault(2),
+                    ReceiptReference = reader.GetStringOrDefault(3)
+                }, parameters);
+
+            return new PagedResult<Payment>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<long> InsertPayment(int companyId, Payment payment)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_date"] = payment.Date,
+                ["p_amount"] = payment.Amount,
+                ["p_student_id"] = payment.StudentId,
+                ["p_receipt_reference"] = payment.ReceiptReference
+            };
+
+            object? result = await dataAccess.ExecuteScalar("insert_payment", CommandType.StoredProcedure, parameters);
+            return result != null ? (long)result : 0L;
+        }
+
+        public async Task<int> UpdatePayment(int companyId, long id, Payment payment)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_date"] = payment.Date,
+                ["p_amount"] = payment.Amount,
+                ["p_student_id"] = payment.StudentId,
+                ["p_receipt_reference"] = payment.ReceiptReference
+            };
+
+            object? result = await dataAccess.ExecuteScalar("update_payment", CommandType.StoredProcedure, parameters);
+            return result != null ? (int)result : 0;
+        }
+
+        public async Task<int> DeletePayment(int companyId, long id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            return await dataAccess.ExecuteNonQuery("delete_payment", CommandType.StoredProcedure, parameters);
+        }
+    }
+}

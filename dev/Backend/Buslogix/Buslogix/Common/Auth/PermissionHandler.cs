@@ -1,0 +1,39 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
+namespace Buslogix.Common.Auth
+{
+    public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+        {
+            Claim? claim = context.User.FindFirst("permissions");
+            if (claim != null)
+            {
+                string[] permissions = claim.Value.Split(',');
+
+                string resource = requirement.RequiredPermission.Split('.')[0];
+                string writePermission = $"{resource}.{PermissionMode.WRITE}";
+
+                if (PermissionMap.PermissionToCode.TryGetValue(writePermission, out string? writeCode))
+                {
+                    if (permissions.Contains(writeCode))
+                    {
+                        context.Succeed(requirement);
+                        return Task.CompletedTask;
+                    }
+                }
+
+                if (PermissionMap.PermissionToCode.TryGetValue(requirement.RequiredPermission, out string? requiredCode))
+                {
+                    if (permissions.Contains(requiredCode))
+                    {
+                        context.Succeed(requirement);
+                    }
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+}

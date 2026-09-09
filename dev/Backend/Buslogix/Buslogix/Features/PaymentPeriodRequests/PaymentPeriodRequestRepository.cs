@@ -1,0 +1,92 @@
+﻿using System.Data;
+
+namespace Buslogix.Features.PaymentPeriodRequests
+{
+    public class PaymentPeriodRequestRepository(IDataAccess dataAccess) : IPaymentPeriodRequestRepository
+    {
+
+        public async Task<PaymentPeriodRequest?> GetPaymentPeriodRequest(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            List<PaymentPeriodRequest> rows = await dataAccess.ExecuteReader("get_payment_period_request", CommandType.StoredProcedure,
+                static reader => new PaymentPeriodRequest
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    Amount = reader.GetDecimalOrDefault(1),
+                    StartDate = reader.GetDateTimeOrDefault(2),
+                    DaysToNextPayment = reader.GetInt32OrDefault(3)
+                }, parameters);
+
+            return rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<PagedResult<PaymentPeriodRequest>> GetPaymentPeriodRequests(int companyId, int page = 1, int pageSize = 20)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
+            };
+
+            (List<PaymentPeriodRequest> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_payment_period_requests", CommandType.StoredProcedure,
+                static reader => new PaymentPeriodRequest
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    StartDate = reader.GetDateTimeOrDefault(1),
+                }, parameters);
+
+            return new PagedResult<PaymentPeriodRequest>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<int> InsertPaymentPeriodRequest(int companyId, PaymentPeriodRequest request)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_amount"] = request.Amount,
+                ["p_start_date"] = request.StartDate,
+                ["p_days_to_next_payment"] = request.DaysToNextPayment
+            };
+
+            object? result = await dataAccess.ExecuteScalar("insert_payment_period_request", CommandType.StoredProcedure, parameters);
+            return result != null ? (int)result : 0;
+        }
+
+        public async Task<int> UpdatePaymentPeriodRequest(int companyId, int id, PaymentPeriodRequest request)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_amount"] = request.Amount,
+                ["p_start_date"] = request.StartDate,
+                ["p_days_to_next_payment"] = request.DaysToNextPayment
+            };
+
+            return await dataAccess.ExecuteNonQuery("update_payment_period_request", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> DeletePaymentPeriodRequest(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            return await dataAccess.ExecuteNonQuery("delete_payment_period_request", CommandType.StoredProcedure, parameters);
+        }
+    }
+}

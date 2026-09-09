@@ -1,0 +1,154 @@
+﻿using System.Data;
+using static Buslogix.Common.Shared.Enums;
+
+namespace Buslogix.Features.Maintenances
+{
+    public class MaintenanceRepository(IDataAccess dataAccess) : IMaintenanceRepository
+    {
+
+        public async Task<Maintenance?> GetMaintenance(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            List<Maintenance> rows = await dataAccess.ExecuteReader("get_maintenance", CommandType.StoredProcedure,
+                static reader => new Maintenance
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    VehicleId = reader.GetInt32OrDefault(1),
+                    Description = reader.GetStringOrDefault(2),
+                    Type = (MaintenanceType)reader.GetInt32OrDefault(3),
+                    ScheduledDate = reader.GetDateTimeOrDefault(4),
+                    CompletedDate = reader.GetDateTimeOrDefault(5)
+                }, parameters);
+
+            return rows.Count > 0 ? rows[0] : null;
+        }
+
+        public async Task<PagedResult<Maintenance>> GetPendingMaintenances(
+            int companyId,
+            int? vehicleId = null,
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
+        )
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_vehicle_id"] = vehicleId,
+                ["p_type"] = type.HasValue ? (int?)type.Value : null,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
+            };
+
+            (List<Maintenance> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_pending_maintenances", CommandType.StoredProcedure,
+                static reader => new Maintenance
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    VehicleId = reader.GetInt32OrDefault(1),
+                    Type = (MaintenanceType)reader.GetInt32OrDefault(2),
+                    ScheduledDate = reader.GetDateTimeOrDefault(3)
+                }, parameters);
+
+            return new PagedResult<Maintenance>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<PagedResult<Maintenance>> GetCompletedMaintenances(
+            int companyId,
+            int? vehicleId = null,
+            MaintenanceType? type = null,
+            int page = 1,
+            int pageSize = 20
+        )
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_vehicle_id"] = vehicleId,
+                ["p_type"] = type.HasValue ? (int?)type.Value : null,
+                ["p_page"] = page,
+                ["p_page_size"] = pageSize
+            };
+
+            (List<Maintenance> items, long totalCount) = await dataAccess.ExecuteReaderPaged("get_completed_maintenances", CommandType.StoredProcedure,
+                static reader => new Maintenance
+                {
+                    Id = reader.GetInt32OrDefault(0),
+                    VehicleId = reader.GetInt32OrDefault(1),
+                    Type = (MaintenanceType)reader.GetInt32OrDefault(2),
+                    CompletedDate = reader.GetDateTimeOrDefault(3)
+                }, parameters);
+
+            return new PagedResult<Maintenance>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<int> InsertMaintenance(int companyId, Maintenance maintenance)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_vehicle_id"] = maintenance.VehicleId,
+                ["p_description"] = maintenance.Description,
+                ["p_type"] = (int)maintenance.Type,
+                ["p_scheduled_date"] = maintenance.ScheduledDate
+            };
+
+            object? result = await dataAccess.ExecuteScalar("insert_maintenance", CommandType.StoredProcedure, parameters);
+            return result != null ? (int)result : 0;
+        }
+
+        public async Task<int> UpdateMaintenance(int companyId, int id, Maintenance maintenance)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_vehicle_id"] = maintenance.VehicleId,
+                ["p_description"] = maintenance.Description,
+                ["p_type"] = (int)maintenance.Type,
+                ["p_scheduled_date"] = maintenance.ScheduledDate
+            };
+
+            return await dataAccess.ExecuteNonQuery("update_maintenance", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> DeleteMaintenance(int companyId, int id)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id
+            };
+
+            return await dataAccess.ExecuteNonQuery("delete_maintenance", CommandType.StoredProcedure, parameters);
+        }
+
+        public async Task<int> CompleteMaintenance(int companyId, int id, Maintenance maintenance)
+        {
+            Dictionary<string, object?> parameters = new()
+            {
+                ["p_company_id"] = companyId,
+                ["p_id"] = id,
+                ["p_completed_date"] = maintenance.CompletedDate
+            };
+
+            return await dataAccess.ExecuteNonQuery("complete_maintenance", CommandType.StoredProcedure, parameters);
+        }
+    }
+}

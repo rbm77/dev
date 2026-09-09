@@ -1,0 +1,13 @@
+﻿namespace Buslogix.Features.Payments
+{
+    public class Payment
+    {
+        public long Id { get; set; }
+        public DateTime? Date { get; set; }
+        public decimal Amount { get; set; }
+        public int StudentId { get; set; }
+        public string? ReceiptReference { get; set; }
+
+        public Payment() { }
+    }
+}
