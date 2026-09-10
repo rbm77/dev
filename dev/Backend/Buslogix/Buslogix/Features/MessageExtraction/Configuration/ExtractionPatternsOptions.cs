@@ -1,8 +1,5 @@
 namespace Buslogix.Features.MessageExtraction.Configuration
 {
-    /// <summary>
-    /// Bound from the "ExtractionPatterns" section of extraction-patterns.json.
-    /// </summary>
     public class ExtractionPatternsOptions
     {
         public List<PatternDefinition> Patterns { get; set; } = [];

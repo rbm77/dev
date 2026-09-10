@@ -1,6 +1,6 @@
 using Buslogix.Features.EmailIngestion.Abstractions;
 using Buslogix.Features.MessageExtraction.Abstractions;
-using Buslogix.Features.MessageExtraction.Queue;
+using Buslogix.Features.MessageExtraction.Ingestion;
 using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.EmailIngestion
@@ -14,7 +14,7 @@ namespace Buslogix.Features.EmailIngestion
     {
         private const int AllDataPageSize = 100000;
 
-        public async Task<EmailIngestionResult> ProcessAllAccountsAsync(CancellationToken ct = default)
+        public async Task<EmailIngestionResult> ProcessAllAccounts(CancellationToken ct = default)
         {
             EmailIngestionResult result = new();
 
@@ -40,8 +40,8 @@ namespace Buslogix.Features.EmailIngestion
                         continue;
                     }
 
-                    int found = await emailClient.ProcessNewMessagesAsync(account, senderAddresses,
-                        text => HandleMessageAsync(account, text, result, ct), ct);
+                    int found = await emailClient.ProcessNewMessages(account, senderAddresses,
+                        text => HandleMessage(account, text, result, ct), ct);
 
                     result.MessagesFound += found;
                     result.AccountsChecked++;
@@ -58,18 +58,11 @@ namespace Buslogix.Features.EmailIngestion
             return result;
         }
 
-        private async Task<bool> HandleMessageAsync(EmailAccount account, string text, EmailIngestionResult result, CancellationToken ct)
+        private async Task<bool> HandleMessage(EmailAccount account, string text, EmailIngestionResult result, CancellationToken ct)
         {
             try
             {
-                // Hand the raw text off to the shared extraction queue and
-                // return immediately - extraction itself happens later, in
-                // the background, decoupled from this IMAP scan. "Processed"
-                // here means "queued", not "extracted": once labeled, MailKit
-                // will never surface this message again, so a failure past
-                // this point is handled by MessageExtractionWorker's own
-                // failure-table safety net, not by retrying the poll.
-                await messageIngestionQueue.EnqueueAsync(
+                await messageIngestionQueue.Enqueue(
                     new IngestionItem(IngestionSource.Email, account.CompanyId, text, DateTime.UtcNow), ct);
 
                 result.MessagesQueued++;

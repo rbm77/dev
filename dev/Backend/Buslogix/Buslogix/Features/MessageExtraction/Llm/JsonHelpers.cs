@@ -3,10 +3,6 @@ using System.Text.RegularExpressions;
 
 namespace Buslogix.Features.MessageExtraction.Llm
 {
-    /// <summary>
-    /// Defensive JSON parsing helper for LLM responses, which sometimes wrap their
-    /// JSON payload in a markdown code fence.
-    /// </summary>
     internal static class JsonHelpers
     {
         private static readonly Regex CodeFence = new(@"^```(?:json)?\s*|\s*```$", RegexOptions.Compiled | RegexOptions.IgnoreCase);

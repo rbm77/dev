@@ -1,4 +1,4 @@
-using Buslogix.Features.Matching;
+using Buslogix.Features.PaymentMatching;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

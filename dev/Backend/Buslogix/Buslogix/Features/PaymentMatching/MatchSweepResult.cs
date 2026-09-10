@@ -1,4 +1,4 @@
-namespace Buslogix.Features.Matching
+namespace Buslogix.Features.PaymentMatching
 {
     public class MatchSweepResult
     {

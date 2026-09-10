@@ -4,7 +4,6 @@ namespace Buslogix.Features.EmailAccounts
     public interface IEmailAccountRepository
     {
 
-        /// <summary>Pass companyId: null and isActive: true for a cross-tenant, active-only fetch (the polling job).</summary>
         Task<PagedResult<EmailAccount>> GetEmailAccounts(int? companyId, bool? isActive, int page, int pageSize);
 
         Task<int> InsertEmailAccount(int companyId, EmailAccount emailAccount);

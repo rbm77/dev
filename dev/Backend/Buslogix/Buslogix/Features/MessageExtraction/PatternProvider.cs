@@ -6,14 +6,10 @@ using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.MessageExtraction
 {
-    /// <summary>
-    /// Compiles the regex patterns from configuration once, and recompiles/atomically
-    /// swaps them whenever the backing configuration file changes on disk. Regular
-    /// message processing (GetPatterns) never touches the file system or recompiles
-    /// anything - it just reads the current immutable list reference, lock-free.
-    /// </summary>
     internal class PatternProvider : IPatternProvider
     {
+        private static readonly TimeSpan MatchTimeout = TimeSpan.FromSeconds(2);
+
         private readonly ILogHandler logHandler;
         private IReadOnlyList<CompiledPattern> patterns;
 
@@ -34,14 +30,11 @@ namespace Buslogix.Features.MessageExtraction
             {
                 try
                 {
-                    Regex regex = new(definition.Regex, RegexOptions.Compiled | RegexOptions.Singleline);
+                    Regex regex = new(definition.Regex, RegexOptions.Compiled | RegexOptions.Singleline, MatchTimeout);
                     compiled.Add(new CompiledPattern(definition.Name, regex, definition.AmountGroup, definition.ReferenceGroup, definition.DateGroup));
                 }
                 catch (ArgumentException ex)
                 {
-                    // Compile() runs synchronously from the constructor and from the
-                    // (also synchronous) OptionsMonitor.OnChange callback, so the async
-                    // WriteLog call is intentionally fire-and-forget here.
                     _ = logHandler.WriteLog($"Skipping malformed extraction pattern {definition.Name}: {ex.Message}", LogType.Warning);
                 }
             }

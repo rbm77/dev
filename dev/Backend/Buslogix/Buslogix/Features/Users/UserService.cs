@@ -65,7 +65,6 @@ namespace Buslogix.Features.Users
             NotificationData? notificationData = await userRepository.ResetPassword(credentials);
             if (notificationData != null && notificationData.CompanyId > 0)
             {
-                // TODO: Send email with new password
             }
         }
 

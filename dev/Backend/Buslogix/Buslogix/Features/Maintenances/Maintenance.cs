@@ -10,7 +10,7 @@ namespace Buslogix.Features.Maintenances
         public MaintenanceType Type { get; set; }
         public DateTime? ScheduledDate { get; set; }
         public DateTime? CompletedDate { get; set; }
- 
+
         public Maintenance() { }
     }
 }

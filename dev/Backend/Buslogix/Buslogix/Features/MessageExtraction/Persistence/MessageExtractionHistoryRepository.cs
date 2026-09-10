@@ -5,7 +5,7 @@ namespace Buslogix.Features.MessageExtraction.Persistence
 {
     public class MessageExtractionHistoryRepository(IDataAccess dataAccess) : IMessageExtractionHistoryRepository
     {
-        public async Task<MessageExtractionPurgeResult> PurgeExpiredRecordsAsync()
+        public async Task<MessageExtractionPurgeResult> PurgeExpiredRecords()
         {
             List<MessageExtractionPurgeResult> rows = await dataAccess.ExecuteReader("purge_message_extraction_history", CommandType.StoredProcedure,
                 static reader => new MessageExtractionPurgeResult(

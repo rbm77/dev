@@ -12,7 +12,7 @@ namespace Buslogix.Features.EmailIngestion.Imap
     {
         private const string ProcessedLabel = "Buslogix/Processed";
 
-        public async Task<int> ProcessNewMessagesAsync(
+        public async Task<int> ProcessNewMessages(
             EmailAccount account,
             IReadOnlyList<string> senderAddresses,
             Func<string, Task<bool>> handleMessageText,
@@ -35,11 +35,6 @@ namespace Buslogix.Features.EmailIngestion.Imap
             IMailFolder inbox = client.Inbox;
             await inbox.OpenAsync(FolderAccess.ReadWrite, ct);
 
-            // Server-side filtering: only candidates from an allowed sender, not
-            // already labeled as processed, within a recent window (performance -
-            // correctness comes entirely from the label exclusion, not the window).
-            // First-ever check for an account starts the window at today, not
-            // an arbitrary number of days back.
             string senderClause = string.Join(" OR ", senderAddresses.Select(address => $"from:{address}"));
             DateTime windowStart = account.LastCheckedAt?.AddHours(-1) ?? DateTime.UtcNow.Date;
             string rawQuery = $"({senderClause}) -label:\"{ProcessedLabel}\" after:{windowStart:yyyy/MM/dd}";
@@ -61,10 +56,6 @@ namespace Buslogix.Features.EmailIngestion.Imap
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    // A single bad message (parsing/extraction/handling failure)
-                    // must not block the rest of the batch or leave later
-                    // messages in this account unprocessed. It stays unlabeled,
-                    // so it will be retried on the next poll.
                     await logHandler.WriteLog(
                         $"Email ingestion: error processing message {uid} for account {account.EmailAddress} (company {account.CompanyId}): {ex.Message}",
                         LogType.Error);

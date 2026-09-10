@@ -4,19 +4,12 @@ using Buslogix.Features.MessageExtraction.Configuration;
 using Buslogix.Features.MessageExtraction.Llm;
 using Buslogix.Features.MessageExtraction.Parsers;
 using Buslogix.Features.MessageExtraction.Persistence;
-using Buslogix.Features.MessageExtraction.Queue;
+using Buslogix.Features.MessageExtraction.Ingestion;
 
 namespace Buslogix.Features.MessageExtraction
 {
     public static class ServiceCollectionExtensions
     {
-        /// <summary>
-        /// Registers the whole MessageExtraction feature: options binding, the Tier 1
-        /// config-driven regex parser, the Tier 2 LLM fallback (backed by the
-        /// Anthropic SDK), and the orchestrator. MessageExtractionWorker also
-        /// depends on IPaymentMatchQueue (Features/Matching) -
-        /// AddPaymentMatching() must also be called, in either order.
-        /// </summary>
         public static IServiceCollection AddMessageExtraction(this IServiceCollection services)
         {
             services.AddOptions<ExtractionPatternsOptions>().BindConfiguration("ExtractionPatterns");
@@ -25,9 +18,6 @@ namespace Buslogix.Features.MessageExtraction
             services.AddSingleton<IPatternProvider, PatternProvider>();
             services.AddSingleton<IMessageParser, ConfigDrivenRegexParser>();
 
-            // ApiKey is resolved directly from IConfiguration (never bound to
-            // LlmFallbackOptions) so the secret can't end up in an {@Options} log
-            // dump. Dev: dotnet user-secrets. Prod: env var LlmFallback__ApiKey.
             services.AddSingleton(sp =>
             {
                 IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
@@ -45,20 +35,11 @@ namespace Buslogix.Features.MessageExtraction
             services.AddScoped<ILlmExtractionFallback, LlmExtractionFallback>();
             services.AddScoped<IMessageExtractionService, MessageExtractor>();
 
-            // Async ingestion queue: producers (EmailIngestion's worker, the
-            // SMS controller) enqueue raw text here without waiting for
-            // extraction; MessageExtractionWorker consumes it in the
-            // background, regardless of source.
             services.AddSingleton<IMessageIngestionQueue, MessageIngestionQueue>();
             services.AddScoped<IMessageExtractionFailureRepository, MessageExtractionFailureRepository>();
             services.AddScoped<IMessageExtractionResultRepository, MessageExtractionResultRepository>();
             services.AddHostedService<MessageExtractionWorker>();
 
-            // Housekeeping behind the retry-failures/purge-history trigger
-            // endpoints (see MessageExtractionController). Their
-            // TriggerWorkers are wired up in Program.cs, since each needs
-            // its own IMessageExtractionMaintenanceService delegate
-            // composed there.
             services.AddScoped<IMessageExtractionHistoryRepository, MessageExtractionHistoryRepository>();
             services.AddScoped<IMessageExtractionMaintenanceService, MessageExtractionMaintenanceService>();
             services.AddSingleton<MessageExtractionRetryQueue>();

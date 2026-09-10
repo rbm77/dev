@@ -1,11 +1,11 @@
 using System.Data;
-using Buslogix.Features.Matching.Abstractions;
+using Buslogix.Features.PaymentMatching.Abstractions;
 
-namespace Buslogix.Features.Matching.Persistence
+namespace Buslogix.Features.PaymentMatching.Persistence
 {
     public class PaymentMatchingRepository(IDataAccess dataAccess) : IPaymentMatchingRepository
     {
-        public async Task<PaymentMatchResult> TryMatchAsync(int companyId, string reference)
+        public async Task<PaymentMatchResult> TryMatch(int companyId, string reference)
         {
             Dictionary<string, object?> parameters = new()
             {

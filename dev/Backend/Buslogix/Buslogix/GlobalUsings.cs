@@ -1,18 +1,3 @@
-// Global usings for this project's own namespaces.
-//
-// Reorganizing from technical layers (Controllers/Services/Repositories/Interfaces/Models)
-// into Feature Folders turned a handful of shared namespaces into ~30 small, per-feature
-// ones. Rather than scatter dozens of narrow `using Buslogix.Features.X;` lines across every
-// file that happens to reference another feature's repository/model (e.g. EmailIngestion
-// reading IEmailAccountRepository, or a controller referencing a shared DTO), they're made
-// globally visible here once.
-//
-// EmailIngestion, MessageExtraction and Matching are feature folders too (they just have
-// more internal structure - Abstractions/, Persistence/, etc. - than a plain CRUD entity),
-// but their sub-namespaces (e.g. Buslogix.Features.MessageExtraction.Llm) aren't globalized
-// here: only files that already need that specific piece reference it, via an explicit
-// `using`, same as any third-party dependency. Buslogix.Common.BackgroundJobs (the generic
-// TriggerQueue/TriggerWorker engine) follows the same rule - explicit `using` where used.
 
 global using Buslogix.Common.Auth;
 global using Buslogix.Common.Data;

@@ -1,8 +1,8 @@
 using System.Text;
 using Buslogix.Features.EmailIngestion;
 using Buslogix.Features.EmailIngestion.Abstractions;
-using Buslogix.Features.Matching;
-using Buslogix.Features.Matching.Abstractions;
+using Buslogix.Features.PaymentMatching;
+using Buslogix.Features.PaymentMatching.Abstractions;
 using Buslogix.Features.MessageExtraction;
 using Buslogix.Features.MessageExtraction.Abstractions;
 using Buslogix.Common.BackgroundJobs;
@@ -103,15 +103,12 @@ builder.Services.AddMessageExtraction();
 builder.Services.AddEmailIngestion();
 builder.Services.AddPaymentMatching();
 
-// Background triggers: each endpoint below only signals its TriggerQueue and
-// returns immediately - the actual work runs on its own TriggerWorker
-// instance, in its own DI scope, never overlapping with itself.
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<EmailPollQueue>(),
     sp.GetRequiredService<IServiceScopeFactory>(),
     async (services, ct) =>
     {
-        EmailIngestionResult result = await services.GetRequiredService<IEmailIngestionService>().ProcessAllAccountsAsync(ct);
+        EmailIngestionResult result = await services.GetRequiredService<IEmailIngestionService>().ProcessAllAccounts(ct);
         await services.GetRequiredService<ILogHandler>().WriteLog(
             $"Email poll completed: {result.AccountsChecked} accounts checked, {result.MessagesFound} messages found, {result.MessagesQueued} queued for extraction.",
             LogType.Info);
@@ -159,7 +156,7 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<IServiceScopeFactory>(),
     async (services, ct) =>
     {
-        int requeuedCount = await services.GetRequiredService<IMessageExtractionMaintenanceService>().RetryFailedExtractionsAsync(ct);
+        int requeuedCount = await services.GetRequiredService<IMessageExtractionMaintenanceService>().RetryFailedExtractions(ct);
         await services.GetRequiredService<ILogHandler>().WriteLog(
             $"Message extraction retry completed: {requeuedCount} failed message(s) requeued for extraction.",
             LogType.Info);
@@ -171,7 +168,7 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<IServiceScopeFactory>(),
     async (services, ct) =>
     {
-        MessageExtractionPurgeResult result = await services.GetRequiredService<IMessageExtractionMaintenanceService>().PurgeExpiredRecordsAsync();
+        MessageExtractionPurgeResult result = await services.GetRequiredService<IMessageExtractionMaintenanceService>().PurgeExpiredRecords();
         await services.GetRequiredService<ILogHandler>().WriteLog(
             $"Message extraction purge completed: {result.FailuresDeletedCount} failure record(s) and {result.ResultsDeletedCount} result record(s) older than 3 days deleted.",
             LogType.Info);

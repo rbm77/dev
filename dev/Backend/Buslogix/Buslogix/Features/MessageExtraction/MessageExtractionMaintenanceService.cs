@@ -1,5 +1,5 @@
 using Buslogix.Features.MessageExtraction.Abstractions;
-using Buslogix.Features.MessageExtraction.Queue;
+using Buslogix.Features.MessageExtraction.Ingestion;
 using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.MessageExtraction
@@ -9,19 +9,19 @@ namespace Buslogix.Features.MessageExtraction
         IMessageExtractionHistoryRepository historyRepository,
         IMessageIngestionQueue ingestionQueue) : IMessageExtractionMaintenanceService
     {
-        public async Task<int> RetryFailedExtractionsAsync(CancellationToken ct)
+        public async Task<int> RetryFailedExtractions(CancellationToken ct)
         {
-            List<ClaimedExtractionFailure> claimed = await failureRepository.ClaimAllForRetryAsync();
+            List<ClaimedExtractionFailure> claimed = await failureRepository.ClaimAllForRetry();
 
             foreach (ClaimedExtractionFailure failure in claimed)
             {
-                await ingestionQueue.EnqueueAsync(
+                await ingestionQueue.Enqueue(
                     new IngestionItem(IngestionSource.Retry, failure.CompanyId, failure.RawText, failure.ReceivedAt), ct);
             }
 
             return claimed.Count;
         }
 
-        public Task<MessageExtractionPurgeResult> PurgeExpiredRecordsAsync() => historyRepository.PurgeExpiredRecordsAsync();
+        public Task<MessageExtractionPurgeResult> PurgeExpiredRecords() => historyRepository.PurgeExpiredRecords();
     }
 }

@@ -2,21 +2,27 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Buslogix.Features.MessageExtraction.Abstractions;
 using Buslogix.Features.MessageExtraction.Configuration;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.MessageExtraction.Parsers
 {
-    /// <summary>
-    /// Tier 1 parser. Does not hardcode any pattern - iterates the compiled patterns
-    /// supplied by IPatternProvider, in order, and returns on the first one whose
-    /// named capture groups successfully map to ExtractedData.
-    /// </summary>
-    internal class ConfigDrivenRegexParser(IPatternProvider patternProvider) : IMessageParser
+    internal class ConfigDrivenRegexParser(IPatternProvider patternProvider, ILogHandler logHandler) : IMessageParser
     {
         public bool TryParse(string message, out ExtractedData? data)
         {
             foreach (CompiledPattern pattern in patternProvider.GetPatterns())
             {
-                Match match = pattern.Regex.Match(message);
+                Match match;
+                try
+                {
+                    match = pattern.Regex.Match(message);
+                }
+                catch (RegexMatchTimeoutException)
+                {
+                    _ = logHandler.WriteLog($"Pattern {pattern.Name} timed out against message, skipping.", LogType.Warning);
+                    continue;
+                }
+
                 if (!match.Success)
                 {
                     continue;

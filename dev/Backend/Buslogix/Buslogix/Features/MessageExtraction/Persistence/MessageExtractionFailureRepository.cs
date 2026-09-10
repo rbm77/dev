@@ -5,7 +5,7 @@ namespace Buslogix.Features.MessageExtraction.Persistence
 {
     public class MessageExtractionFailureRepository(IDataAccess dataAccess) : IMessageExtractionFailureRepository
     {
-        public async Task InsertAsync(int companyId, string rawText)
+        public async Task Insert(int companyId, string rawText)
         {
             Dictionary<string, object?> parameters = new()
             {
@@ -16,7 +16,7 @@ namespace Buslogix.Features.MessageExtraction.Persistence
             await dataAccess.ExecuteScalar("insert_message_extraction_failure", CommandType.StoredProcedure, parameters);
         }
 
-        public async Task<List<ClaimedExtractionFailure>> ClaimAllForRetryAsync()
+        public async Task<List<ClaimedExtractionFailure>> ClaimAllForRetry()
         {
             return await dataAccess.ExecuteReader("retry_message_extraction_failures", CommandType.StoredProcedure,
                 static reader => new ClaimedExtractionFailure(

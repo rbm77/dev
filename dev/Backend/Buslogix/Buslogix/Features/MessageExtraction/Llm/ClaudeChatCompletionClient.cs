@@ -9,24 +9,13 @@ using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.MessageExtraction.Llm
 {
-    /// <summary>
-    /// The only place in this feature that talks to the Anthropic API. Uses the
-    /// official Anthropic SDK against a shared singleton AnthropicClient; the model
-    /// id is configuration-driven (LlmFallbackOptions.Model) instead of hardcoded.
-    /// </summary>
     public class ClaudeChatCompletionClient(
         AnthropicClient anthropicClient,
         IOptionsMonitor<LlmFallbackOptions> optionsMonitor,
         ILogHandler logHandler) : IChatCompletionClient
     {
-        // Short, single-JSON-object extraction ({amount, reference, date}) never
-        // needs a large output ceiling; keep this tight.
         private const int MaxTokens = 1024;
 
-        // Mirrors ExtractedData(decimal Amount, string Reference, DateTime? Date).
-        // Forcing this schema via structured outputs means the response is
-        // guaranteed to parse - JsonHelpers.TryDeserialize failing becomes
-        // effectively impossible instead of something we hope the prompt prevents.
         private static readonly Dictionary<string, JsonElement> ExtractedDataSchema = new()
         {
             ["type"] = JsonSerializer.SerializeToElement("object"),
@@ -44,7 +33,7 @@ namespace Buslogix.Features.MessageExtraction.Llm
             ["additionalProperties"] = JsonSerializer.SerializeToElement(false)
         };
 
-        public async Task<string?> CompleteAsync(string prompt, CancellationToken ct)
+        public async Task<string?> Complete(string prompt, CancellationToken ct)
         {
             string model = optionsMonitor.CurrentValue.Model;
 
@@ -80,10 +69,6 @@ namespace Buslogix.Features.MessageExtraction.Llm
             }
             catch (AnthropicForbiddenException ex) when (ex.ErrorType == Anthropic.Models.ErrorType.BillingError)
             {
-                // The account's prepaid credit balance is exhausted (or a payment
-                // method needs attention). Logged as Error, not Warning, so this
-                // doesn't get lost among routine rate-limit/5xx retries - it needs a
-                // human to recharge at console.anthropic.com/settings/billing.
                 await logHandler.WriteLog(
                     $"Claude chat completion blocked: billing_error (likely out of API credit - recharge at console.anthropic.com/settings/billing). Details: {ex.Message}",
                     LogType.Error);

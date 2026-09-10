@@ -1,5 +1,5 @@
-using Buslogix.Features.Matching;
-using Buslogix.Features.Matching.Abstractions;
+using Buslogix.Features.PaymentMatching;
+using Buslogix.Features.PaymentMatching.Abstractions;
 
 namespace Buslogix.Features.PaymentRequests
 {
@@ -24,10 +24,7 @@ namespace Buslogix.Features.PaymentRequests
 
             if (id > 0)
             {
-                // Inserted successfully - try to pair it against a pending
-                // message_extraction_result in the background, without
-                // holding up this request.
-                await paymentMatchQueue.EnqueueAsync(new PaymentMatchRequest(companyId, paymentRequest.ReceiptReference));
+                await paymentMatchQueue.Enqueue(new PaymentMatchRequest(companyId, paymentRequest.ReceiptReference));
             }
 
             return id;

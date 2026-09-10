@@ -1,5 +1,5 @@
 using Buslogix.Features.MessageExtraction.Abstractions;
-using Buslogix.Features.MessageExtraction.Queue;
+using Buslogix.Features.MessageExtraction.Ingestion;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Buslogix.Common.Shared.Enums;
@@ -18,7 +18,7 @@ namespace Buslogix.Features.MessageExtraction
             if (HttpContext.GetServiceName() != "SmsIngestionService") return Forbid();
             if (string.IsNullOrWhiteSpace(dto.MessageText)) return BadRequest();
 
-            await messageIngestionQueue.EnqueueAsync(
+            await messageIngestionQueue.Enqueue(
                 new IngestionItem(IngestionSource.Sms, dto.CompanyId, dto.MessageText, DateTime.UtcNow));
 
             return Accepted();
