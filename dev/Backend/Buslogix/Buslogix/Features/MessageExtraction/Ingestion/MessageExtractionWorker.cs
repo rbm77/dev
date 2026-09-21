@@ -1,3 +1,5 @@
+using Buslogix.Common.BackgroundJobs;
+using Buslogix.Common.Llm;
 using Buslogix.Features.PaymentMatching;
 using Buslogix.Features.PaymentMatching.Abstractions;
 using Buslogix.Features.MessageExtraction.Abstractions;
@@ -9,56 +11,38 @@ namespace Buslogix.Features.MessageExtraction.Ingestion
         IMessageIngestionQueue queue,
         IPaymentMatchQueue paymentMatchQueue,
         IServiceScopeFactory scopeFactory,
-        ILogHandler logHandler) : BackgroundService
+        ILogHandler logHandler) : QueueConsumerWorker<IngestionItem>(queue, scopeFactory, logHandler, consumerCount: 2)
     {
-        private const int ConsumerCount = 2;
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ProcessItem(IServiceProvider sp, IngestionItem item, CancellationToken ct)
         {
-            IEnumerable<Task> consumers = Enumerable.Range(0, ConsumerCount)
-                .Select(_ => Consume(stoppingToken));
-
-            return Task.WhenAll(consumers);
-        }
-
-        private async Task Consume(CancellationToken ct)
-        {
-            await foreach (IngestionItem item in queue.DequeueAll(ct))
+            try
             {
-                using IServiceScope scope = scopeFactory.CreateScope();
+                IMessageExtractionService extractionService = sp.GetRequiredService<IMessageExtractionService>();
+                ExtractedData? extracted = await extractionService.Extract(item.RawText, ct);
 
-                try
+                if (extracted is not null)
                 {
-                    IMessageExtractionService extractionService = scope.ServiceProvider.GetRequiredService<IMessageExtractionService>();
-                    ExtractedData? extracted = await extractionService.Extract(item.RawText, ct);
+                    IMessageExtractionResultRepository resultRepository = sp.GetRequiredService<IMessageExtractionResultRepository>();
+                    await resultRepository.Insert(item.CompanyId, extracted);
 
-                    if (extracted is not null)
-                    {
-                        IMessageExtractionResultRepository resultRepository = scope.ServiceProvider.GetRequiredService<IMessageExtractionResultRepository>();
-                        await resultRepository.Insert(item.CompanyId, extracted);
-
-                        await paymentMatchQueue.Enqueue(new PaymentMatchRequest(item.CompanyId, extracted.Reference), ct);
-                    }
-                }
-                catch (DuplicateReferenceException ex)
-                {
-                    await logHandler.WriteLog(
-                        $"Message extraction worker skipped a {item.Source} message for company {item.CompanyId}: duplicate reference '{ex.Reference}'.",
-                        LogType.Warning);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    await logHandler.WriteLog(
-                        $"Message extraction worker error processing a {item.Source} message for company {item.CompanyId}: {ex.Message}",
-                        LogType.Error);
-
-                    if (item.Source != IngestionSource.Retry)
-                    {
-                        IMessageExtractionFailureRepository failureRepository = scope.ServiceProvider.GetRequiredService<IMessageExtractionFailureRepository>();
-                        await failureRepository.Insert(item.CompanyId, item.RawText);
-                    }
+                    await paymentMatchQueue.Enqueue(new PaymentMatchRequest(item.CompanyId, extracted.Reference), ct);
                 }
             }
+            catch (DuplicateReferenceException ex)
+            {
+                await LogHandler.WriteLog(
+                    $"Message extraction worker skipped a {item.Source} message for company {item.CompanyId}: duplicate reference '{ex.Reference}'.",
+                    LogType.Warning);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException && item.Source != IngestionSource.Retry)
+            {
+                IMessageExtractionFailureRepository failureRepository = sp.GetRequiredService<IMessageExtractionFailureRepository>();
+                await failureRepository.Insert(item.CompanyId, item.RawText);
+                throw;
+            }
         }
+
+        protected override string DescribeError(IngestionItem item, Exception ex) =>
+            $"Message extraction worker error processing a {item.Source} message for company {item.CompanyId}: {ex.Message}";
     }
 }

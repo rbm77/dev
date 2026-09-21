@@ -31,5 +31,12 @@
             Sms = 2,
             Retry = 3
         }
+
+        public enum WhatsAppMessageType
+        {
+            Text = 1,
+            Image = 2,
+            Interactive = 3
+        }
     }
 }

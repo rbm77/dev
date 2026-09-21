@@ -35,15 +35,6 @@ namespace Buslogix.Features.PaymentRequests
             return paymentRequest == null ? NotFound() : Ok(paymentRequest);
         }
 
-        [Authorize(Policy = $"{Resources.PAYMENT_REQUEST}.{PermissionMode.WRITE}")]
-        [HttpPost]
-        public async Task<IActionResult> InsertPaymentRequest([FromBody] PaymentRequest paymentRequest)
-        {
-            int companyId = HttpContext.GetCompanyId();
-            int id = await paymentRequestService.InsertPaymentRequest(companyId, paymentRequest);
-            return id > 0 ? CreatedAtAction(nameof(GetPaymentRequest), new { id }, null) : BadRequest();
-        }
-
         [Authorize(Policy = $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}")]
         [HttpPost("{id:int}/approve")]
         public async Task<IActionResult> ApprovePaymentRequest(int id)

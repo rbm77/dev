@@ -14,7 +14,16 @@ namespace Buslogix.Features.EmailAccounts
         {
             int companyId = HttpContext.GetCompanyId();
             PagedResult<EmailAccount> emailAccounts = await emailAccountRepository.GetEmailAccounts(companyId, isActive, page, pageSize);
-            return Ok(emailAccounts);
+
+            PagedResult<EmailAccountSummary> response = new()
+            {
+                Items = emailAccounts.Items.Select(EmailAccountSummary.FromAccount).ToList(),
+                TotalCount = emailAccounts.TotalCount,
+                Page = emailAccounts.Page,
+                PageSize = emailAccounts.PageSize
+            };
+
+            return Ok(response);
         }
 
         [Authorize(Policy = $"{Resources.EMAIL_ACCOUNT}.{PermissionMode.WRITE}")]

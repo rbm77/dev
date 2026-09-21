@@ -1,4 +1,5 @@
 using System.Data;
+using Buslogix.Common.Llm;
 using Buslogix.Features.MessageExtraction.Abstractions;
 using MySqlConnector;
 

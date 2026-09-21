@@ -1,4 +1,3 @@
-using Anthropic;
 using Buslogix.Features.MessageExtraction.Abstractions;
 using Buslogix.Features.MessageExtraction.Configuration;
 using Buslogix.Features.MessageExtraction.Llm;
@@ -17,20 +16,6 @@ namespace Buslogix.Features.MessageExtraction
 
             services.AddSingleton<IPatternProvider, PatternProvider>();
             services.AddSingleton<IMessageParser, ConfigDrivenRegexParser>();
-
-            services.AddSingleton(sp =>
-            {
-                IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-                string apiKey = configuration["LlmFallback:ApiKey"]
-                    ?? throw new InvalidOperationException(
-                        "Configuration key 'LlmFallback:ApiKey' is not set. In development: " +
-                        "dotnet user-secrets set \"LlmFallback:ApiKey\" \"<key>\" --project Buslogix.csproj. " +
-                        "In production: set the environment variable LlmFallback__ApiKey.");
-
-                return new AnthropicClient { ApiKey = apiKey };
-            });
-
-            services.AddSingleton<IChatCompletionClient, ClaudeChatCompletionClient>();
 
             services.AddScoped<ILlmExtractionFallback, LlmExtractionFallback>();
             services.AddScoped<IMessageExtractionService, MessageExtractor>();

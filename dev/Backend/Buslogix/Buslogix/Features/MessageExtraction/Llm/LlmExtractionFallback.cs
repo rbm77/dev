@@ -1,3 +1,4 @@
+using Buslogix.Common.Llm;
 using Buslogix.Features.MessageExtraction.Abstractions;
 using Buslogix.Features.MessageExtraction.Configuration;
 using Microsoft.Extensions.Options;

@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Buslogix.Features.MessageExtraction.Llm
+namespace Buslogix.Common.Llm
 {
-    internal static class JsonHelpers
+    public static class JsonHelpers
     {
         private static readonly Regex CodeFence = new(@"^```(?:json)?\s*|\s*```$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

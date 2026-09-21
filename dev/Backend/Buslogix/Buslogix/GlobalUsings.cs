@@ -33,3 +33,4 @@ global using Buslogix.Features.EmailSenders;
 global using Buslogix.Features.Users;
 global using Buslogix.Features.Students;
 global using Buslogix.Features.PaymentRequests;
+global using Buslogix.Features.WhatsAppAccounts;

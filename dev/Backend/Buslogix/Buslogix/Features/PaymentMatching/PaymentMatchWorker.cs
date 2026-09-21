@@ -1,3 +1,4 @@
+using Buslogix.Common.BackgroundJobs;
 using Buslogix.Features.PaymentMatching.Abstractions;
 using static Buslogix.Common.Shared.Enums;
 
@@ -6,50 +7,30 @@ namespace Buslogix.Features.PaymentMatching
     public class PaymentMatchWorker(
         IPaymentMatchQueue queue,
         IServiceScopeFactory scopeFactory,
-        ILogHandler logHandler) : BackgroundService
+        ILogHandler logHandler) : QueueConsumerWorker<PaymentMatchRequest>(queue, scopeFactory, logHandler, consumerCount: 2)
     {
-        private const int ConsumerCount = 2;
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ProcessItem(IServiceProvider sp, PaymentMatchRequest request, CancellationToken ct)
         {
-            IEnumerable<Task> consumers = Enumerable.Range(0, ConsumerCount)
-                .Select(_ => Consume(stoppingToken));
+            IPaymentMatchingRepository repository = sp.GetRequiredService<IPaymentMatchingRepository>();
 
-            return Task.WhenAll(consumers);
-        }
+            PaymentMatchResult result = await repository.TryMatch(request.CompanyId, request.Reference);
 
-        private async Task Consume(CancellationToken ct)
-        {
-            await foreach (PaymentMatchRequest request in queue.DequeueAll(ct))
+            if (result.Matched)
             {
-                using IServiceScope scope = scopeFactory.CreateScope();
-
-                try
-                {
-                    IPaymentMatchingRepository repository = scope.ServiceProvider.GetRequiredService<IPaymentMatchingRepository>();
-                    PaymentMatchResult result = await repository.TryMatch(request.CompanyId, request.Reference);
-
-                    if (result.Matched)
-                    {
-                        await logHandler.WriteLog(
-                            $"Matched payment_request {request.CompanyId}/{result.PaymentRequestId} against message_extraction_result reference '{request.Reference}'." +
-                            (result.NewPaymentId > 0 ? $" Auto-approved as payment {result.NewPaymentId}." : ""),
-                            LogType.Info);
-                    }
-                    else if (result.AmountMismatch)
-                    {
-                        await logHandler.WriteLog(
-                            $"Payment match for company {request.CompanyId}, reference '{request.Reference}' found rows on both sides but the amounts differ - left unmatched for manual reconciliation.",
-                            LogType.Warning);
-                    }
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    await logHandler.WriteLog(
-                        $"Payment match worker error for company {request.CompanyId}, reference '{request.Reference}': {ex.Message}",
-                        LogType.Error);
-                }
+                await LogHandler.WriteLog(
+                    $"Matched payment_request {request.CompanyId}/{result.PaymentRequestId} against message_extraction_result reference '{request.Reference}'." +
+                    (result.NewPaymentId > 0 ? $" Auto-approved as payment {result.NewPaymentId}." : ""),
+                    LogType.Info);
+            }
+            else if (result.AmountMismatch)
+            {
+                await LogHandler.WriteLog(
+                    $"Payment match for company {request.CompanyId}, reference '{request.Reference}' found rows on both sides but the amounts differ - left unmatched for manual reconciliation.",
+                    LogType.Warning);
             }
         }
+
+        protected override string DescribeError(PaymentMatchRequest request, Exception ex) =>
+            $"Payment match worker error for company {request.CompanyId}, reference '{request.Reference}': {ex.Message}";
     }
 }

@@ -2,16 +2,14 @@ using System.Text.Json;
 using Anthropic;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
-using Buslogix.Features.MessageExtraction.Abstractions;
-using Buslogix.Features.MessageExtraction.Configuration;
 using Microsoft.Extensions.Options;
 using static Buslogix.Common.Shared.Enums;
 
-namespace Buslogix.Features.MessageExtraction.Llm
+namespace Buslogix.Common.Llm
 {
     public class ClaudeChatCompletionClient(
         AnthropicClient anthropicClient,
-        IOptionsMonitor<LlmFallbackOptions> optionsMonitor,
+        IOptionsMonitor<ClaudeOptions> optionsMonitor,
         ILogHandler logHandler) : IChatCompletionClient
     {
         private const int MaxTokens = 1024;
@@ -33,7 +31,31 @@ namespace Buslogix.Features.MessageExtraction.Llm
             ["additionalProperties"] = JsonSerializer.SerializeToElement(false)
         };
 
-        public async Task<string?> Complete(string prompt, CancellationToken ct)
+        public Task<string?> Complete(string prompt, CancellationToken ct)
+        {
+            MessageParam message = new() { Role = Anthropic.Models.Messages.Role.User, Content = prompt };
+            return CompleteInternal(message, ct);
+        }
+
+        public Task<string?> CompleteWithImage(byte[] imageBytes, string mediaType, string prompt, CancellationToken ct)
+        {
+            Base64ImageSource imageSource = new()
+            {
+                Data = Convert.ToBase64String(imageBytes),
+                MediaType = mediaType
+            };
+
+            List<ContentBlockParam> content =
+            [
+                new ContentBlockParam(new ImageBlockParam(new ImageBlockParamSource(imageSource))),
+                new ContentBlockParam(new TextBlockParam(prompt))
+            ];
+
+            MessageParam message = new() { Role = Anthropic.Models.Messages.Role.User, Content = content };
+            return CompleteInternal(message, ct);
+        }
+
+        private async Task<string?> CompleteInternal(MessageParam message, CancellationToken ct)
         {
             string model = optionsMonitor.CurrentValue.Model;
 
@@ -44,7 +66,7 @@ namespace Buslogix.Features.MessageExtraction.Llm
                     {
                         Model = model,
                         MaxTokens = MaxTokens,
-                        Messages = [new() { Role = Anthropic.Models.Messages.Role.User, Content = prompt }],
+                        Messages = [message],
                         OutputConfig = new OutputConfig
                         {
                             Format = new JsonOutputFormat { Schema = ExtractedDataSchema }

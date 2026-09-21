@@ -5,7 +5,9 @@ using Buslogix.Features.PaymentMatching;
 using Buslogix.Features.PaymentMatching.Abstractions;
 using Buslogix.Features.MessageExtraction;
 using Buslogix.Features.MessageExtraction.Abstractions;
+using Buslogix.Features.WhatsAppBot;
 using Buslogix.Common.BackgroundJobs;
+using Buslogix.Common.Llm;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -58,6 +60,7 @@ builder.Services.AddPaymentRequests();
 builder.Services.AddReports();
 builder.Services.AddEmailAccounts();
 builder.Services.AddEmailSenders();
+builder.Services.AddWhatsAppAccounts();
 
 string secretKey = builder.Configuration["JWT:SecretKey"] ?? "";
 byte[] key = Encoding.UTF8.GetBytes(secretKey);
@@ -99,9 +102,11 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddOpenApi();
+builder.Services.AddClaudeChatCompletion();
 builder.Services.AddMessageExtraction();
 builder.Services.AddEmailIngestion();
 builder.Services.AddPaymentMatching();
+builder.Services.AddWhatsAppBot();
 
 builder.Services.AddHostedService(sp => new TriggerWorker(
     sp.GetRequiredService<EmailPollQueue>(),

@@ -45,13 +45,14 @@
             { "39", $"{Resources.PAYMENT}.{PermissionMode.WRITE}" },
             { "40", $"{Resources.PAYMENT}.{PermissionMode.READ}" },
             { "41", $"{Resources.DEBTOR}.{PermissionMode.READ}" },
-            { "42", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.WRITE}" },
             { "43", $"{Resources.PAYMENT_REQUEST}.{PermissionMode.READ}" },
             { "44", $"{Resources.PAYMENT_APPROVAL}.{PermissionMode.WRITE}" },
             { "45", $"{Resources.EMAIL_ACCOUNT}.{PermissionMode.WRITE}" },
             { "46", $"{Resources.EMAIL_ACCOUNT}.{PermissionMode.READ}" },
             { "47", $"{Resources.EMAIL_SENDER}.{PermissionMode.WRITE}" },
-            { "48", $"{Resources.EMAIL_SENDER}.{PermissionMode.READ}" }
+            { "48", $"{Resources.EMAIL_SENDER}.{PermissionMode.READ}" },
+            { "49", $"{Resources.WHATSAPP_ACCOUNT}.{PermissionMode.WRITE}" },
+            { "50", $"{Resources.WHATSAPP_ACCOUNT}.{PermissionMode.READ}" }
 
         };
 

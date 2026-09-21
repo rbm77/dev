@@ -13,7 +13,9 @@ namespace Buslogix.Features.Users
             if (userIdentity?.Permissions != null && userIdentity.Permissions.Count > 0)
             {
                 string[] permissionCodes = userIdentity.Permissions
-                    .Select(static p => PermissionMap.PermissionToCode[p])
+                    .Select(static p => PermissionMap.PermissionToCode.TryGetValue(p, out string? code) ? code : null)
+                    .Where(static code => code != null)
+                    .Cast<string>()
                     .ToArray();
 
                 List<Claim> claims =
