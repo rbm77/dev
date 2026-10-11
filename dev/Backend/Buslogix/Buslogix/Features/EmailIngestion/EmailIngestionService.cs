@@ -66,9 +66,6 @@ namespace Buslogix.Features.EmailIngestion
                     new IngestionItem(IngestionSource.Email, account.CompanyId, text, DateTime.UtcNow), ct);
 
                 result.MessagesQueued++;
-                await logHandler.WriteLog(
-                    $"Email ingestion: queued message for extraction, company {account.CompanyId}.",
-                    LogType.Info);
                 return true;
             }
             catch (Exception ex)

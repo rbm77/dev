@@ -1,4 +1,4 @@
 namespace Buslogix.Features.PaymentMatching
 {
-    public record PaymentMatchRequest(int CompanyId, string Reference);
+    public record PaymentMatchRequest(int CompanyId, string Reference) : ICompanyScoped;
 }

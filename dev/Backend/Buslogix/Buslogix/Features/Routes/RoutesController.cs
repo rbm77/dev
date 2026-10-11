@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Route = Buslogix.Features.Routes.Route;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Routes
 {
@@ -51,13 +52,14 @@ namespace Buslogix.Features.Routes
 
         [Authorize(Policy = $"{Resources.ROUTE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteRoute(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteRoute(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Route {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await routeRepository.DeleteRoute(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

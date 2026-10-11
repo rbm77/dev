@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Contacts
 {
@@ -37,13 +38,14 @@ namespace Buslogix.Features.Contacts
 
         [Authorize(Policy = $"{Resources.CONTACT}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteContact(int studentId, int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteContact(int studentId, int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Contact {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await contactRepository.DeleteContact(companyId, studentId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

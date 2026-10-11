@@ -52,13 +52,14 @@ namespace Buslogix.Features.Incidents
 
         [Authorize(Policy = $"{Resources.INCIDENT}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteIncident(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteIncident(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Incident {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await incidentRepository.DeleteIncident(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

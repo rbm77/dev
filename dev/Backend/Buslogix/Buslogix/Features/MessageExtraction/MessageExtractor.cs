@@ -15,15 +15,16 @@ namespace Buslogix.Features.MessageExtraction
             {
                 if (parser.TryParse(message, out ExtractedData? data))
                 {
-                    await logHandler.WriteLog($"Message extracted by Tier 1 parser {parser.GetType().Name}: {data}", LogType.Info);
                     return data;
                 }
             }
 
-            await logHandler.WriteLog($"No Tier 1 pattern matched message, falling back to LLM. RawMessage: {message}", LogType.Warning);
-
             ExtractedData? fallbackResult = await llmExtractionFallback.Extract(message, ct);
-            await logHandler.WriteLog($"Tier 2 LLM fallback result: {fallbackResult}", LogType.Info);
+
+            if (fallbackResult is null)
+            {
+                await logHandler.WriteLog("Message extraction: Tier 2 LLM fallback failed to produce a result.", LogType.Warning);
+            }
 
             return fallbackResult;
         }

@@ -13,6 +13,7 @@ namespace Buslogix.Common.BackgroundJobs
             await foreach (byte _ in queue.DequeueAll(stoppingToken))
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
+                using IDisposable logScope = LogScope.Push(LogScope.NewId(), null);
 
                 try
                 {

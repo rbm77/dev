@@ -1,12 +1,14 @@
 using Buslogix.Common.Llm;
 using Buslogix.Features.WhatsAppBot.Abstractions;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.WhatsAppBot.ImageExtraction
 {
     public class WhatsAppReceiptProcessor(
         IWhatsAppGraphClient graphClient,
         IWhatsAppReceiptImageExtractor extractor,
-        IPaymentRequestService paymentRequestService) : IWhatsAppReceiptProcessor
+        IPaymentRequestService paymentRequestService,
+        ILogHandler logHandler) : IWhatsAppReceiptProcessor
     {
         public async Task Process(WhatsAppImageExtractionItem item, CancellationToken ct)
         {
@@ -15,6 +17,7 @@ namespace Buslogix.Features.WhatsAppBot.ImageExtraction
 
             if (extracted is null)
             {
+                await logHandler.WriteLog($"WhatsApp receipt extraction: could not parse LLM response for WaId {item.WaId}.", LogType.Warning);
                 await graphClient.SendTextMessage(
                     item.AccessToken, item.PhoneNumberId, item.WaId,
                     "No pudimos leer los datos de tu comprobante 😕 Escribinos de nuevo para intentarlo otra vez.", ct);

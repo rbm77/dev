@@ -8,13 +8,32 @@ using Buslogix.Features.MessageExtraction.Abstractions;
 using Buslogix.Features.WhatsAppBot;
 using Buslogix.Common.BackgroundJobs;
 using Buslogix.Common.Llm;
+using Buslogix.Common.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
 using static Buslogix.Common.Shared.Enums;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+FileLoggingOptions fileLoggingOptions = builder.Configuration.GetSection("FileLogging").Get<FileLoggingOptions>()
+    ?? new FileLoggingOptions();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Async(sink => sink.File(
+        path: fileLoggingOptions.Path,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RequestId}] [{CompanyId}] {Message:lj}{NewLine}{Exception}",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: fileLoggingOptions.RetainedFileCount))
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Configuration.AddJsonFile("extraction-patterns.json", optional: false, reloadOnChange: true);
 
@@ -27,6 +46,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new NullableDateOnlyJsonConverter());
     });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ILogHandler, LogHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
@@ -182,6 +202,7 @@ builder.Services.AddHostedService(sp => new TriggerWorker(
 
 WebApplication app = builder.Build();
 
+app.UseMiddleware<RequestIdMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

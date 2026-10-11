@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Payments
 {
@@ -42,26 +43,28 @@ namespace Buslogix.Features.Payments
 
         [Authorize(Policy = $"{Resources.PAYMENT}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdatePayment(long id, [FromBody] Payment payment, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdatePayment(long id, [FromBody] Payment payment, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating Payment {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await paymentRepository.UpdatePayment(companyId, id, payment)) > 0;
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.PAYMENT}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:long}")]
-        public async Task<IActionResult> DeletePayment(long id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeletePayment(long id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Payment {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await paymentRepository.DeletePayment(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

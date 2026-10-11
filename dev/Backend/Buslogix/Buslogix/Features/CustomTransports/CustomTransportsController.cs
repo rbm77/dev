@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.CustomTransports
 {
@@ -54,26 +55,28 @@ namespace Buslogix.Features.CustomTransports
 
         [Authorize(Policy = $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.WRITE}")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateCustomTransport(int id, [FromBody] CustomTransport customTransport, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdateCustomTransport(int id, [FromBody] CustomTransport customTransport, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating CustomTransport {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await customTransportRepository.UpdateCustomTransport(companyId, id, customTransport)) > 0;
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.CUSTOM_TRANSPORT}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteCustomTransport(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteCustomTransport(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting CustomTransport {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await customTransportRepository.DeleteCustomTransport(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.PeriodicExemptions
 {
@@ -41,26 +42,28 @@ namespace Buslogix.Features.PeriodicExemptions
 
         [Authorize(Policy = $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.WRITE}")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdatePeriodicExemption(int id, [FromBody] PeriodicExemption periodicExemption, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdatePeriodicExemption(int id, [FromBody] PeriodicExemption periodicExemption, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating PeriodicExemption {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await periodicExemptionRepository.UpdatePeriodicExemption(companyId, id, periodicExemption)) > 0;
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.PERIODIC_EXEMPTION}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeletePeriodicExemption(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeletePeriodicExemption(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting PeriodicExemption {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await periodicExemptionRepository.DeletePeriodicExemption(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

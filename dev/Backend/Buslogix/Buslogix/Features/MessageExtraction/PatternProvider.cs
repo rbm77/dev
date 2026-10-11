@@ -24,6 +24,7 @@ namespace Buslogix.Features.MessageExtraction
 
         private IReadOnlyList<CompiledPattern> Compile(ExtractionPatternsOptions options)
         {
+            using IDisposable logScope = LogScope.Push(LogScope.NewId(), null);
             List<CompiledPattern> compiled = [];
 
             foreach (PatternDefinition definition in options.Patterns)

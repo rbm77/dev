@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Roles
 {
@@ -50,13 +51,14 @@ namespace Buslogix.Features.Roles
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteRole(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteRole(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Role {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await roleRepository.DeleteRole(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }
@@ -75,13 +77,14 @@ namespace Buslogix.Features.Roles
 
         [Authorize(Policy = $"{Resources.ROLE}.{PermissionMode.WRITE}")]
         [HttpPut("{roleId:int}/permissions")]
-        public async Task<IActionResult> UpdatePermissions(int roleId, [FromBody] List<RolePermission> permissions, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdatePermissions(int roleId, [FromBody] List<RolePermission> permissions, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating permissions for Role {roleId} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             string permissionsJson = JsonSerializer.Serialize(permissions);
             bool updated = (await roleRepository.UpdatePermissions(companyId, roleId, permissionsJson)) > 0;
             return updated ? NoContent() : NotFound();

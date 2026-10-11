@@ -6,5 +6,5 @@ namespace Buslogix.Features.WhatsAppBot.ImageExtraction
         string AccessToken,
         string WaId,
         int StudentId,
-        string MediaId);
+        string MediaId) : ICompanyScoped;
 }

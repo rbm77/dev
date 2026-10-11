@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Vehicles
 {
@@ -52,13 +53,14 @@ namespace Buslogix.Features.Vehicles
 
         [Authorize(Policy = $"{Resources.VEHICLE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteVehicle(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteVehicle(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Vehicle {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await vehicleRepository.DeleteVehicle(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

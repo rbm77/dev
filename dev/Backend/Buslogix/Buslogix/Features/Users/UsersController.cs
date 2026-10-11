@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.Users
 {
@@ -69,26 +70,28 @@ namespace Buslogix.Features.Users
 
         [Authorize(Policy = $"{Resources.USER}.{PermissionMode.WRITE}")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating User {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = await userService.UpdateUser(companyId, id, user);
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.USER}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting User {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = await userService.DeleteUser(companyId, id);
             return deleted ? NoContent() : NotFound();
         }

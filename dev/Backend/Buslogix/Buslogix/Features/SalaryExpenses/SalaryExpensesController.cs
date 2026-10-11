@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.SalaryExpenses
 {
@@ -41,13 +42,14 @@ namespace Buslogix.Features.SalaryExpenses
 
         [Authorize(Policy = $"{Resources.EXPENSE}.{PermissionMode.WRITE}")]
         [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateSalaryExpense(long id, [FromBody] SalaryExpense expense, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdateSalaryExpense(long id, [FromBody] SalaryExpense expense, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating SalaryExpense {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await salaryExpenseRepository.UpdateSalaryExpense(companyId, id, expense)) > 0;
             return updated ? NoContent() : NotFound();
         }

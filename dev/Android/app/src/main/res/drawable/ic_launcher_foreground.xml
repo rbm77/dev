@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Carrocería del autobús -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,32H70A6,6 0 0 1 76,38V60A6,6 0 0 1 70,66H38A6,6 0 0 1 32,60V38A6,6 0 0 1 38,32Z" />
+    <!-- Ventanas -->
+    <path
+        android:fillColor="#006A6A"
+        android:pathData="M37,39H47V48H37Z" />
+    <path
+        android:fillColor="#006A6A"
+        android:pathData="M50,39H58V48H50Z" />
+    <path
+        android:fillColor="#006A6A"
+        android:pathData="M61,39H71V48H61Z" />
+    <!-- Franja -->
+    <path
+        android:fillColor="#006A6A"
+        android:pathData="M32,53H76V56H32Z" />
+    <!-- Ruedas -->
+    <path
+        android:fillColor="#003C3C"
+        android:pathData="M42,68.5m-5.5,0a5.5,5.5 0 1,0 11,0a5.5,5.5 0 1,0 -11,0Z" />
+    <path
+        android:fillColor="#003C3C"
+        android:pathData="M66,68.5m-5.5,0a5.5,5.5 0 1,0 11,0a5.5,5.5 0 1,0 -11,0Z" />
+</vector>

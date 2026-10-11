@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Buslogix.Common.Shared.Enums;
 
 namespace Buslogix.Features.PaymentPeriodRequests
 {
@@ -39,26 +40,28 @@ namespace Buslogix.Features.PaymentPeriodRequests
 
         [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}")]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdatePaymentPeriodRequest(int id, [FromBody] PaymentPeriodRequest request, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdatePaymentPeriodRequest(int id, [FromBody] PaymentPeriodRequest request, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: updating PaymentPeriodRequest {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await paymentPeriodRequestRepository.UpdatePaymentPeriodRequest(companyId, id, request)) > 0;
             return updated ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = $"{Resources.PAYMENT_PERIOD}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeletePaymentPeriodRequest(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeletePaymentPeriodRequest(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting PaymentPeriodRequest {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await paymentPeriodRequestRepository.DeletePaymentPeriodRequest(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

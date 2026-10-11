@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">Sms Bridge</string>
+
+    <string name="pin_title">Introduce tu PIN</string>
+    <string name="pin_wrong">PIN incorrecto. Inténtalo de nuevo.</string>
+    <string name="pin_delete">Borrar</string>
+
+    <string name="settings_title">Configuración</string>
+
+    <string name="section_status">Estado</string>
+    <string name="toggle_receive_send">Recibir y enviar mensajes</string>
+    <string name="status_active">Activa</string>
+    <string name="status_inactive">Desactivada</string>
+    <string name="toggle_pending_hint">Pulsa «Guardar configuración» para aplicar el cambio.</string>
+    <string name="enable_error_settings">Revisa la configuración y guárdala antes de activar.</string>
+    <string name="enable_error_permission">Concede el permiso para recibir SMS antes de activar.</string>
+
+    <string name="section_connection">Conexión con la API</string>
+    <string name="field_url">Dirección de la API (https)</string>
+    <string name="field_api_key">Clave de API</string>
+    <string name="field_company_id">ID de la empresa</string>
+    <string name="field_retry_minutes">Minutos antes de reintentar</string>
+    <string name="error_url">Escribe una dirección que empiece por https://</string>
+    <string name="error_api_key">La clave de API es obligatoria</string>
+    <string name="error_company_id">Escribe un número mayor que 0</string>
+    <string name="error_retry_minutes">Escribe un número de 1 o más</string>
+    <string name="show_api_key">Mostrar</string>
+    <string name="hide_api_key">Ocultar</string>
+    <string name="action_save">Guardar configuración</string>
+    <string name="settings_saved">Cambios guardados</string>
+    <string name="action_view_messages">Ver mensajes guardados</string>
+
+    <string name="section_permissions">Permisos</string>
+    <string name="sms_permission_title">Recibir SMS</string>
+    <string name="status_granted">Concedido</string>
+    <string name="status_missing">Pendiente: la app no puede leer los SMS</string>
+    <string name="action_grant_sms">Conceder permiso</string>
+
+    <string name="section_battery">Batería</string>
+    <string name="battery_title">Optimización de batería</string>
+    <string name="battery_excluded">Sin restricciones: los reintentos salen a tiempo</string>
+    <string name="battery_not_excluded">Con optimización: Android puede retrasar los reintentos</string>
+    <string name="action_exclude_battery">Quitar la optimización</string>
+
+    <string name="messages_title">Mensajes guardados</string>
+    <string name="messages_empty">Todavía no hay mensajes guardados.</string>
+    <string name="action_back">Volver</string>
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="delete_title">¿Eliminar este mensaje?</string>
+    <string name="delete_message">Se borrará y no se enviará.</string>
+    <string name="message_id">Mensaje %1$d</string>
+    <string name="message_status">Estado</string>
+    <string name="status_first_attempt">Esperando el primer envío</string>
+    <string name="status_retry_scheduled">Reintento programado</string>
+    <string name="message_attempts">Intentos de envío</string>
+    <string name="message_job">En cola de envío</string>
+    <string name="job_yes">Sí</string>
+    <string name="job_no">No</string>
+    <string name="message_created">Recibido</string>
+</resources>

@@ -15,14 +15,7 @@ namespace Buslogix.Features.PaymentMatching
 
             PaymentMatchResult result = await repository.TryMatch(request.CompanyId, request.Reference);
 
-            if (result.Matched)
-            {
-                await LogHandler.WriteLog(
-                    $"Matched payment_request {request.CompanyId}/{result.PaymentRequestId} against message_extraction_result reference '{request.Reference}'." +
-                    (result.NewPaymentId > 0 ? $" Auto-approved as payment {result.NewPaymentId}." : ""),
-                    LogType.Info);
-            }
-            else if (result.AmountMismatch)
+            if (result.AmountMismatch)
             {
                 await LogHandler.WriteLog(
                     $"Payment match for company {request.CompanyId}, reference '{request.Reference}' found rows on both sides but the amounts differ - left unmatched for manual reconciliation.",

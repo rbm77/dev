@@ -64,13 +64,14 @@ namespace Buslogix.Features.Maintenances
 
         [Authorize(Policy = $"{Resources.MAINTENANCE}.{PermissionMode.WRITE}")]
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteMaintenance(int id, [FromServices] IUserService userService)
+        public async Task<IActionResult> DeleteMaintenance(int id, [FromServices] IUserService userService, [FromServices] ILogHandler logHandler)
         {
             int companyId = HttpContext.GetCompanyId();
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
             }
+            await logHandler.WriteLog($"Critical process: deleting Maintenance {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool deleted = (await maintenanceRepository.DeleteMaintenance(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }

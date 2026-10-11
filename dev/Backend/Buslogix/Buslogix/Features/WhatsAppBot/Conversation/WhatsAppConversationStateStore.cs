@@ -52,6 +52,7 @@ namespace Buslogix.Features.WhatsAppBot.Conversation
             }
             catch (Exception ex)
             {
+                using IDisposable logScope = LogScope.Push(LogScope.NewId(), state.CompanyId);
                 ILogHandler logHandler = scope.ServiceProvider.GetRequiredService<ILogHandler>();
                 await logHandler.WriteLog($"WhatsApp conversation expiration: failed to notify {state.WaId}: {ex.Message}", LogType.Error);
             }

@@ -23,6 +23,8 @@ namespace Buslogix.Common.BackgroundJobs
             await foreach (T item in queue.DequeueAll(ct))
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
+                int? companyId = item is ICompanyScoped scoped ? scoped.CompanyId : null;
+                using IDisposable logScope = LogScope.Push(LogScope.NewId(), companyId);
 
                 try
                 {
