@@ -20,7 +20,14 @@ namespace Buslogix.Common.Llm
             ["properties"] = JsonSerializer.SerializeToElement(new
             {
                 amount = new { type = "number" },
-                reference = new { type = "string" },
+                reference = new
+                {
+                    type = new[] { "string", "null" },
+                    description = "Only two values are allowed: (1) the reference or transaction/receipt number copied exactly as it appears, " +
+                        "made only of the letters A-Z or a-z and the digits 0-9, between 1 and 50 characters, with no spaces, hyphens or any other symbol; " +
+                        "or (2) null when no reference is present, it is not fully legible, or it contains any character other than letters and digits. " +
+                        "Never return an empty string or placeholders such as \"N/A\", \"none\", \"unknown\" or \"not visible\"."
+                },
                 date = new
                 {
                     type = new[] { "string", "null" },

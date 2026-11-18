@@ -22,9 +22,9 @@ namespace Buslogix.Features.PaymentRequests
         {
             int id = await paymentRequestRepository.InsertPaymentRequest(companyId, paymentRequest);
 
-            if (id > 0)
+            if (id > 0 && !string.IsNullOrWhiteSpace(paymentRequest.ReceiptReference))
             {
-                await paymentMatchQueue.Enqueue(new PaymentMatchRequest(companyId, paymentRequest.ReceiptReference));
+                await paymentMatchQueue.Enqueue(new PaymentMatchRequest(companyId, paymentRequest.ReceiptReference.Trim()));
             }
 
             return id;

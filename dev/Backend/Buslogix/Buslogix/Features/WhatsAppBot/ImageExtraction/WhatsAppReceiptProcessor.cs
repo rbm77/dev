@@ -24,21 +24,25 @@ namespace Buslogix.Features.WhatsAppBot.ImageExtraction
                 return;
             }
 
+            string? reference = ExtractedData.NormalizeReference(extracted.Reference);
+
             PaymentRequest paymentRequest = new()
             {
                 StudentId = item.StudentId,
                 Amount = extracted.Amount,
-                ReceiptReference = extracted.Reference,
+                ReceiptReference = reference,
                 Date = extracted.Date
             };
 
             int id = await paymentRequestService.InsertPaymentRequest(item.CompanyId, paymentRequest);
 
-            await graphClient.SendTextMessage(
-                item.AccessToken, item.PhoneNumberId, item.WaId,
-                id > 0
-                    ? "¡Listo! Registramos tu comprobante de pago correctamente 🎉"
-                    : "No pudimos registrar tu comprobante de pago 😕 Por favor comunicate con un colaborador.", ct);
+            string reply = id <= 0
+                ? "No pudimos registrar tu comprobante de pago 😕 Por favor comunicate con un colaborador."
+                : reference is null
+                    ? "¡Listo! Registramos tu comprobante de pago 🎉 No encontramos un número de referencia, así que un colaborador lo revisará manualmente."
+                    : "¡Listo! Registramos tu comprobante de pago correctamente 🎉";
+
+            await graphClient.SendTextMessage(item.AccessToken, item.PhoneNumberId, item.WaId, reply, ct);
         }
     }
 }

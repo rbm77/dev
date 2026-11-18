@@ -10,7 +10,7 @@ export type PaymentRequest = {
   date?: string;
   amount: number;
   studentId: number;
-  receiptReference: string;
+  receiptReference?: string;
   requestedAt?: string;
   isValidated: boolean;
 };

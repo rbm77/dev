@@ -20,7 +20,7 @@ namespace Buslogix.Features.PaymentRequests
                     Date = reader.GetDateTimeOrDefault(1),
                     Amount = reader.GetDecimalOrDefault(2),
                     StudentId = reader.GetInt32OrDefault(3),
-                    ReceiptReference = reader.GetStringOrDefault(4, "") ?? "",
+                    ReceiptReference = reader.GetStringOrDefault(4),
                     RequestedAt = reader.GetDateTimeOrDefault(5),
                     IsValidated = reader.GetBooleanOrDefault(6)
                 }, parameters);
@@ -47,7 +47,7 @@ namespace Buslogix.Features.PaymentRequests
                     Date = reader.GetDateTimeOrDefault(1),
                     Amount = reader.GetDecimalOrDefault(2),
                     StudentId = reader.GetInt32OrDefault(3),
-                    ReceiptReference = reader.GetStringOrDefault(4, "") ?? "",
+                    ReceiptReference = reader.GetStringOrDefault(4),
                     RequestedAt = reader.GetDateTimeOrDefault(5),
                     IsValidated = reader.GetBooleanOrDefault(6)
                 }, parameters);
@@ -69,7 +69,7 @@ namespace Buslogix.Features.PaymentRequests
                 ["p_date"] = paymentRequest.Date,
                 ["p_amount"] = paymentRequest.Amount,
                 ["p_student_id"] = paymentRequest.StudentId,
-                ["p_receipt_reference"] = paymentRequest.ReceiptReference
+                ["p_receipt_reference"] = string.IsNullOrWhiteSpace(paymentRequest.ReceiptReference) ? null : paymentRequest.ReceiptReference.Trim()
             };
 
             object? result = await dataAccess.ExecuteScalar("insert_payment_request", CommandType.StoredProcedure, parameters);

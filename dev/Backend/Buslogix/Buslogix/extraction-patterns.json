@@ -3,7 +3,7 @@
     "Patterns": [
       {
         "Name": "spei-transfer-notification",
-        "Regex": "Recibiste\\s+una\\s+transferencia\\s+SPEI\\s+por\\s+\\$(?<Amount>[\\d,]+\\.\\d{2})\\s+con\\s+referencia\\s+(?<Reference>[A-Za-z0-9-]+)\\s+el\\s+(?<Date>\\d{2}/\\d{2}/\\d{4})",
+        "Regex": "Recibiste\\s+una\\s+transferencia\\s+SPEI\\s+por\\s+\\$(?<Amount>[\\d,]+\\.\\d{2})\\s+con\\s+referencia\\s+(?<Reference>[A-Za-z0-9]+)\\s+el\\s+(?<Date>\\d{2}/\\d{2}/\\d{4})",
         "AmountGroup": "Amount",
         "ReferenceGroup": "Reference",
         "DateGroup": "Date"
@@ -18,7 +18,7 @@
     ]
   },
   "LlmFallback": {
-    "PromptTemplate": "Extract the amount, reference, and date from the following message. Respond ONLY with JSON matching {\"amount\": number, \"reference\": string, \"date\": \"yyyy-MM-dd or null\"}.\n\nMessage: \"{{message}}\"",
+    "PromptTemplate": "Extract the amount, reference, and date from the following message. Respond ONLY with JSON matching {\"amount\": number, \"reference\": string or null, \"date\": \"yyyy-MM-dd\" or null}. The reference must be exactly one of these two values: the reference copied exactly as it appears, made only of letters (A-Z, a-z) and digits (0-9), 1 to 50 characters, with no spaces, hyphens or other symbols; or null if the message has no reference, it is incomplete, or it contains any character other than letters and digits. Never return an empty string or placeholders such as \"N/A\", \"none\", \"unknown\" or \"not visible\".\n\nMessage: \"{{message}}\"",
     "Model": "claude-sonnet-5"
   }
 }

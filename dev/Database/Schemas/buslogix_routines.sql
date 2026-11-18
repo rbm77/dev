@@ -66,8 +66,10 @@ BEGIN
         INSERT INTO `payment` (company_id, id, `date`, amount, student_id)
         VALUES (p_company_id, v_new_payment_id, v_date, v_amount, v_student_id);
 
-        INSERT INTO `payment_receipt_reference` (receipt_reference, company_id, payment_id)
-        VALUES (v_receipt_reference, p_company_id, v_new_payment_id);
+        IF v_receipt_reference IS NOT NULL THEN
+            INSERT INTO `payment_receipt_reference` (receipt_reference, company_id, payment_id)
+            VALUES (v_receipt_reference, p_company_id, v_new_payment_id);
+        END IF;
 
         DELETE FROM `payment_request`
          WHERE company_id = p_company_id AND id = p_id;
@@ -4611,10 +4613,14 @@ BEGIN
         RESIGNAL;
     END;
 
-    SELECT
-        (SELECT COUNT(*) FROM `payment_receipt_reference` WHERE receipt_reference = p_receipt_reference)
-      + (SELECT COUNT(*) FROM `payment_request`           WHERE receipt_reference = p_receipt_reference)
-      INTO v_exists;
+    SET p_receipt_reference = NULLIF(TRIM(p_receipt_reference), '');
+
+    IF p_receipt_reference IS NOT NULL THEN
+        SELECT
+            (SELECT COUNT(*) FROM `payment_receipt_reference` WHERE receipt_reference = p_receipt_reference)
+          + (SELECT COUNT(*) FROM `payment_request`           WHERE receipt_reference = p_receipt_reference)
+          INTO v_exists;
+    END IF;
 
     IF v_exists > 0 THEN
         SELECT -1 AS new_id;
@@ -5311,34 +5317,36 @@ BEGIN
     SET p_payment_request_id = NULL;
     SET p_new_payment_id = 0;
 
-    START TRANSACTION;
+    IF p_reference IS NOT NULL THEN
+        START TRANSACTION;
 
-    SELECT id, amount INTO v_pr_id, v_pr_amount
-      FROM `payment_request`
-     WHERE company_id = p_company_id AND receipt_reference = p_reference
-       FOR UPDATE;
+        SELECT id, amount INTO v_pr_id, v_pr_amount
+          FROM `payment_request`
+         WHERE company_id = p_company_id AND receipt_reference = p_reference
+           FOR UPDATE;
 
-    SELECT id, amount INTO v_mer_id, v_mer_amount
-      FROM `message_extraction_result`
-     WHERE company_id = p_company_id AND reference = p_reference
-       FOR UPDATE;
+        SELECT id, amount INTO v_mer_id, v_mer_amount
+          FROM `message_extraction_result`
+         WHERE company_id = p_company_id AND reference = p_reference
+           FOR UPDATE;
 
-    IF v_pr_id IS NOT NULL AND v_mer_id IS NOT NULL THEN
-        IF v_pr_amount = v_mer_amount THEN
-            DELETE FROM `message_extraction_result` WHERE id = v_mer_id;
+        IF v_pr_id IS NOT NULL AND v_mer_id IS NOT NULL THEN
+            IF v_pr_amount = v_mer_amount THEN
+                DELETE FROM `message_extraction_result` WHERE id = v_mer_id;
 
-            UPDATE `payment_request`
-               SET is_validated = 1
-             WHERE company_id = p_company_id AND id = v_pr_id;
+                UPDATE `payment_request`
+                   SET is_validated = 1
+                 WHERE company_id = p_company_id AND id = v_pr_id;
 
-            SET p_matched = 1;
-            SET p_payment_request_id = v_pr_id;
-        ELSE
-            SET p_amount_mismatch = 1;
+                SET p_matched = 1;
+                SET p_payment_request_id = v_pr_id;
+            ELSE
+                SET p_amount_mismatch = 1;
+            END IF;
         END IF;
-    END IF;
 
-    COMMIT;
+        COMMIT;
+    END IF;
 
     IF p_matched = 1 THEN
         SELECT COUNT(*) INTO v_auto_approval_enabled

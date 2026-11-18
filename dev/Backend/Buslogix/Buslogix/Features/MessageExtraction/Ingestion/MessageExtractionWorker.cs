@@ -22,10 +22,20 @@ namespace Buslogix.Features.MessageExtraction.Ingestion
 
                 if (extracted is not null)
                 {
-                    IMessageExtractionResultRepository resultRepository = sp.GetRequiredService<IMessageExtractionResultRepository>();
-                    await resultRepository.Insert(item.CompanyId, extracted);
+                    string? reference = ExtractedData.NormalizeReference(extracted.Reference);
 
-                    await paymentMatchQueue.Enqueue(new PaymentMatchRequest(item.CompanyId, extracted.Reference), ct);
+                    if (reference is null)
+                    {
+                        await LogHandler.WriteLog(
+                            $"Message extraction worker discarded a {item.Source} message for company {item.CompanyId}: no valid reference was extracted ('{extracted.Reference}').",
+                            LogType.Warning);
+                        return;
+                    }
+
+                    IMessageExtractionResultRepository resultRepository = sp.GetRequiredService<IMessageExtractionResultRepository>();
+                    await resultRepository.Insert(item.CompanyId, extracted with { Reference = reference });
+
+                    await paymentMatchQueue.Enqueue(new PaymentMatchRequest(item.CompanyId, reference), ct);
                 }
             }
             catch (DuplicateReferenceException ex)

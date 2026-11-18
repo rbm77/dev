@@ -1,3 +1,4 @@
+using Buslogix.Common.Llm;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Buslogix.Common.Shared.Enums;
@@ -36,6 +37,10 @@ namespace Buslogix.Features.Payments
         [HttpPost]
         public async Task<IActionResult> InsertPayment([FromBody] Payment payment)
         {
+            if (!HasValidReceiptReference(payment))
+            {
+                return BadRequest();
+            }
             int companyId = HttpContext.GetCompanyId();
             long id = await paymentRepository.InsertPayment(companyId, payment);
             return id > 0 ? CreatedAtAction(nameof(GetPayment), new { id }, null) : BadRequest();
@@ -49,6 +54,10 @@ namespace Buslogix.Features.Payments
             if (!await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
             {
                 return Forbid();
+            }
+            if (!HasValidReceiptReference(payment))
+            {
+                return BadRequest();
             }
             await logHandler.WriteLog($"Critical process: updating Payment {id} by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = (await paymentRepository.UpdatePayment(companyId, id, payment)) > 0;
@@ -68,5 +77,8 @@ namespace Buslogix.Features.Payments
             bool deleted = (await paymentRepository.DeletePayment(companyId, id)) > 0;
             return deleted ? NoContent() : NotFound();
         }
+
+        private static bool HasValidReceiptReference(Payment payment) =>
+            string.IsNullOrWhiteSpace(payment.ReceiptReference) || ExtractedData.NormalizeReference(payment.ReceiptReference) is not null;
     }
 }

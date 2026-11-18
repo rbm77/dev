@@ -9,7 +9,9 @@ import type { PaymentRequest } from "../types";
 
 /** Validate → approve (creates the payment), or reject (deletes the request). */
 export function PaymentRequestActions({ request }: { request: PaymentRequest }) {
-  const summary = `${formatMoney(request.amount)} · referencia ${request.receiptReference}`;
+  const summary = request.receiptReference
+    ? `${formatMoney(request.amount)} · referencia ${request.receiptReference}`
+    : `${formatMoney(request.amount)} · sin referencia`;
 
   return (
     <>

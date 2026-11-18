@@ -28,7 +28,7 @@ CREATE TABLE `payment_request` (
   `date` date NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `student_id` int NOT NULL,
-  `receipt_reference` varchar(50) NOT NULL,
+  `receipt_reference` varchar(50) DEFAULT NULL,
   `requested_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `is_validated` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`company_id`,`id`),
@@ -36,7 +36,7 @@ CREATE TABLE `payment_request` (
   KEY `fk_payment_request_student` (`company_id`,`student_id`),
   KEY `idx_payment_request_is_validated` (`is_validated`),
   CONSTRAINT `fk_payment_request_student` FOREIGN KEY (`company_id`, `student_id`) REFERENCES `student` (`company_id`, `id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `chk_payment_request_receipt_reference` CHECK ((char_length(trim(`receipt_reference`)) > 0))
+  CONSTRAINT `chk_payment_request_receipt_reference` CHECK (((`receipt_reference` is null) or (char_length(trim(`receipt_reference`)) > 0)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

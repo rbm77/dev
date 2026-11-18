@@ -58,9 +58,8 @@ export function PaymentForm({ payment, studentLabel, presetStudent, readOnly = f
             control={control}
             name="receiptReference"
             label="Referencia del comprobante"
-            required
             maxLength={LIMITS.payment.receiptReference}
-            description="Número de comprobante o transferencia. Debe ser único."
+            description="Opcional. Número de comprobante o transferencia, solo letras y números. Si se indica, debe ser único."
             className="md:col-span-2"
           />
         </FormSection>

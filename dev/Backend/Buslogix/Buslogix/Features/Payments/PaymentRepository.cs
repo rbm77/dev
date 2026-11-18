@@ -71,7 +71,7 @@ namespace Buslogix.Features.Payments
                 ["p_date"] = payment.Date,
                 ["p_amount"] = payment.Amount,
                 ["p_student_id"] = payment.StudentId,
-                ["p_receipt_reference"] = payment.ReceiptReference
+                ["p_receipt_reference"] = string.IsNullOrWhiteSpace(payment.ReceiptReference) ? null : payment.ReceiptReference.Trim()
             };
 
             object? result = await dataAccess.ExecuteScalar("insert_payment", CommandType.StoredProcedure, parameters);
@@ -87,7 +87,7 @@ namespace Buslogix.Features.Payments
                 ["p_date"] = payment.Date,
                 ["p_amount"] = payment.Amount,
                 ["p_student_id"] = payment.StudentId,
-                ["p_receipt_reference"] = payment.ReceiptReference
+                ["p_receipt_reference"] = string.IsNullOrWhiteSpace(payment.ReceiptReference) ? null : payment.ReceiptReference.Trim()
             };
 
             object? result = await dataAccess.ExecuteScalar("update_payment", CommandType.StoredProcedure, parameters);

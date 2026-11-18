@@ -24,12 +24,12 @@ namespace Buslogix.Features.MessageExtraction.Persistence
             }
             catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
             {
-                throw new DuplicateReferenceException(data.Reference, ex);
+                throw new DuplicateReferenceException(data.Reference ?? string.Empty, ex);
             }
 
             if (result is not null && Convert.ToInt64(result) == -1)
             {
-                throw new DuplicateReferenceException(data.Reference);
+                throw new DuplicateReferenceException(data.Reference ?? string.Empty);
             }
         }
     }

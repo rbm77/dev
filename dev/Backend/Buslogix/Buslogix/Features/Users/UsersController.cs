@@ -149,9 +149,21 @@ namespace Buslogix.Features.Users
 
         [Authorize(Policy = $"{Resources.USER}.{PermissionMode.WRITE}")]
         [HttpPut("critical-process")]
-        public async Task<IActionResult> UpdateCriticalProcessUsers([FromBody] List<CriticalProcessUser> users)
+        public async Task<IActionResult> UpdateCriticalProcessUsers([FromBody] List<CriticalProcessUser> users, [FromServices] ILogHandler logHandler)
         {
+            if (users.Count == 0)
+            {
+                return BadRequest(new Error { Message = "At least one critical process user is required." });
+            }
+
             int companyId = HttpContext.GetCompanyId();
+            // Bootstrap: while the company has no critical process users, any USER.WRITE holder may assign the first ones.
+            bool hasCriticalUsers = (await userService.GetCriticalProcessUsers(companyId, 1, 1)).TotalCount > 0;
+            if (hasCriticalUsers && !await userService.IsCriticalProcessUser(companyId, HttpContext.GetUserId()))
+            {
+                return Forbid();
+            }
+            await logHandler.WriteLog($"Critical process: updating critical process users by user {HttpContext.GetUserId()} (company {companyId}).", LogType.Warning);
             bool updated = await userService.UpdateCriticalProcessUsers(companyId, users);
             return updated ? NoContent() : NotFound();
         }
