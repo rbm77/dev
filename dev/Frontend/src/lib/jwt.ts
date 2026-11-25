@@ -2,8 +2,11 @@ import { parsePermissionCodes, type Permission } from "@/lib/permissions";
 
 /**
  * Identity carried by the backend JWT (Features/Users/TokenHandler.cs).
- * JwtSecurityTokenHandler maps ClaimTypes.NameIdentifier to `nameid` and
- * ClaimTypes.Name to `unique_name`; `cid` and `permissions` are custom claims.
+ * TokenHandler builds the token with the JwtSecurityToken constructor, which
+ * does not apply the outbound claim map, so ClaimTypes.NameIdentifier and
+ * ClaimTypes.Name arrive as full URIs. The short names (`nameid`,
+ * `unique_name`) are also accepted in case the backend starts mapping them.
+ * `cid` and `permissions` are custom claims.
  */
 export type TokenIdentity = {
   userId: number;
@@ -13,6 +16,9 @@ export type TokenIdentity = {
   /** Expiration as a Unix timestamp in seconds. */
   expiresAt: number;
 };
+
+const NAME_IDENTIFIER_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
+const NAME_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
 
 function decodeBase64Url(segment: string): string {
   const base64 = segment.replace(/-/g, "+").replace(/_/g, "/");
@@ -44,17 +50,18 @@ export function decodeToken(token: string): TokenIdentity | null {
     }
 
     const claims = payload as Record<string, unknown>;
-    const userId = toPositiveInt(claims.nameid);
+    const userId = toPositiveInt(claims.nameid ?? claims[NAME_IDENTIFIER_URI]);
     const companyId = toPositiveInt(claims.cid);
     const expiresAt = toPositiveInt(claims.exp);
     if (userId === null || companyId === null || expiresAt === null) {
       return null;
     }
+    const username = claims.unique_name ?? claims[NAME_URI];
 
     return {
       userId,
       companyId,
-      username: typeof claims.unique_name === "string" ? claims.unique_name : "",
+      username: typeof username === "string" ? username : "",
       permissions: typeof claims.permissions === "string" ? parsePermissionCodes(claims.permissions) : [],
       expiresAt,
     };
