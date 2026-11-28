@@ -5027,7 +5027,7 @@ BEGIN
         VALUES (p_company_id, v_id, p_identity_document, p_name, p_lastname, p_address, p_phone_number, p_email);
     ELSE
         UPDATE personal_data
-        SET first_name = p_name,
+        SET name = p_name,
             last_name = p_lastname,
             address = p_address,
             phone_number = p_phone_number,
